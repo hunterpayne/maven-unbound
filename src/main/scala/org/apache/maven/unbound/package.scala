@@ -192,7 +192,38 @@ package object unbound {
     ConfigValueFactory.fromMap(fromJsonObject(jobject)).toConfig()
   }
 
-  def configToJson(conf: Config): JObject = ???
+  def configToJson(conf: Config): JObject = {
+    import scala.collection.JavaConverters._
+
+    val children: Seq[java.util.Map.Entry[String, ConfigValue]] =
+      conf.entrySet().asScala.toSeq
+
+    def makeJValuePrimitive(value: ConfigValue): JValue = 
+      value.unwrapped() match {
+        case null => JNull
+        case b: java.lang.Boolean => JBool(b.booleanValue())
+        case b: java.lang.Byte => JInt(b.toInt)
+        case s: java.lang.Short => JInt(s.toInt)
+        case i: java.lang.Integer => JInt(i.toInt)
+        case l: java.lang.Long => JDecimal(new java.math.BigDecimal(l.toLong))
+        case f: java.lang.Float => JDouble(f.toDouble)
+        case d: java.lang.Double => JDouble(d.toDouble)
+        case s: String => JString(s)
+        case _ => ???
+      }
+
+    def makeJValue(value: ConfigValue): JValue = value match {
+      case l: ConfigList => 
+        JArray(l.asScala.map { it => makeJValue(it) }.toList)
+      case m: ConfigObject =>
+        JObject(m.asScala.map { it => (it._1, makeJValue(it._2)) }.toList)
+      case _ => makeJValuePrimitive(value)
+    }
+
+    val childElems: Seq[JField] = 
+      children.map { entry => (entry.getKey(), makeJValue(entry.getValue())) }
+    new JObject(childElems.toList)
+  }
 
   object SL extends Labels
 }

@@ -10,13 +10,18 @@ import com.typesafe.config.ConfigFactory
 
 object Cli {
 
+  val xmlFileName = "/pom.xml"
+  val hoconFileName = "/pom.conf"
+  val jsonFileName = "/pom.json"
+
   def createPomHoconFiles(at: String, project: Project): Unit = {
 
     val hocon = ConfigFactory.parseString(JsonWriter.writePOM(project))
-    val writer = new FileWriter(new File(at + "/pom.conf"))
+    val writer = new FileWriter(new File(at + hoconFileName))
     try {
       writer.write(hocon.root().render())
       writer.flush()
+      println(s"generated ${at}${hoconFileName}")
     } finally {
       writer.close()
     }
@@ -26,11 +31,13 @@ object Cli {
 
   def createPomJsonFiles(at: String, project: Project): Unit = {
 
+    println("serializing project " + project)
     val jsonStr = JsonWriter.writePOM(project)
-    val writer = new FileWriter(new File(at + "/pom.json"))
+    val writer = new FileWriter(new File(at + jsonFileName))
     try {
       writer.write(jsonStr)
       writer.flush()
+      println(s"generated ${at}${jsonFileName}")
     } finally {
       writer.close()
 
@@ -41,7 +48,7 @@ object Cli {
 
   def recurseXml(s: String, createFile: (String, Project) => Unit): Unit = {
 
-    val xml = new File(s + "/pom.xml")
+    val xml = new File(s + xmlFileName)
 
     if (xml.exists()) {
 
@@ -58,10 +65,11 @@ object Cli {
   def createPomXmlFiles(at: String, project: Project): Unit = {
 
     val xmlStr = project.toXmlString
-    val writer = new FileWriter(new File(at + "/pom.xml"))
+    val writer = new FileWriter(new File(at + xmlFileName))
     try {
       writer.write(xmlStr)
       writer.flush()
+      println(s"generated ${at}${xmlFileName}")
     } finally {
       writer.close()
 
@@ -71,8 +79,8 @@ object Cli {
 
   def recurse(s: String): Unit = {
 
-    val conf = new File(s + "/pom.conf")
-    val json = new File(s + "/pom.json")
+    val conf = new File(s + hoconFileName)
+    val json = new File(s + jsonFileName)
 
     if (json.exists()) {
 

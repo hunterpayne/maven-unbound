@@ -59,9 +59,13 @@ case object Project extends CommonJsonReader {
           JField(Version, JString(p.version)) ::
           JField(Packaging, JString(p.packaging)) ::
           JField(Name, JString(p.name)) ::
-          JField(Description, JString(p.description)) ::
+          JField(
+            Description, 
+            if (p.description != null) JString(p.description) else JNull) ::
           JField(UrlStr, JString(p.url)) ::
-          JField(InceptionYear, JString(p.inceptionYear)) ::
+          JField(
+            InceptionYear, 
+            if (p.inceptionYear != null) JString(p.inceptionYear) else JNull) ::
           JField(OrganizationStr, Extraction.decompose(p.organization)) ::
           JField(
             Licenses, 
