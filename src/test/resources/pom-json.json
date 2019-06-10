@@ -1,0 +1,154 @@
+{
+    "groupId" : "org.clifford",
+    "artifactId" : "clifford",
+    "packaging" : "pom",
+    "name" : "clifford",
+    "version" : "1.0.0",
+    "modules" : [ "cross/2.11", "cross/2.12" ],
+
+    "parent" : {
+      "groupId" : "parent-group",
+      "artifactId" : "parent-pom"
+    },
+
+    "properties" : {
+      "maven.build.timestamp.format" : "",
+      "release.epoch" : "1.0.0",
+      "release.stamp" : "${maven.build.timestamp}",
+      "revision" : "${release.epoch}",
+      "version.scala.simple.epoch" : "2.11",
+      "version.scala.epoch" : "2.11",
+      "version.scala.release" : "2.11.12",
+      "version.scala.zinc" : "1.3.0-M2",
+      "version.scala.plugin.macro" : "2.1.1",
+
+      "notavailable.scalajs" : true,
+      "version.scalajs.epoch" : "0.6",
+      "version.scalajs.release" : "0.6.26",
+      "version.scalajs.library" : "sjs${version.scalajs.epoch}_${version.scala.epoch}",
+
+      "version.scalanat.epoch" : "0.3",
+      "version.scalanat.release" : "0.3.8",
+      "version.scalanat.library" : "native${version.scalanat.epoch}_${version.scala.epoch}",
+      "version.scala.plugin.native" : "${version.scalanat.release}",
+
+      "version.java" : "1.8",
+      "maven.compiler.source" : "${version.java}",
+      "maven.compiler.target" : "${version.java}",
+
+      "version.scalatest" : "3.0.6",
+
+      "version.junit4" : "4.12",
+      "version.maven.testing" : "2.22.1",
+    
+      "project.build.sourceEncoding" : "UTF-8"
+    },
+
+    "dependencies" : [
+      { 
+        "groupId" : "org.scala-lang",
+        "artifactId" : "scala-library",
+        "version" : "${version.scala.release}",
+        "scope" : "compile"
+      },
+      {
+        "groupId" : "org.scalanlp",
+        "artifactId" : "breeze_${version.scala.epoch}",
+        "version" : "0.13.2"
+      },
+      {
+        "groupId" : "com.chuusai",
+        "artifactId" : "shapeless_${version.scala.epoch}",
+        "version" : "2.3.3"
+      },
+      {
+        "groupId" : "org.scalatest",
+        "artifactId" : "scalatest_${version.scala.epoch}",
+        "version" : "${version.scalatest}",
+        "scope" : "test"
+      },
+      {
+        "groupId" : "org.scalacheck",
+        "artifactId" : "scalacheck_${version.scala.epoch}",
+        "version" : "1.14.0",
+        "scope" : "test"
+      }  
+    ],
+
+  "build" : {
+    "plugins" : [
+      {
+        "groupId" : "org.apache.maven.plugins",
+        "artifactId" : "maven-compiler-plugin",
+        "version" : "3.7.0",
+        "configuration" : {
+          "skip" : true,
+          "skipMain" : true
+        }
+      },
+      {
+        "groupId" : "com.carrotgarden.maven",
+        "artifactId" : "scalor-maven-plugin_2.12",
+        "configuration" : {
+          "zincOptionsScala" : 
+            "-Xsource:${version.scala.epoch} -withVersionClasspathValidator:false -compileorder:Mixed -language:implicitConversions -usejavacp",
+          "defineBridge" : [
+            {
+              "groupId" : "org.scala-sbt",
+              "artifactId" : "compiler-bridge_${version.scala.epoch}",
+              "version" : "${version.scala.zinc}"
+            }
+          ],
+          "defineCompiler" : [
+            {
+              "groupId" : "org.scala-lang",
+              "artifactId" : "scala-compiler",
+              "version" : "${version.scala.release}"
+            }
+          ]
+        },
+        "executions" : [
+          {
+            "id" : "scala-build",
+            "inherited" : false,
+            "goals" : [
+              "register-main", "register-test",
+              "compile-main", "compile-test",
+              "scala-js-link-main", "scala-js-link-test",
+              "scala-js-env-prov-webjars", "scala-js-env-prov-nodejs", 
+              "scala-js-env-conf-nodejs"
+            ]
+          }
+        ]
+      },
+      {
+        "groupId" : "org.scalatest",
+        "artifactId" : "scalatest-maven-plugin",
+        "version" : "1.0",
+        "configuration" : {
+          "reportsDirectory" : "${project.build.directory}/jvm-surefire-reports",
+          "junitxml" : ".",
+          "filereports" : "Clifford-TestSuite.txt",
+          "parallel" : false
+        },
+        "executions" : [
+          {
+            "id" : "test",
+            "goals" : [ "test" ]
+          }
+        ]
+      }      
+    ]
+  },
+
+  "reporting" : {
+    "plugins" : [
+      {
+        "groupId" : "net.alchim31.maven",
+        "artifactId" : "scala-maven-plugin",
+        "version" : "3.4.4",
+        "configuration" : { "jvmArgs" : [ "-Xms64m", "-Xmx1024m" ] }
+      }
+    ]
+  }
+}

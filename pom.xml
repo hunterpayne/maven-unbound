@@ -1,0 +1,190 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.maven</groupId>
+  <artifactId>hocon</artifactId>
+  <packaging>jar</packaging>
+  <name>hocon</name>
+  <url></url>
+  <version>1.0.0</version>
+
+  <properties>
+    <!-- Resource identity sequence. -->
+<!--    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> -->
+    <maven.build.timestamp.format></maven.build.timestamp.format>
+    
+    <!-- Streaming release version. -->
+    <release.epoch>1.0.0</release.epoch>
+    <release.stamp>${maven.build.timestamp}</release.stamp>
+    <!--    <revision>${release.epoch}.${release.stamp}</revision> -->
+    <revision>${release.epoch}</revision>
+
+    <!-- Must override in each cross-version module. -->
+    <version.scala.simple.epoch>2.12</version.scala.simple.epoch>
+    <version.scala.epoch>2.12</version.scala.epoch>
+    <version.scala.release>2.12.8</version.scala.release>
+    
+    <version.scala.zinc>1.3.0-M2</version.scala.zinc>
+    <version.scala.plugin.macro>2.1.1</version.scala.plugin.macro>
+    
+    <!-- Java epoch. -->
+    <version.java>1.8</version.java>
+    <maven.compiler.source>${version.java}</maven.compiler.source><!-- Used by M2E. -->
+    <maven.compiler.target>${version.java}</maven.compiler.target><!-- Used by M2E. -->
+
+    <!-- scalatest -->
+    <version.scalatest>3.0.6</version.scalatest>
+
+    <!-- File format. -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${version.scala.release}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+      <version>1.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.iheart</groupId>
+      <artifactId>ficus_${version.scala.epoch}</artifactId>
+      <version>1.4.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json4s</groupId>
+      <artifactId>json4s-native_${version.scala.epoch}</artifactId>
+      <version>3.6.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>3.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+      <version>3.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${version.scala.epoch}</artifactId>
+      <version>${version.scalatest}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scalacheck</groupId>
+      <artifactId>scalacheck_${version.scala.epoch}</artifactId>
+      <version>1.14.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+
+      <!-- Disable default compiler. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.7.0</version>
+        <configuration>
+          <skip>true</skip>
+          <skipMain>true</skipMain>
+        </configuration>
+      </plugin>
+      
+      <!-- Enable alternative compiler. -->
+      <plugin>
+        <groupId>com.carrotgarden.maven</groupId>
+        <artifactId>scalor-maven-plugin_2.12</artifactId>
+        <!-- <version>1.4.2.20180508161326</version> -->
+  
+        <configuration>
+    
+          <defineBridge>
+            <dependency>
+              <groupId>org.scala-sbt</groupId>
+              <artifactId>compiler-bridge_${version.scala.epoch}</artifactId>
+              <version>${version.scala.zinc}</version>
+            </dependency>
+          </defineBridge>
+    
+          <zincOptionsScala>
+            -Xsource:${version.scala.epoch}
+            -withVersionClasspathValidator:false
+            -compileorder:Mixed
+            -language:implicitConversions
+            -usejavacp
+          </zincOptionsScala>
+    
+          <defineCompiler>
+            <dependency>
+              <groupId>org.scala-lang</groupId>
+              <artifactId>scala-compiler</artifactId>
+              <version>${version.scala.release}</version>
+            </dependency>
+          </defineCompiler>
+        </configuration>
+  
+        <executions>
+          <execution>
+            <id>scala-build</id>
+            <inherited>false</inherited>
+            <goals>
+
+              <goal>register-main</goal>
+              <goal>register-test</goal>
+        
+              <goal>compile-main</goal>
+              <goal>compile-test</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- enable scalatest -->
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+        <version>1.0</version>
+        <configuration>
+          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+          <junitxml>.</junitxml>
+          <filereports>TestSuite.txt</filereports>
+          <parallel>false</parallel>
+        </configuration>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.4.4</version>
+        <configuration>
+          <jvmArgs>
+            <jvmArg>-Xms64m</jvmArg>
+            <jvmArg>-Xmx1024m</jvmArg>
+          </jvmArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+</project>
