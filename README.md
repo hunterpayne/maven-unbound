@@ -1,3 +1,3 @@
-# maven-unbound
-Hocon and Json to Apache pom.xml
+# Maven Unbound
+Hocon and Json to Apache Maven pom.xml
 

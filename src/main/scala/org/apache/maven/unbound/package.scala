@@ -9,7 +9,7 @@ import org.json4s._
 
 import com.typesafe.config._
 
-package object hocon {
+package object unbound {
 
   def ensureDefault[T](seq: Seq[T], default: T): Seq[T] =
     if (!seq.isEmpty) seq

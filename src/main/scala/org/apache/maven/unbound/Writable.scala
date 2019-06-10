@@ -1,5 +1,5 @@
 
-package org.apache.maven.hocon
+package org.apache.maven.unbound
 
 import java.io.{ File, FileWriter, Writer }
 

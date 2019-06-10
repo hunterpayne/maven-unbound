@@ -1,5 +1,5 @@
 
-package org.apache.maven.hocon
+package org.apache.maven.unbound
 
 import scala.xml.{ Elem, Text, XML, Null, TopScope }
 
