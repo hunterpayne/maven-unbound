@@ -1,2 +1,2 @@
 #!/bin/sh
-java -jar target/unbound-1.0.0.jar $@
+java -jar target/unbound-1.0.0-exec.jar $@
