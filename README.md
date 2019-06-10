@@ -64,3 +64,9 @@ current Maven Project.  Then it will call mvn with the same arguments as Unbound
 was given.  This has the effect of making it seem like you are using
 Json or Hocon style Maven when you are really just generating the pom.xml files
 on the fly and calling normal Maven.
+
+
+## Is it ready to use
+
+No, the Json writing is still broken.  Also more unit tests are necessary.
+Watch this space for more news.
