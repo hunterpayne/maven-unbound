@@ -68,5 +68,8 @@ on the fly and calling normal Maven.
 
 ## Is it ready to use
 
-More unit tests are necessary but the code is usable now.
+More unit tests are necessary and there are still some bugs but the basic
+functionality is finished.  There are bugs in how the code handles 
+configurations and perhaps there are a few places where defaults are not
+handled correctly but mostly the code is working now.
 Watch this space for more news.

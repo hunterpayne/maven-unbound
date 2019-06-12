@@ -60,9 +60,12 @@ case object Build extends CommonJsonReader {
             TestOutputDirectory, b.testOutputDirectory, defTestOutputDir),
           writeObjectSequence(Extensions, b.extensions),
           writeStr(DefaultGoal, b.defaultGoal),
-          // TODO default values for resources and testResources
-          writeObjectSequence(Resources, b.resources),
-          writeObjectSequence(TestResources, b.resources),
+          if (!isDefaultResources(b.resources)) 
+            writeObjectSequence(Resources, b.resources)
+          else None,
+          if (!isDefaultResources(b.testResources)) 
+            writeObjectSequence(TestResources, b.testResources)
+          else None,
           writeStr(DirectoryStr, b.directory, Target),
           writeStr(FinalName, b.finalName),
           writeStringSequence(Filters, b.filters),
@@ -71,6 +74,18 @@ case object Build extends CommonJsonReader {
         ).flatten.toList)
     }
   ))
+
+  protected[unbound] def isDefaultResources(res: Seq[Resource]): Boolean = {
+    res.size == 1 && res(0).targetPath == Build.defResourcesDir &&
+    res(0).directory == SL.Dot.toString && res(0).includes.size == 1 &&
+    res(0).excludes.size == 0 && res(0).includes(0) == Build.defResourcesDir
+  }
+
+  protected[unbound] def isDefaultTestResources(res: Seq[Resource]): Boolean = {
+    res.size == 1 && res(0).targetPath == Build.defTestResourcesDir &&
+    res(0).directory == SL.Dot.toString && res(0).includes.size == 1 &&
+    res(0).excludes.size == 0 && res(0).includes(0) == Build.defTestResourcesDir
+  }
 }
 
 case class Build(
@@ -114,18 +129,6 @@ case class Build(
       case e: Elem => new Plugin(e) },
     (elem \ SL.Plugins \ SL.PluginStr).map { case e: Elem => new Plugin(e) })
 
-  private def isDefaultResources(res: Seq[Resource]): Boolean = {
-    res.size == 1 && res(0).targetPath == Build.defResourcesDir &&
-    res(0).directory == SL.Dot.toString && res(0).includes.size == 1 &&
-    res(0).excludes.size == 0 && res(0).includes(0) == Build.defResourcesDir
-  }
-
-  private def isDefaultTestResources(res: Seq[Resource]): Boolean = {
-    res.size == 1 && res(0).targetPath == Build.defTestResourcesDir &&
-    res(0).directory == SL.Dot.toString && res(0).includes.size == 1 &&
-    res(0).excludes.size == 0 && res(0).includes(0) == Build.defTestResourcesDir
-  }
-
   lazy val xml = 
     <build>
       { if (sourceDirectory != null && sourceDirectory != Build.defSourceDir) 
@@ -145,9 +148,10 @@ case class Build(
         { extensions.map { _.xml } }
         </extensions> }
       { if (defaultGoal != null) <defaultGoal>{defaultGoal}</defaultGoal> }
-      { if (!resources.isEmpty && !isDefaultResources(resources)) 
+      { if (!resources.isEmpty && !Build.isDefaultResources(resources)) 
         <resources> { resources.map { _.xml } } </resources> }
-      { if (!testResources.isEmpty && !isDefaultTestResources(testResources)) 
+      { if (!testResources.isEmpty && 
+        !Build.isDefaultTestResources(testResources))
         <testResources> { testResources.map { _.testXml } } </testResources> }
       { if (directory != null && directory != SL.Target.toString)
         <directory>{directory}</directory> }

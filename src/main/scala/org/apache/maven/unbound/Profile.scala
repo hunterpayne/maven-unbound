@@ -175,13 +175,14 @@ case class Activation(
     (elem \ SL.FileStr).map { case e: Elem => 
       new ActivationFile(e) }.headOption.getOrElse(null))
 
-  lazy val xml = <activation>
-                   <activeByDefault>{ if (activeByDefault) SL.TrueStr else SL.FalseStr }</activeByDefault>
-                   { if (jdk != null) <jdk>{jdk}</jdk> }
-                   { if (os != null) os.xml }
-                   { if (property != null) property.xml }
-                   { if (file != null) file.xml }
-                 </activation>
+  lazy val xml = 
+    <activation>
+      <activeByDefault>{ if (activeByDefault) SL.TrueStr else SL.FalseStr }</activeByDefault>
+      { if (jdk != null) <jdk>{jdk}</jdk> }
+      { if (os != null) os.xml }
+      { if (property != null) property.xml }
+      { if (file != null) file.xml }
+    </activation>
 
   def makeModelObject(): org.apache.maven.model.Activation = {
     val activation = new org.apache.maven.model.Activation()
@@ -312,9 +313,12 @@ case object BuildBase extends CommonJsonReader {
       case b: BuildBase =>
         JObject(Seq[Option[JField]](
           writeStr(DefaultGoal, b.defaultGoal),
-          // TODO defaults
-          writeObjectSequence(Resources, b.resources),
-          writeObjectSequence(TestResources, b.resources),
+          if (!Build.isDefaultResources(b.resources)) 
+            writeObjectSequence(Resources, b.resources)
+          else None,
+          if (!Build.isDefaultResources(b.testResources))
+            writeObjectSequence(TestResources, b.testResources)
+          else None,
           writeStr(DirectoryStr, b.directory, Target),
           writeStr(FinalName, b.finalName),
           writeStringSequence(Filters, b.filters),
@@ -353,25 +357,22 @@ case class BuildBase(
       case e: Elem => new Plugin(e) },
     (elem \ SL.Plugins \ SL.PluginStr).map { case e: Elem => new Plugin(e) })
 
-  lazy val xml = <build>
-                   { if (defaultGoal != null) <defaultGoal>{defaultGoal}</defaultGoal> }
-                   { if (!resources.isEmpty) <resources>
-                       { resources.map { _.xml } }
-                     </resources> }
-                   { if (!testResources.isEmpty) <testResources>
-                       { testResources.map { _.testXml } }
-                     </testResources> }
-                   <directory>{directory}</directory>
-                   { if (!filters.isEmpty) <filters>
-                       { filters.map { Filter(_).xml } }
-                     </filters> }
-                   { if (!pluginManagement.isEmpty) <pluginManagement>
-                       { pluginManagement.map { _.xml } }
-                     </pluginManagement> }
-                   { if (!plugins.isEmpty) <plugins>
-                       { plugins.map { _.xml } }
-                     </plugins> }
-                 </build>
+  lazy val xml = 
+    <build>
+      { if (defaultGoal != null) <defaultGoal>{defaultGoal}</defaultGoal> }
+      { if (!Build.isDefaultResources(resources))
+        <resources> { resources.map { _.xml } } </resources> }
+      { if (!Build.isDefaultTestResources(testResources))
+        <testResources> { testResources.map { _.testXml } } </testResources> }
+      <directory>{directory}</directory>
+      { if (!filters.isEmpty) 
+        <filters> { filters.map { Filter(_).xml } } </filters> }
+      { if (!pluginManagement.isEmpty) <pluginManagement>
+        { pluginManagement.map { _.xml } }
+        </pluginManagement> }
+      { if (!plugins.isEmpty) 
+        <plugins> { plugins.map { _.xml } } </plugins> }
+    </build>
 
   def makeModelObject(): org.apache.maven.model.BuildBase = {
     val build = new org.apache.maven.model.BuildBase()
