@@ -148,7 +148,7 @@ case class Build(
       { if (!resources.isEmpty && !isDefaultResources(resources)) 
         <resources> { resources.map { _.xml } } </resources> }
       { if (!testResources.isEmpty && !isDefaultTestResources(testResources)) 
-        <testResources> { testResources.map { _.xml } } </testResources> }
+        <testResources> { testResources.map { _.testXml } } </testResources> }
       { if (directory != null && directory != SL.Target.toString)
         <directory>{directory}</directory> }
       { if (finalName != null) <finalName>{finalName}</finalName> }
@@ -264,6 +264,18 @@ case class Resource(
                      { excludes.map { Exclude(_).xml } }
                    </excludes> }
                  </resource>
+
+  lazy val testXml = <testResource>
+                   <targetPath>{targetPath}</targetPath>
+                   <filtering>{filtering}</filtering>
+                   <directory>{directory}</directory>
+                   { if (!includes.isEmpty) <includes>
+                     { includes.map { Include(_).xml } }
+                   </includes> }
+                   { if (!excludes.isEmpty) <excludes>
+                     { excludes.map { Exclude(_).xml } }
+                   </excludes> }
+                 </testResource>
 
   def makeModelObject(): org.apache.maven.model.Resource = {
     val resource = new org.apache.maven.model.Resource()

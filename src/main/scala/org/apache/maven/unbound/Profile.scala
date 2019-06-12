@@ -359,7 +359,7 @@ case class BuildBase(
                        { resources.map { _.xml } }
                      </resources> }
                    { if (!testResources.isEmpty) <testResources>
-                       { testResources.map { _.xml } }
+                       { testResources.map { _.testXml } }
                      </testResources> }
                    <directory>{directory}</directory>
                    { if (!filters.isEmpty) <filters>

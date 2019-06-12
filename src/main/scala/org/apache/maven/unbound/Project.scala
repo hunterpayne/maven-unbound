@@ -159,7 +159,8 @@ case class Project(
     (elem \ SL.Profiles \ SL.ProfileStr).map { case e: Elem => new Profile(e) })
 
   lazy val xml = <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" child.project.url.inherit.append.path={if (childInheritUrl) SL.TrueStr else SL.FalseStr}>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+                   { if (!childInheritUrl) <child.project.url.inherit.append.path>false</child.project.url.inherit.append.path> }
                    <modelVersion>{modelVersion}</modelVersion>
                    { if (parent != null) parent.xml }
                    <groupId>{groupId}</groupId>

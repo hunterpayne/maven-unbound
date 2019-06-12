@@ -60,7 +60,7 @@ case class Plugin(
   def this(elem: Elem) = this(
     emptyToDefault((elem \ SL.GroupId).text, SL.DefaultPluginGroup),
     emptyToNull((elem \ SL.ArtifactId).text),
-    emptyToNull((elem \ SL.Version).text), 
+    emptyToNull((elem \ SL.Version).text),
     emptyToDefault((elem \ SL.Extensions).text.toLowerCase, SL.FalseStr) == 
       SL.TrueStr.toString,
     (elem \ SL.Executions \ SL.ExecutionStr).map { case e: Elem => 

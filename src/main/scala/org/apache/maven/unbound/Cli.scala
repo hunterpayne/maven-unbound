@@ -6,7 +6,7 @@ import java.io.{ File, FileWriter }
 import scala.io.Source
 import scala.xml.XML
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 
 object Cli {
 
@@ -18,8 +18,9 @@ object Cli {
 
     val hocon = ConfigFactory.parseString(JsonWriter.writePOM(project))
     val writer = new FileWriter(new File(at + hoconFileName))
+    val options = ConfigRenderOptions.defaults().setOriginComments(false)
     try {
-      writer.write(hocon.root().render())
+      writer.write(hocon.root().render(options))
       writer.flush()
       println(s"generated ${at}${hoconFileName}")
     } finally {
@@ -100,20 +101,22 @@ object Cli {
 
   def main(args: Array[String]): Unit = {
 
-    if (args.size == 1 && args(0).startsWith("--generate")) {
+    // generate json or hocon files
+    if (args.forall { _.startsWith("--generate") }) {
 
-      // generate json or hocon files
-      if (args(0) == "--generate-json") {
-        // read xml and generate json
+      // read xml and generate json
+      if (args.find(_ == "--generate-json").isDefined)
         recurseXml(".", (s, p) => createPomJsonFiles(s, p))
 
-      } else if (args(0) == "--generate-hocon") {
-        // read xml and generate hocon
+      // read xml and generate hocon
+      if (args.find(_ == "--generate-hocon").isDefined)
         recurseXml(".", (s, p) => createPomHoconFiles(s, p))
-
-      } else {
+    
+      val unkn = args.find { s =>
+        s != "--generate-hocon" && s != "--generate-json" }
+      if (unkn.isDefined) {
         println(
-          "can't generate that file type, supported types are hocon and json")
+          "can't generate with ${unkn.get}, supported types are hocon and json")
         println("use please use --generate-hocon or --generate-json")
       }
     } else {
