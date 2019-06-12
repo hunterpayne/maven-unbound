@@ -28,12 +28,12 @@ case object Parent extends CommonJsonReader {
     },
     {
       case p: Parent =>
-        JObject(
-          JField(GroupId, JString(p.groupId)) ::
-          JField(ArtifactId, JString(p.artifactId)) ::
-          JField(Version, JString(p.version)) ::
-          JField(RelativePath, JString(p.relativePath)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(GroupId, p.groupId),
+          writeStr(ArtifactId, p.artifactId),
+          writeStr(Version, p.version),
+          writeStr(RelativePath, p.relativePath)
+        ).flatten.toList)
     }
   ))
 }     
@@ -103,12 +103,12 @@ case object License extends CommonJsonReader {
     },
     {
       case l: License =>
-        JObject(
-          JField(Name, JString(l.name)) ::
-          JField(UrlStr, JString(l.url)) ::
-          JField(Distribution, JString(l.distribution)) ::
-          JField(Comments, JString(l.comments)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(Name, l.name),
+          writeStr(UrlStr, l.url),
+          writeStr(Distribution, l.distribution),
+          writeStr(Comments, l.comments)
+        ).flatten.toList)
     }
   ))
 }     
@@ -159,17 +159,18 @@ case object Scm extends CommonJsonReader {
     },
     {
       case s: Scm =>
-        JObject(
-          JField(ChildInheritConnection, JBool(s.childInheritConnection)) ::
-          JField(
+        JObject(Seq[Option[JField]](
+          writeBool(ChildInheritConnection, s.childInheritConnection, true),
+          writeBool(
             ChildInheritDeveloperConnection, 
-            JBool(s.childInheritDeveloperConnection)) ::
-          JField(ChildInheritUrl, JBool(s.childInheritUrl)) ::
-          JField(Connection, JString(s.connection)) ::
-          JField(DeveloperConnection, JString(s.developerConnection)) ::
-          JField(Tag, JString(s.tag)) ::
-          JField(UrlStr, JString(s.url)) ::
-          Nil)
+            s.childInheritDeveloperConnection, 
+            true),
+          writeBool(ChildInheritUrl, s.childInheritUrl, true),
+          writeStr(Connection, s.connection),
+          writeStr(DeveloperConnection, s.developerConnection),
+          writeStr(Tag, s.tag, Head),
+          writeStr(UrlStr, s.url)
+        ).flatten.toList)
     }
   ))
 }     
@@ -253,15 +254,14 @@ case object DistributionManagement extends CommonJsonReader {
     },
     {
       case d: DistributionManagement =>
-        JObject(
-          JField(RepositoryStr, Extraction.decompose(d.repository)) ::
-          JField(
-            SnapshotRepository, Extraction.decompose(d.snapshotRepository)) ::
-          JField(SiteStr, Extraction.decompose(d.site)) ::
-          JField(DownloadUrl, JString(d.downloadUrl)) ::
-          JField(RelocationStr, Extraction.decompose(d.relocation)) ::
-          JField(Status, JString(d.status)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeObject(RepositoryStr, d.repository),
+          writeObject(SnapshotRepository, d.snapshotRepository),
+          writeObject(SiteStr, d.site),
+          writeStr(DownloadUrl, d.downloadUrl),
+          writeObject(RelocationStr, d.relocation),
+          writeStr(Status, d.status, None)
+        ).flatten.toList)
     }
   ))
 }     
@@ -320,12 +320,12 @@ case object Site extends CommonJsonReader {
     },
     {
       case s: Site =>
-        JObject(
-          JField(ChildInheritUrl, JBool(s.childInheritUrl)) ::
-          JField(Id, JString(s.id)) ::
-          JField(Name, JString(s.name)) ::
-          JField(UrlStr, JString(s.url)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeBool(ChildInheritUrl, s.childInheritUrl, true),
+          writeStr(Id, s.id),
+          writeStr(Name, s.name),
+          writeStr(UrlStr, s.url)
+        ).flatten.toList)
     }
   ))
 }
@@ -371,12 +371,12 @@ case object Relocation extends CommonJsonReader {
     },
     {
       case d: Relocation =>
-        JObject(
-          JField(GroupId, JString(d.groupId)) ::
-          JField(ArtifactId, JString(d.artifactId)) ::
-          JField(Version, JString(d.version)) ::
-          JField(Message, JString(d.message)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(GroupId, d.groupId),
+          writeStr(ArtifactId, d.artifactId),
+          writeStr(Version, d.version),
+          writeStr(Message, d.message)
+        ).flatten.toList)
     }
   ))
 }

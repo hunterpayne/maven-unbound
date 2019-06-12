@@ -28,19 +28,16 @@ case object Contributor extends CommonJsonReader {
     },
     {
       case c: Contributor =>
-        JObject(
-          JField(Name, JString(c.name)) ::
-          JField(Email, JString(c.email)) ::
-          JField(UrlStr, JString(c.url)) ::
-          JField(OrganizationStr, JString(c.organization)) ::
-          JField(OrganizationUrl, JString(c.organizationUrl)) ::
-          JField(Roles, JArray(c.roles.map { JString(_) }.toList)) ::
-          JField(TimezoneStr, JString(c.timezone)) ::
-          JField(
-            PropertiesStr, 
-            JObject(
-              c.properties.map { case(k, v) => (k, JString(v)) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(Name, c.name),
+          writeStr(Email, c.email),
+          writeStr(UrlStr, c.url),
+          writeStr(OrganizationStr, c.organization),
+          writeStr(OrganizationUrl, c.organizationUrl),
+          writeStringSequence(Roles, c.roles),
+          writeStr(TimezoneStr, c.timezone),
+          writeProperties(PropertiesStr, c.properties)
+        ).flatten.toList)
     }
   ))
 }
@@ -113,20 +110,17 @@ case object Developer extends CommonJsonReader {
     },
     {
       case d: Developer =>
-        JObject(
-          JField(Id, JString(d.id)) ::
-          JField(Name, JString(d.name)) ::
-          JField(Email, JString(d.email)) ::
-          JField(UrlStr, JString(d.url)) ::
-          JField(OrganizationStr, JString(d.organization)) ::
-          JField(OrganizationUrl, JString(d.organizationUrl)) ::
-          JField(Roles, JArray(d.roles.map { JString(_) }.toList)) ::
-          JField(TimezoneStr, JString(d.timezone)) ::
-          JField(
-            PropertiesStr, 
-            JObject(
-              d.properties.map { case(k, v) => (k, JString(v)) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(Id, d.id),
+          writeStr(Name, d.name),
+          writeStr(Email, d.email),
+          writeStr(UrlStr, d.url),
+          writeStr(OrganizationStr, d.organization),
+          writeStr(OrganizationUrl, d.organizationUrl),
+          writeStringSequence(Roles, d.roles),
+          writeStr(TimezoneStr, d.timezone),
+          writeProperties(PropertiesStr, d.properties)
+        ).flatten.toList)
     }
   ))
 }

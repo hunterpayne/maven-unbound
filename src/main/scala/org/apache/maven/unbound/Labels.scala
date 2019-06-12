@@ -410,6 +410,37 @@ trait Labels {
   object ChecksumPolicy extends Str {
     override def toString(): String = "checksumPolicy"
   }
+  object Arch extends Str {
+    override def toString(): String = "arch"
+  }
+  object Family extends Str {
+    override def toString(): String = "family"
+  }
+  object ValueStr extends Str {
+    override def toString(): String = "value"
+  }
+  object ActiveByDefault extends Str {
+    override def toString(): String = "activeByDefault"
+  }
+  object JDK extends Str {
+    override def toString(): String = "jdk"
+  }
+  object OS extends Str {
+    override def toString(): String = "os"
+  }
+  object PropertyStr extends Str {
+    override def toString(): String = "property"
+  }
+  object FileStr extends Str {
+    override def toString(): String = "file"
+  }
+  object Missing extends Str {
+    override def toString(): String = "missing"
+  }
+  object Exists extends Str {
+    override def toString(): String = "exists"
+  }
+
   object TrueStr extends Str {
     override def toString(): String = "true"
   }

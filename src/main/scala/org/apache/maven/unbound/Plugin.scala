@@ -34,22 +34,16 @@ case object Plugin extends CommonJsonReader {
     },
     {
       case p: Plugin =>
-        JObject(
-          JField(GroupId, JString(p.groupId)) ::
-          JField(ArtifactId, JString(p.artifactId)) ::
-          JField(Version, JString(p.version)) ::
-          JField(Extensions, JBool(p.extensions)) :: 
-          JField(
-            Executions, 
-            JArray(p.executions.map { e => Extraction.decompose(e) }.toList)) ::
-          JField(
-            Dependencies, 
-            JArray(p.dependencies.map { d => 
-              Extraction.decompose(d) }.toList)) ::
-          JField(Inherited, JBool(p.inherited)) :: 
-          JField(Configuration, configToJson(p.configuration)) ::
-          Nil
-        )
+        JObject(Seq[Option[JField]](
+          writeStr(GroupId, p.groupId),
+          writeStr(ArtifactId, p.artifactId),
+          writeStr(Version, p.version),
+          writeBool(Extensions, p.extensions, false),
+          writeObjectSequence(Executions, p.executions),
+          writeObjectSequence(Dependencies, p.dependencies),
+          writeBool(Inherited, p.inherited, true),
+          writeObject(Configuration, configToJson(p.configuration))
+        ).flatten.toList)
     }
   ))
 }
@@ -134,16 +128,13 @@ case object Execution extends CommonJsonReader {
     },
     {
       case e: Execution =>
-        JObject(
-          JField(Id, JString(e.id)) ::
-          JField(Phase, JString(e.phase)) ::
-          JField(
-            Goals,
-            JArray(e.goals.map { goal => JString(goal) }.toList)) ::
-          JField(Inherited, JBool(e.inherited)) :: 
-          JField(Configuration, configToJson(e.configuration)) ::
-          Nil
-        )
+        JObject(Seq[Option[JField]](
+          writeStr(Id, e.id, DefaultStr),
+          writeStr(Phase, e.phase),
+          writeStringSequence(Goals, e.goals),
+          writeBool(Inherited, e.inherited, true),
+          writeObject(Configuration, configToJson(e.configuration))
+        ).flatten.toList)
     }
   ))
 }

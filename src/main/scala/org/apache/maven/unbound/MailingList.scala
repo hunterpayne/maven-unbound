@@ -25,16 +25,14 @@ case object MailingList extends CommonJsonReader {
     },
     {
       case m: MailingList =>
-        JObject(
-          JField(Name, JString(m.name)) ::
-          JField(Subscribe, JString(m.subscribe)) ::
-          JField(Unsubscribe, JString(m.unsubscribe)) ::
-          JField(Post, JString(m.post)) ::
-          JField(Archive, JString(m.archive)) ::
-          JField(
-            OtherArchives, 
-            JArray(m.otherArchives.map { JString(_) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(Name, m.name),
+          writeStr(Subscribe, m.subscribe),
+          writeStr(Unsubscribe, m.unsubscribe),
+          writeStr(Post, m.post),
+          writeStr(Archive, m.archive),
+          writeStringSequence(OtherArchives, m.otherArchives)
+        ).flatten.toList)
     }
   ))
 }

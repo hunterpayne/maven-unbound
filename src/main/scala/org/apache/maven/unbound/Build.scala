@@ -50,36 +50,25 @@ case object Build extends CommonJsonReader {
     },
     {
       case b: Build =>
-        JObject(
-          JField(SourceDirectory, JString(b.sourceDirectory)) ::
-          JField(ScriptSourceDirectory, JString(b.scriptSourceDirectory)) ::
-          JField(TestSourceDirectory, JString(b.testSourceDirectory)) ::
-          JField(OutputDirectory, JString(b.outputDirectory)) ::
-          JField(TestOutputDirectory, JString(b.testOutputDirectory)) ::
-          JField(
-            Extensions, JArray(
-              b.extensions.map { ex => Extraction.decompose(ex) }.toList)) ::
-          JField(DefaultGoal, JString(b.defaultGoal)) ::
-          JField(
-            Resources, 
-            JArray(b.resources.map { r => Extraction.decompose(r) }.toList)) ::
-          JField(
-            TestResources, 
-            JArray(b.resources.map { r => Extraction.decompose(r) }.toList)) ::
-          JField(DirectoryStr, JString(b.directory)) ::
-          JField(FinalName, JString(b.finalName)) ::
-          JField(
-            Filters,
-            JArray(b.filters.map { filter => JString(filter) }.toList)) ::
-          JField(
-            PluginManagement, 
-            JArray(b.pluginManagement.map { p => 
-              Extraction.decompose(p) }.toList)) ::
-          JField(
-            Plugins, 
-            JArray(b.pluginManagement.map { p => 
-              Extraction.decompose(p) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(SourceDirectory, b.sourceDirectory, defSourceDir),
+          writeStr(
+            ScriptSourceDirectory, b.scriptSourceDirectory, defScriptDir),
+          writeStr(TestSourceDirectory, b.testSourceDirectory, defTestDir),
+          writeStr(OutputDirectory, b.outputDirectory, defSourceDir),
+          writeStr(
+            TestOutputDirectory, b.testOutputDirectory, defTestOutputDir),
+          writeObjectSequence(Extensions, b.extensions),
+          writeStr(DefaultGoal, b.defaultGoal),
+          // TODO default values for resources and testResources
+          writeObjectSequence(Resources, b.resources),
+          writeObjectSequence(TestResources, b.resources),
+          writeStr(DirectoryStr, b.directory, Target),
+          writeStr(FinalName, b.finalName),
+          writeStringSequence(Filters, b.filters),
+          writeObjectSequence(PluginManagement, b.pluginManagement),
+          writeObjectSequence(Plugins, b.plugins)
+        ).flatten.toList)
     }
   ))
 }
@@ -200,30 +189,6 @@ case class Filter(filter: String) {
   lazy val xml = <filter>{filter}</filter> 
 }
 
-case object Extension extends CommonJsonReader {
-
-  implicit val formats = JsonReader.formats
-
-  class ExtensionSerializer extends CustomSerializer[Extension](format => (
-    {
-      case JObject(fields) =>
-        new Extension(
-          readStr(fields, GroupId).get,
-          readStr(fields, ArtifactId).get,
-          readStr(fields, Version).getOrElse(null)
-        )
-    },
-    {
-      case e: Extension =>
-        JObject(
-          JField(GroupId, JString(e.groupId)) ::
-          JField(ArtifactId, JString(e.artifactId)) ::
-          JField(Version, JString(e.version)) ::
-          Nil)
-    }
-  ))
-}
-
 case class Extension(groupId: String, artifactId: String, version: String) {
 
   def this(elem: Elem) = this(
@@ -263,13 +228,13 @@ case object Resource extends CommonJsonReader {
     },
     {
       case r: Resource =>
-        JObject(
-          JField(TargetPath, JString(r.targetPath)) ::
-          JField(Filtering, JBool(r.filtering)) ::
-          JField(DirectoryStr, JString(r.directory)) ::
-          JField(Includes, JArray(r.includes.map { JString(_) }.toList)) ::
-          JField(Excludes, JArray(r.excludes.map { JString(_) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(TargetPath, r.targetPath),
+          writeBool(Filtering, r.filtering, false),
+          writeStr(DirectoryStr, r.directory, Dot),
+          writeStringSequence(Includes, r.includes),
+          writeStringSequence(Excludes, r.excludes)
+        ).flatten.toList)
     }
   ))
 }

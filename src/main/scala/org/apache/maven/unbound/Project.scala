@@ -50,66 +50,37 @@ case object Project extends CommonJsonReader {
     },
     {
       case p: Project =>
-        JObject(
-          JField(ChildInheritUrl, JBool(p.childInheritUrl)) ::
-          JField(ModelVersion, JString(p.modelVersion)) ::
-          JField(ParentStr, Extraction.decompose(p.parent)) ::
-          JField(GroupId, JString(p.groupId)) ::
-          JField(ArtifactId, JString(p.artifactId)) ::
-          JField(Version, JString(p.version)) ::
-          JField(Packaging, JString(p.packaging)) ::
-          JField(Name, JString(p.name)) ::
-          JField(
-            Description, 
-            if (p.description != null) JString(p.description) else JNull) ::
-          JField(UrlStr, JString(p.url)) ::
-          JField(
-            InceptionYear, 
-            if (p.inceptionYear != null) JString(p.inceptionYear) else JNull) ::
-          JField(OrganizationStr, Extraction.decompose(p.organization)) ::
-          JField(
-            Licenses, 
-            JArray(p.licenses.map { Extraction.decompose(_) }.toList)) ::
-          JField(
-            Developers, 
-            JArray(p.developers.map { Extraction.decompose(_) }.toList)) ::
-          JField(
-            Contributors, 
-            JArray(p.contributors.map { Extraction.decompose(_) }.toList)) ::
-          JField(
-            MailingLists, 
-            JArray(p.mailingLists.map { Extraction.decompose(_) }.toList)) ::
-          JField(Modules, JArray(p.modules.map { JString(_) }.toList)) ::
-          JField(ScmStr, Extraction.decompose(p.scm)) ::
-          JField(IssueManagementStr, Extraction.decompose(p.issueManagement)) ::
-          JField(CIManagementStr, Extraction.decompose(p.ciManagement)) ::
-          JField(
-            DistributionManagementStr, 
-            Extraction.decompose(p.distributionManagement)) ::
-          JField(
-            PropertiesStr, 
-            JObject(
-              p.properties.map { case(k, v) => (k, JString(v)) }.toList)) ::
-          JField(
-            DependencyManagementStr, 
-            JArray(p.dependencyManagement.map { dm => 
-              Extraction.decompose(dm) }.toList)) ::
-          JField(
-            Dependencies, 
-            JArray(p.dependencies.map { Extraction.decompose(_) }.toList)) ::
-          JField(
-            Repositories, 
-            JArray(p.repositories.map { Extraction.decompose(_) }.toList)) ::
-          JField(
-            PluginRepositories, 
-            JArray(p.pluginRepositories.map { pr => 
-              Extraction.decompose(pr) }.toList)) ::
-          JField(BuildStr, Extraction.decompose(p.build)) ::
-          JField(ReportingStr, Extraction.decompose(p.reporting)) ::
-          JField(
-            Profiles, 
-            JArray(p.profiles.map { Extraction.decompose(_) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeBool(ChildInheritUrl, p.childInheritUrl, true),
+          writeStr(ModelVersion, p.modelVersion, "4.0.0"),
+          writeObject(ParentStr, p.parent),
+          writeStr(GroupId, p.groupId),
+          writeStr(ArtifactId, p.artifactId),
+          writeStr(Version, p.version),
+          writeStr(Packaging, p.packaging, SL.JarStr),
+          writeStr(Name, p.name),
+          writeStr(Description, p.description),
+          writeStr(UrlStr, p.url),
+          writeStr(InceptionYear, p.inceptionYear),
+          writeObject(OrganizationStr, p.organization),
+          writeObjectSequence(Licenses, p.licenses),
+          writeObjectSequence(Developers, p.developers),
+          writeObjectSequence(Contributors, p.contributors),
+          writeObjectSequence(MailingLists, p.mailingLists),
+          writeStringSequence(Modules, p.modules),
+          writeObject(ScmStr, p.scm),
+          writeObject(IssueManagementStr, p.issueManagement),
+          writeObject(CIManagementStr, p.ciManagement),
+          writeObject(DistributionManagementStr, p.distributionManagement),
+          writeProperties(PropertiesStr, p.properties),
+          writeObjectSequence(DependencyManagementStr, p.dependencyManagement),
+          writeObjectSequence(Dependencies, p.dependencies),
+          writeObjectSequence(Repositories, p.repositories),
+          writeObjectSequence(PluginRepositories, p.pluginRepositories),
+          writeObject(BuildStr, p.build),
+          writeObject(ReportingStr, p.reporting),
+          writeObjectSequence(Profiles, p.profiles)
+        ).flatten.toList)
     }
   ))
 }

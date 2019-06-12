@@ -31,8 +31,7 @@ object Cli {
 
   def createPomJsonFiles(at: String, project: Project): Unit = {
 
-    println("serializing project " + project)
-    val jsonStr = JsonWriter.writePOM(project)
+    val jsonStr = JsonWriter.writePrettyPOM(project)
     val writer = new FileWriter(new File(at + jsonFileName))
     try {
       writer.write(jsonStr)

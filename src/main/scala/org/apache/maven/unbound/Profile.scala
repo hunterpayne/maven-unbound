@@ -30,34 +30,19 @@ case object Profile extends CommonJsonReader {
     },
     {
       case p: Profile =>
-        JObject(
-          JField(Id, JString(p.id)) ::
-          JField(ActivationStr, Extraction.decompose(p.activation)) ::
-          JField(BuildStr, Extraction.decompose(p.build)) ::
-          JField(Modules, JArray(p.modules.map { JString(_) }.toList)) ::
-          JField(
-            DistributionManagementStr, 
-            Extraction.decompose(p.distributionManagement)) ::
-          JField(
-            "properties", 
-            JObject(
-              p.properties.map { case(k, v) => (k, JString(v)) }.toList)) ::
-          JField(
-            DependencyManagementStr, 
-            JArray(p.dependencyManagement.map { dm => 
-              Extraction.decompose(dm) }.toList)) ::
-          JField(
-            Dependencies, 
-            JArray(p.dependencies.map { Extraction.decompose(_) }.toList)) ::
-          JField(
-            Repositories, 
-            JArray(p.repositories.map { Extraction.decompose(_) }.toList)) ::
-          JField(
-            PluginRepositories, 
-            JArray(p.pluginRepositories.map { pr => 
-              Extraction.decompose(pr) }.toList)) ::
-          JField(ReportingStr, Extraction.decompose(p.reporting)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(Id, p.id, DefaultStr),
+          writeObject(ActivationStr, p.activation),
+          writeObject(BuildStr, p.build),
+          writeStringSequence(Modules, p.modules),
+          writeObject(DistributionManagementStr, p.distributionManagement),
+          writeProperties(PropertiesStr, p.properties),
+          writeObjectSequence(DependencyManagementStr, p.dependencyManagement),
+          writeObjectSequence(Dependencies, p.dependencies),
+          writeObjectSequence(Repositories, p.repositories),
+          writeObjectSequence(PluginRepositories, p.pluginRepositories),
+          writeObject(ReportingStr, p.reporting)
+        ).flatten.toList)
     }
   ))
 }
@@ -154,22 +139,22 @@ case object Activation extends CommonJsonReader {
     {
       case obj @ JObject(fields) =>
         new Activation(
-          readBool(fields, "activeByDefault").getOrElse(false),
-          readStr(fields, "jdk").getOrElse(null),
-          readObject[ActivationOS](obj, "os"),
-          readObject[ActivationProperty](obj, "property"),
-          readObject[ActivationFile](obj, "file")
+          readBool(fields, ActiveByDefault).getOrElse(false),
+          readStr(fields, JDK).getOrElse(null),
+          readObject[ActivationOS](obj, OS),
+          readObject[ActivationProperty](obj, PropertyStr),
+          readObject[ActivationFile](obj, FileStr)
         )
     },
     {
       case a: Activation =>
-        JObject(
-          JField("activeByDefault", JBool(a.activeByDefault)) ::
-          JField("jdk", JString(a.jdk)) ::
-          JField("os", Extraction.decompose(a.os)) ::
-          JField("property", Extraction.decompose(a.property)) ::
-          JField("file", Extraction.decompose(a.file)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeBool(ActiveByDefault, a.activeByDefault, false),
+          writeStr(JDK, a.jdk),
+          writeObject(OS, a.os),
+          writeObject(PropertyStr, a.property),
+          writeObject(FileStr, a.file)
+        ).flatten.toList)
     }
   ))
 }
@@ -180,17 +165,18 @@ case class Activation(
   file: ActivationFile = null) {
 
   def this(elem: Elem) = this(
-    emptyToDefault((elem \ "activeByDefault").text.toLowerCase, "false") == "true",
-    emptyToNull((elem \ "jdk").text), 
-    (elem \ "os").map { case e: Elem => 
+    emptyToDefault((elem \ SL.ActiveByDefault).text.toLowerCase, SL.FalseStr) ==
+      SL.TrueStr.toString,
+    emptyToNull((elem \ SL.JDK).text), 
+    (elem \ SL.OS).map { case e: Elem => 
       new ActivationOS(e) }.headOption.getOrElse(null),
-    (elem \ "property").map { case e: Elem => 
+    (elem \ SL.PropertyStr).map { case e: Elem => 
       new ActivationProperty(e) }.headOption.getOrElse(null),
-    (elem \ "file").map { case e: Elem => 
+    (elem \ SL.FileStr).map { case e: Elem => 
       new ActivationFile(e) }.headOption.getOrElse(null))
 
   lazy val xml = <activation>
-                   <activeByDefault>{ if (activeByDefault) "true" else "false" }</activeByDefault>
+                   <activeByDefault>{ if (activeByDefault) SL.TrueStr else SL.FalseStr }</activeByDefault>
                    { if (jdk != null) <jdk>{jdk}</jdk> }
                    { if (os != null) os.xml }
                    { if (property != null) property.xml }
@@ -217,20 +203,20 @@ case object ActivationOS extends CommonJsonReader {
     {
       case obj @ JObject(fields) =>
         new ActivationOS(
-          readStr(fields, "name").getOrElse(null),
-          readStr(fields, "family").getOrElse(null),
-          readStr(fields, "arch").getOrElse(null),
-          readStr(fields, "version").getOrElse(null)
+          readStr(fields, Name).getOrElse(null),
+          readStr(fields, Family).getOrElse(null),
+          readStr(fields, Arch).getOrElse(null),
+          readStr(fields, Version).getOrElse(null)
         )
     },
     {
       case a: ActivationOS =>
-        JObject(
-          JField("name", JString(a.name)) ::
-          JField("family", JString(a.family)) ::
-          JField("arch", JString(a.arch)) ::
-          JField("version", JString(a.version)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(Name, a.name),
+          writeStr(Family, a.family),
+          writeStr(Arch, a.arch),
+          writeStr(Version, a.version)
+        ).flatten.toList)
     }
   ))
 }
@@ -240,8 +226,8 @@ case class ActivationOS(
   family: String = null, arch: String = null, version: String = null) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ "name").text), emptyToNull((elem \ "family").text),
-    emptyToNull((elem \ "arch").text), emptyToNull((elem \ "version").text))
+    emptyToNull((elem \ SL.Name).text), emptyToNull((elem \ SL.Family).text),
+    emptyToNull((elem \ SL.Arch).text), emptyToNull((elem \ SL.Version).text))
 
   lazy val xml = <os>
                    <name>{name}</name>
@@ -262,8 +248,8 @@ case class ActivationOS(
 
 case class ActivationProperty(name: String, value: String) {
 
-  def this(elem: Elem) = 
-    this(emptyToNull((elem \ "name").text), emptyToNull((elem \ "value").text))
+  def this(elem: Elem) = this(
+    emptyToNull((elem \ SL.Name).text), emptyToNull((elem \ SL.ValueStr).text))
 
   lazy val xml = <property>
                    <name>{name}</name>
@@ -281,8 +267,8 @@ case class ActivationProperty(name: String, value: String) {
 case class ActivationFile(missing: String, exists: String) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ "missing").text), 
-    emptyToNull((elem \ "exists").text))
+    emptyToNull((elem \ SL.Missing).text), 
+    emptyToNull((elem \ SL.Exists).text))
 
   lazy val xml = <file>
                    { if (missing != null) <missing>{missing}</missing> }
@@ -301,78 +287,71 @@ case class ActivationFile(missing: String, exists: String) {
 case object BuildBase extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+  val defResourcesDir = "src/main/resources"
+  val defTestResourcesDir = "src/test/resources"
 
   class BuildBaseSerializer extends CustomSerializer[BuildBase](format => (
     {
       case JObject(fields) =>
         new BuildBase(
-          readStr(fields, "defaultGoal").getOrElse(null),
+          readStr(fields, DefaultGoal).getOrElse(null),
           readObjectSequence[Resource](
-            fields, "resources", 
-            Seq[Resource](new Resource("src/main/resources"))),
+            fields, Resources, 
+            Seq[Resource](new Resource(defResourcesDir))),
           readObjectSequence[Resource](
-            fields, "testResources", 
-            Seq[Resource](new Resource("src/test/resources"))),
-          readStr(fields, "directory").getOrElse("target"),
-          readStr(fields, "finalName").getOrElse(null),
-          readStringSequence(fields, "filters"),
-          readObjectSequence[Plugin](fields, "pluginManagement"),
-          readObjectSequence[Plugin](fields, "plugins")
+            fields, TestResources, 
+            Seq[Resource](new Resource(defTestResourcesDir))),
+          readStr(fields, DirectoryStr).getOrElse(Target),
+          readStr(fields, FinalName).getOrElse(null),
+          readStringSequence(fields, Filters),
+          readObjectSequence[Plugin](fields, PluginManagement),
+          readObjectSequence[Plugin](fields, Plugins)
         )
     },
     {
       case b: BuildBase =>
-        JObject(
-          JField("defaultGoal", JString(b.defaultGoal)) ::
-          JField(
-            "resources", 
-            JArray(b.resources.map { r => Extraction.decompose(r) }.toList)) ::
-          JField(
-            "testResources", 
-            JArray(b.resources.map { r => Extraction.decompose(r) }.toList)) ::
-          JField("directory", JString(b.directory)) ::
-          JField("finalName", JString(b.finalName)) ::
-          JField(
-            "filters",
-            JArray(b.filters.map { filter => JString(filter) }.toList)) ::
-          JField(
-            "pluginManagement", 
-            JArray(b.pluginManagement.map { p => 
-              Extraction.decompose(p) }.toList)) ::
-          JField(
-            "plugins", 
-            JArray(b.pluginManagement.map { p => 
-              Extraction.decompose(p) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(DefaultGoal, b.defaultGoal),
+          // TODO defaults
+          writeObjectSequence(Resources, b.resources),
+          writeObjectSequence(TestResources, b.resources),
+          writeStr(DirectoryStr, b.directory, Target),
+          writeStr(FinalName, b.finalName),
+          writeStringSequence(Filters, b.filters),
+          writeObjectSequence(PluginManagement, b.pluginManagement),
+          writeObjectSequence(Plugins, b.plugins)
+        ).flatten.toList)
     }
   ))
 }
 
 case class BuildBase(
   defaultGoal: String, 
-  resources: Seq[Resource] = Seq[Resource](new Resource("src/main/resources")),
+  resources: Seq[Resource] = 
+    Seq[Resource](new Resource(BuildBase.defResourcesDir)),
   testResources: Seq[Resource] = 
-    Seq[Resource](new Resource("src/test/resources")),
-  directory: String, finalName: String, 
+    Seq[Resource](new Resource(BuildBase.defTestResourcesDir)),
+  directory: String = SL.Target, finalName: String, 
   filters: Seq[String] = Seq[String](),
   pluginManagement: Seq[Plugin] = Seq[Plugin](),
   plugins: Seq[Plugin] = Seq[Plugin]()) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ "defaultGoal").text),
+    emptyToNull((elem \ SL.DefaultGoal).text),
     ensureDefault(
-      (elem \ "resources" \ "resource").map { case e: Elem => new Resource(e) },
-      new Resource("src/main/resources")),
-    ensureDefault(
-      (elem \ "testResources" \ "testResource").map { case e: Elem =>
+      (elem \ SL.Resources \ SL.ResourceStr).map { case e: Elem => 
         new Resource(e) },
-      new Resource("src/test/resources")),
-    emptyToNull((elem \ "directory").text), 
-    emptyToNull((elem \ "finalName").text),
-    (elem \ "filters" \ "filter").map { _.text },
-    (elem \ "pluginManagement" \ "plugins" \ "plugin").map { case e: Elem =>
-      new Plugin(e) },
-    (elem \ "plugins" \ "plugin").map { case e: Elem => new Plugin(e) })
+      new Resource(BuildBase.defResourcesDir)),
+    ensureDefault(
+      (elem \ SL.TestResources \ SL.TestResource).map { case e: Elem =>
+        new Resource(e) },
+      new Resource(BuildBase.defTestResourcesDir)),
+    emptyToDefault((elem \ SL.DirectoryStr).text, SL.Target),
+    emptyToNull((elem \ SL.FinalName).text),
+    (elem \ SL.Filters \ SL.FilterStr).map { _.text },
+    (elem \ SL.PluginManagement \ SL.Plugins \ SL.PluginStr).map { 
+      case e: Elem => new Plugin(e) },
+    (elem \ SL.Plugins \ SL.PluginStr).map { case e: Elem => new Plugin(e) })
 
   lazy val xml = <build>
                    { if (defaultGoal != null) <defaultGoal>{defaultGoal}</defaultGoal> }

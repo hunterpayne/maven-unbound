@@ -27,15 +27,15 @@ case object DistributionRepository extends CommonJsonReader {
     },
     {
       case d: DistributionRepository =>
-        JObject(
-          JField(UniqueVersion, JBool(d.uniqueVersion)) ::
-          JField(Releases, Extraction.decompose(d.releases)) ::
-          JField(Snapshots, Extraction.decompose(d.snapshots)) ::
-          JField(Id, JString(d.id)) ::
-          JField(Name, JString(d.name)) ::
-          JField(UrlStr, JString(d.url)) ::
-          JField(Layout, JString(d.layout)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeBool(UniqueVersion, d.uniqueVersion, true),
+          writeObject(Releases, d.releases),
+          writeObject(Snapshots, d.snapshots),
+          writeStr(Id, d.id),
+          writeStr(Name, d.name),
+          writeStr(UrlStr, d.url),
+          writeStr(Layout, d.layout, DefaultStr)
+        ).flatten.toList)
     }
   ))
 }
@@ -98,11 +98,11 @@ case object RepositoryPolicy extends CommonJsonReader {
     },
     {
       case r: RepositoryPolicy =>
-        JObject(
-          JField(Enabled, JBool(r.enabled)) ::
-          JField(UpdatePolicy, Extraction.decompose(r.updatePolicy)) ::
-          JField(ChecksumPolicy, Extraction.decompose(r.checksumPolicy)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeBool(Enabled, r.enabled, true),
+          writeStr(UpdatePolicy, r.updatePolicy, Daily),
+          writeStr(ChecksumPolicy, r.checksumPolicy, Warn)
+        ).flatten.toList)
     }
   ))
 }
@@ -156,14 +156,14 @@ case object Repository extends CommonJsonReader {
     },
     {
       case d: Repository =>
-        JObject(
-          JField(Releases, Extraction.decompose(d.releases)) ::
-          JField(Snapshots, Extraction.decompose(d.snapshots)) ::
-          JField(Id, JString(d.id)) ::
-          JField(Name, JString(d.name)) ::
-          JField(UrlStr, JString(d.url)) ::
-          JField(Layout, JString(d.layout)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeObject(Releases, d.releases),
+          writeObject(Snapshots, d.snapshots),
+          writeStr(Id, d.id),
+          writeStr(Name, d.name),
+          writeStr(UrlStr, d.url),
+          writeStr(Layout, d.layout, DefaultStr)
+        ).flatten.toList)
     }
   ))
 }

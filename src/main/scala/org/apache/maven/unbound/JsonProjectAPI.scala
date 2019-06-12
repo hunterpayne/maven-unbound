@@ -8,7 +8,7 @@ import com.typesafe.config.{ Config, ConfigObject, ConfigFactory }
 import org.json4s._
 import org.json4s.native.JsonMethods
 import org.json4s.native.Serialization
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.native.Serialization.{ read, write, writePretty }
 
 trait CommonJsonReader extends Labels {
 
@@ -48,6 +48,40 @@ trait CommonJsonReader extends Labels {
     fields.filter { _._1 == key }.headOption.map { goals =>
       goals._2.children.map { goal => Extraction.extract[String](goal) }
     }.getOrElse(Seq[String]())
+
+  protected def writeBool(
+    name: String, b: Boolean, defVal: Boolean): Option[JField] =
+    if (b != defVal) Some((name, JBool(b)))
+    else None
+
+  protected def writeStr(
+    name: String, s: String, defVal: String = null): Option[JField] = {
+    if (s != null && s != defVal) Some((name, JString(s)))
+    else None
+  }
+
+  protected def writeObject[T](
+    name: String, t: T, defVal: T = null): Option[JField] =
+    if (t != null && t != defVal) Some((name, Extraction.decompose(t)))
+    else None
+
+  protected def writeProperties(
+    name: String, p: Map[String, String]): Option[JField] = 
+    if (!p.isEmpty) 
+      Some((name, JObject(p.map { case(k, v) => (k, JString(v)) }.toList)))
+    else None
+
+  protected def writeObjectSequence[T](
+    name: String, arr: Seq[T], defVal: Seq[T] = Seq[T]()): Option[JField] =
+    if (arr != null && arr != defVal)
+      Some((name, JArray(arr.map { Extraction.decompose(_) }.toList)))
+    else None
+
+  protected def writeStringSequence(
+    name: String, v: Seq[String]): Option[JField] =
+    if (v != null && !v.isEmpty)
+      Some((name, JArray(v.map { JString(_) }.toList)))
+    else None
 }
 
 trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
@@ -61,7 +95,6 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     new Execution.ExecutionSerializer +
     new Reporting.ReportingSerializer + 
     new ReportPlugin.ReportPluginSerializer + 
-    new Extension.ExtensionSerializer +
     new Resource.ResourceSerializer +
     new Notifier.NotifierSerializer +
     new Contributor.ContributorSerializer +
@@ -91,5 +124,7 @@ object JsonReader extends JsonProjectAPI {
 object JsonWriter extends JsonProjectAPI {
 
   def writePOM(project: Project): String = write[Project](project)
+
+  def writePrettyPOM(project: Project): String = writePretty[Project](project)
 
 }

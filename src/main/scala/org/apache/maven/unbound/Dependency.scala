@@ -22,35 +22,22 @@ case object Dependency extends CommonJsonReader {
           readStr(fields, Classifier).getOrElse(null),
           readStr(fields, Scope).getOrElse(Compile),
           readStr(fields, SystemPath).getOrElse(null),
-          fields.filter { _._1 == Exclusions }.headOption.map { excls =>
-            excls._2.children.map { excl => excl match {
-              case JObject(exFields) =>
-                new Exclusion(
-                  readStr(exFields, GroupId).get, 
-                  readStr(exFields, ArtifactId).get)
-              case _ => ???
-            }}.toSeq}.getOrElse(Seq[Exclusion]()),
+          readObjectSequence[Exclusion](fields, Exclusions),
           readBool(fields, OptionalStr).getOrElse(false))
     },
     {
       case d: Dependency =>
-        JObject(
-          JField(GroupId, JString(d.groupId)) ::
-          JField(ArtifactId, JString(d.artifactId)) ::
-          JField(Version, JString(d.version)) ::
-          JField(TypeStr, JString(d.`type`)) ::
-          JField(Classifier, JString(d.artifactId)) ::
-          JField(Scope, JString(d.artifactId)) ::
-          JField(SystemPath, JString(d.artifactId)) ::
-          JField(
-            Exclusions, JArray(
-              d.exclusions.map { ex =>
-                JObject(
-                  JField(GroupId, JString(ex.groupId)) ::
-                  JField(ArtifactId, JString(ex.artifactId)) ::
-                  Nil) }.toList)) ::
-          JField(OptionalStr, JBool(d.optional)) :: 
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(GroupId, d.groupId),
+          writeStr(ArtifactId, d.artifactId),
+          writeStr(Version, d.version),
+          writeStr(TypeStr, d.`type`, JarStr),
+          writeStr(Classifier, d.classifier),
+          writeStr(Scope, d.scope, Compile),
+          writeStr(SystemPath, d.systemPath),
+          writeObjectSequence(Exclusions, d.exclusions),
+          writeBool(OptionalStr, d.optional, false)
+        ).flatten.toList)
     }
   ))
 }
@@ -58,7 +45,7 @@ case object Dependency extends CommonJsonReader {
 case class Dependency(
   groupId: String, artifactId: String, version: String,
   `type`: String = SL.JarStr, classifier: String = null, 
-  scope: String = SL.Compile.toString, systemPath: String = null,
+  scope: String = SL.Compile, systemPath: String = null,
   exclusions: Seq[Exclusion] = Seq[Exclusion](), optional: Boolean = false) {
 
   def this(elem: Elem) = this(

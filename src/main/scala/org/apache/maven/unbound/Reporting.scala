@@ -26,13 +26,11 @@ case object Reporting extends CommonJsonReader {
     },
     {
       case r: Reporting =>
-        JObject(
-          JField(ExcludeDefaults, JBool(r.excludeDefaults)) ::
-          JField(OutputDirectory, JString(r.outputDirectory)) ::
-          JField(
-            Plugins,
-            JArray(r.plugins.map { e => Extraction.decompose(e) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeBool(ExcludeDefaults, r.excludeDefaults, false),
+          writeStr(OutputDirectory, r.outputDirectory, SiteStr),
+          writeObjectSequence(Plugins, r.plugins)
+        ).flatten.toList)
     }
   ))
 }
@@ -91,16 +89,14 @@ case object ReportPlugin extends CommonJsonReader {
     },
     {
       case p: ReportPlugin =>
-        JObject(
-          JField(GroupId, JString(p.groupId)) ::
-          JField(ArtifactId, JString(p.artifactId)) ::
-          JField(Version, JString(p.version)) ::
-          JField(
-            ReportSets, 
-            JArray(p.reportSets.map { e => Extraction.decompose(e) }.toList)) ::
-          JField(Inherited, JBool(p.inherited)) :: 
-          JField(Configuration, configToJson(p.configuration)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(GroupId, p.groupId),
+          writeStr(ArtifactId, p.artifactId),
+          writeStr(Version, p.version),
+          writeObjectSequence(ReportSets, p.reportSets),
+          writeBool(Inherited, p.inherited, true),
+          writeObject(Configuration, configToJson(p.configuration))
+        ).flatten.toList)
     }
   ))
 }
@@ -173,12 +169,12 @@ case object ReportSet extends CommonJsonReader {
     },
     {
       case r: ReportSet =>
-        JObject(
-          JField(Id, JString(r.id)) ::
-          JField(Reports, JArray(r.reports.map { JString(_) }.toList)) ::
-          JField(Inherited, JBool(r.inherited)) :: 
-          JField(Configuration, configToJson(r.configuration)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(Id, r.id, DefaultStr),
+          writeStringSequence(Reports, r.reports),
+          writeBool(Inherited, r.inherited, true),
+          writeObject(Configuration, configToJson(r.configuration))
+        ).flatten.toList)
     }
   ))
 }

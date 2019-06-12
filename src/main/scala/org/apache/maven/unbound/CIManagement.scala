@@ -52,17 +52,14 @@ case object Notifier extends CommonJsonReader {
     },
     {
       case n: Notifier =>
-        JObject(
-          JField(TypeStr, JString(n.`type`)) ::
-          JField(SendOnError, JBool(n.sendOnError)) ::
-          JField(SendOnFailure, JBool(n.sendOnFailure)) ::
-          JField(SendOnSuccess, JBool(n.sendOnSuccess)) ::
-          JField(SendOnWarning, JBool(n.sendOnWarning)) ::
-          JField(
-            Configuration, 
-            JObject(
-              n.configuration.map { case(k, v) => (k, JString(v)) }.toList)) ::
-          Nil)
+        JObject(Seq[Option[JField]](
+          writeStr(TypeStr, n.`type`, Mail),
+          writeBool(SendOnError, n.sendOnError, true),
+          writeBool(SendOnFailure, n.sendOnFailure, true),
+          writeBool(SendOnSuccess, n.sendOnSuccess, false),
+          writeBool(SendOnWarning, n.sendOnWarning, false),
+          writeProperties(Configuration, n.configuration)
+        ).flatten.toList)
     }
   ))
 }

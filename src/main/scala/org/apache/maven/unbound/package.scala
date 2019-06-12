@@ -195,10 +195,7 @@ package object unbound {
   def configToJson(conf: Config): JObject = {
     import scala.collection.JavaConverters._
 
-    val children: Seq[java.util.Map.Entry[String, ConfigValue]] =
-      conf.entrySet().asScala.toSeq
-
-    def makeJValuePrimitive(value: ConfigValue): JValue = 
+    def makeJValuePrimitive(value: ConfigValue): JValue =
       value.unwrapped() match {
         case null => JNull
         case b: java.lang.Boolean => JBool(b.booleanValue())
@@ -220,9 +217,16 @@ package object unbound {
       case _ => makeJValuePrimitive(value)
     }
 
-    val childElems: Seq[JField] = 
-      children.map { entry => (entry.getKey(), makeJValue(entry.getValue())) }
-    new JObject(childElems.toList)
+    if (conf != null) {
+      val children: Seq[java.util.Map.Entry[String, ConfigValue]] =
+        conf.entrySet().asScala.toSeq
+      val childElems: Seq[JField] =
+        children.map { entry => (entry.getKey(), makeJValue(entry.getValue())) }
+      new JObject(childElems.toList)
+    } else {
+      null
+      //JNull
+    }
   }
 
   object SL extends Labels
