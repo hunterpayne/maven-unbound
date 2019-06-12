@@ -68,5 +68,5 @@ on the fly and calling normal Maven.
 
 ## Is it ready to use
 
-No, the Json writing is still broken.  Also more unit tests are necessary.
+More unit tests are necessary but the code is usable now.
 Watch this space for more news.
