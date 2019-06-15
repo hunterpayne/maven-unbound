@@ -71,5 +71,5 @@ on the fly and calling normal Maven.
 More unit tests are necessary but the basic functionality is finished and 
 works.  Perhaps there are a few places where defaults are not handled 
 correctly but mostly the code is working now.  Exotic configuration elements
-could also have issues.  Support for translating comments is coming
+could also have issues.  Support for translating comments is coming.
 Watch this space for more news.
