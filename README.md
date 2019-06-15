@@ -68,8 +68,8 @@ on the fly and calling normal Maven.
 
 ## Is it ready to use
 
-More unit tests are necessary and there are still some bugs but the basic
-functionality is finished.  There are bugs in how the code handles 
-configurations and perhaps there are a few places where defaults are not
-handled correctly but mostly the code is working now.
+More unit tests are necessary but the basic functionality is finished and 
+works.  Perhaps there are a few places where defaults are not handled 
+correctly but mostly the code is working now.  Exotic configuration elements
+could also have issues.  Support for translating comments is coming
 Watch this space for more news.
