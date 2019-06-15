@@ -16,7 +16,7 @@ class JsonSpec extends FlatSpec with Matchers {
   it should "load from json" in {
 
     val correct = """<project 
-xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" child.project.url.inherit.append.path="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>parent-group</groupId>
@@ -183,10 +183,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   </reporting>
 </project>
 """
+
     val is = getClass().getClassLoader.getResourceAsStream("pom-json.json")
     try {
       val jsonStr = Source.fromInputStream(is, "UTF-8").getLines.mkString
-      val project1 = readPOM(jsonStr)
+      val project1: Project = readPOM(jsonStr)
       val xmlStr = project1.toXmlString
 
       xmlStr should be (correct)

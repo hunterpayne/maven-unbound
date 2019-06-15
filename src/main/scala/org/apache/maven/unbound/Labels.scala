@@ -440,6 +440,18 @@ trait Labels {
   object Exists extends Str {
     override def toString(): String = "exists"
   }
+  object ProjectStr extends Str {
+    override def toString(): String = "project"
+  }
+  object TextStr extends Str {
+    override def toString(): String = "text"
+  }
+  object Transformer extends Str {
+    override def toString(): String = "transformer"
+  }
+  object Implementation extends Str {
+    override def toString(): String = "implementation"
+  }
 
   object TrueStr extends Str {
     override def toString(): String = "true"

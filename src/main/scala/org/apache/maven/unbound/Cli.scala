@@ -1,7 +1,7 @@
 
 package org.apache.maven.unbound
 
-import java.io.{ File, FileWriter }
+import java.io.{ File, FileWriter, FileInputStream }
 
 import scala.io.Source
 import scala.xml.XML
@@ -16,33 +16,35 @@ object Cli {
 
   def createPomHoconFiles(at: String, project: Project): Unit = {
 
-    val hocon = ConfigFactory.parseString(JsonWriter.writePOM(project))
+    val hocon = ConfigFactory.parseString(JsonWriter.writeConcisePOM(project))
     val writer = new FileWriter(new File(at + hoconFileName))
     val options = ConfigRenderOptions.defaults().setOriginComments(false)
     try {
-      writer.write(hocon.root().render(options))
+      writer.write(hocon.atKey(SL.ProjectStr).root().render(options))
       writer.flush()
-      println(s"generated ${at}${hoconFileName}")
+      println(s"generated ${at}${hoconFileName} from ${at}${xmlFileName}")
     } finally {
       writer.close()
     }
     project.modules.foreach { module =>
-      recurseXml(at + "/" + module, (s, p) => createPomHoconFiles(s, p)) }
+      recurseXml(at + File.separator + module, (s, p) => 
+        createPomHoconFiles(s, p)) }
   }
 
   def createPomJsonFiles(at: String, project: Project): Unit = {
 
-    val jsonStr = JsonWriter.writePrettyPOM(project)
+    val jsonStr = JsonWriter.writePOM(project)
     val writer = new FileWriter(new File(at + jsonFileName))
     try {
       writer.write(jsonStr)
       writer.flush()
-      println(s"generated ${at}${jsonFileName}")
+      println(s"generated ${at}${jsonFileName} from ${at}${xmlFileName}")
     } finally {
       writer.close()
 
       project.modules.foreach { module => 
-        recurseXml(at + "/" + module, (s, p) => createPomJsonFiles(s, p)) }
+        recurseXml(at + File.separator + module, (s, p) => 
+          createPomJsonFiles(s, p)) }
     }
   }
 
@@ -52,28 +54,32 @@ object Cli {
 
     if (xml.exists()) {
 
-      val xmlStr = Source.fromFile(xml).getLines.mkString
-      val project = new Project(XML.loadString(xmlStr))
-      createFile(s, project)
-
+      val xmlIn = new FileInputStream(xml)
+      try {
+        val project = new Project(XML.load(xmlIn))
+        createFile(s, project)
+      } catch {
+        case e: Exception => e.printStackTrace()
+      }
     } else {
 
       println(s"no pom.json or pom.conf in ${s}")
     }
   }
 
-  def createPomXmlFiles(at: String, project: Project): Unit = {
+  def createPomXmlFiles(at: String, project: Project, from: String): Unit = {
 
     val xmlStr = project.toXmlString
     val writer = new FileWriter(new File(at + xmlFileName))
     try {
       writer.write(xmlStr)
       writer.flush()
-      println(s"generated ${at}${xmlFileName}")
+      println(s"generated ${at}${xmlFileName} from ${at}${from}")
     } finally {
       writer.close()
 
-      project.modules.foreach { module => recurse(at + "/" + module) }
+      project.modules.foreach { module => 
+        recurse(at + File.separator + module) }
     }
   }
 
@@ -86,12 +92,12 @@ object Cli {
 
       val jsonStr = Source.fromFile(json).getLines.mkString
       val project = JsonReader.readPOM(jsonStr)
-      createPomXmlFiles(s, project)
+      createPomXmlFiles(s, project, jsonFileName)
 
     } else if (conf.exists()) {
 
       val project = HoconReader.readPOM(loadConfig(conf))
-      createPomXmlFiles(s, project)
+      createPomXmlFiles(s, project, hoconFileName)
 
     } else {
 

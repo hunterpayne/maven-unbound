@@ -1,9 +1,17 @@
 
 package org.apache.maven
 
-import java.io.File
+import java.io.{ File, InputStream, IOException }
 
-import scala.xml.{ Elem, Node, Text, Null, TopScope }
+import scala.xml.{ 
+  Comment, Elem, MetaData, Node, Null, Text, TopScope, UnprefixedAttribute }
+import javax.xml.parsers.{ 
+  DocumentBuilder, DocumentBuilderFactory, ParserConfigurationException }
+
+import org.w3c.dom.{ 
+  Document, Element, Comment => DomComment, Node => DomNode, Text => DomText, 
+  ProcessingInstruction, Entity }
+import org.xml.sax.SAXException
 
 import org.json4s._
 
@@ -43,11 +51,14 @@ package object unbound {
         case e: Elem =>
           // a simple value
           if (e.child.forall { _.isInstanceOf[Text] }) {
-            ConfigValueFactory.fromAnyRef(e.text.trim)
+            //ConfigValueFactory.fromAnyRef(e.text)
+            ConfigValueFactory.fromAnyRef(e.child.map { 
+              _.text
+            }.mkString(scala.compat.Platform.EOL))
 
             // a Dependency object
           } else if (e.child.forall {
-            case ele: Elem => ele.label == "dependency"
+            case ele: Elem => ele.label == SL.DependencyStr.toString
             case t: Text => t.text.trim == ""
             case _ => false
           }) {
@@ -57,12 +68,12 @@ package object unbound {
 
             // a property map (ie Map[String, String])
           } else if (e.child.forall {
-            case el: Elem => el.label == "property"
+            case el: Elem => el.label == SL.PropertyStr.toString
             case t: Text => t.text.trim == ""
             case _ => false
           }) {
-            val mapInJava = (e \ "property").map { el =>
-              ((el \ "name").text, (el \ "value").text) }.toMap.asJava
+            val mapInJava = (e \ SL.PropertyStr).map { el =>
+              ((el \ SL.Name).text, (el \ SL.ValueStr).text) }.toMap.asJava
             ConfigValueFactory.fromMap(mapInJava)
 
             // a list
@@ -76,22 +87,34 @@ package object unbound {
             ConfigValueFactory.fromIterable(listInJava)
 
           } else {
-            // a java map
+            val implAttr = (e \ ("@" + SL.Implementation))
             val mapInScala: Map[String, ConfigValue] =
               e.child.map {
                 case ele: Elem =>
                   val newPath =
                     if (path != "") path + "." + ele.label else ele.label
                   (ele.label, appendNode(newPath, parent, ele))
-                case t: Text => ("text", null)
+                case t: Text => (SL.TextStr.toString, null)
               }.filter { case(k, v) => v != null }.toMap
-            mapInScala.foldLeft(parent) { case(c, (k, v)) =>
+            val map = mapInScala.foldLeft(parent) { case(c, (k, v)) =>
               c.withValue(k, v) }.root()
+
+            // resource transformer
+            if (e.label == SL.Transformer.toString && !implAttr.isEmpty) {
+              map.withValue(
+                SL.Implementation, 
+                ConfigValueFactory.fromAnyRef(implAttr.text.trim))
+            } else {
+              map
+            }
           }
         case t: Text =>
           if (t.text.trim != "") ConfigValueFactory.fromAnyRef(t.text.trim)
           else null
+        case c: Comment =>
+          null // TODO put comment into ConfigValue
         case n: Node => {
+          println("n " + n)
           assert(false)
           null
         }
@@ -130,22 +153,38 @@ package object unbound {
       case m: ConfigObject =>
         val mS = m.asScala
         var elemKey = key
+        var attrs: MetaData = Null
         val childElems =
           if (mS.values.forall { v => 
             v.valueType() == ConfigValueType.STRING }) {
             if (mS.keySet.forall { isDependencyProperty(_) }) {
               // a Dependency object (for configurations)
-              elemKey = "dependency"
+              elemKey = SL.DependencyStr
               mS.map { case(k, v) => new Elem(
-                null, k, Null, TopScope, Text(removeQuotes(v.render()))) }.toSeq
+                null, k, Null, TopScope, Text(removeQuotes(v.render()))) 
+              }.toSeq
+            } else if (mS.keySet.find { 
+              _ == SL.Implementation.toString }.isDefined) {
+              // a resource transformer
+              elemKey = SL.Transformer
+              val impl = 
+                mS.find { case(k, v) => 
+                  k == SL.Implementation.toString }.map { _._2 }.get
+              attrs = new UnprefixedAttribute(
+                SL.Implementation, removeQuotes(impl.render()), Null)
+              mS.filter { case(k, _) =>
+                k != SL.Implementation.toString }.map { case(k, v) => 
+                  new Elem(
+                    null, k, Null, TopScope, Text(removeQuotes(v.render())))
+              }.toSeq
             } else {
               // a Properties object
               mS.map { case(k, v) =>
                 new Elem(
-                  null, "property", Null, TopScope,
-                  new Elem(null, "name", Null, TopScope, new Text(k)),
+                  null, SL.PropertyStr, Null, TopScope,
+                  new Elem(null, SL.Name, Null, TopScope, new Text(k)),
                   new Elem(
-                    null, "value", Null, TopScope,
+                    null, SL.ValueStr, Null, TopScope,
                     new Text(removeQuotes(v.render()))))
               }.toSeq
             }
@@ -153,14 +192,14 @@ package object unbound {
             // a normal Map (ie non-string value type)
             mS.map { case(k, v) => makeElem(k, v) }.toSeq
           }
-        new Elem(null, elemKey, Null, TopScope, childElems: _*)
+        new Elem(null, elemKey, attrs, TopScope, childElems: _*)
       case v: ConfigValue => 
         new Elem(null, key, Null, TopScope, new Text(removeQuotes(v.render())))
     }
 
-    val childElems: Seq[Elem] = 
+    val childElems: Seq[Elem] =
       children.map { entry => makeElem(entry.getKey(), entry.getValue()) }
-    new Elem(null, "configuration", Null, TopScope, childElems: _*)
+    new Elem(null, SL.Configuration, Null, TopScope, childElems: _*)
   }
 
   def jsonToConfig(jobject: JObject): Config = {

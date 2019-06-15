@@ -1,6 +1,10 @@
 
 package org.apache.maven.unbound
 
+import java.io.{ 
+  InputStream, InputStreamReader, Reader, 
+  OutputStream, OutputStreamWriter, Writer }
+
 import scala.reflect.Manifest
 
 import com.typesafe.config.{ Config, ConfigObject, ConfigFactory }
@@ -119,12 +123,24 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
 object JsonReader extends JsonProjectAPI {
 
   def readPOM(jsonSrc: String): Project = read[Project](jsonSrc)
+
+  def readPOM(reader: Reader): Project = read[Project](reader)
+
+  def readPOM(in: InputStream, enc: String = "UTF-8"): Project = 
+    read[Project](new InputStreamReader(in, enc))
 }
 
 object JsonWriter extends JsonProjectAPI {
 
-  def writePOM(project: Project): String = write[Project](project)
+  def writeConcisePOM(project: Project): String = write[Project](project)
 
-  def writePrettyPOM(project: Project): String = writePretty[Project](project)
+  def writePOM(project: Project): String = writePretty(project)
 
+  def writePOM[W <: Writer](project: Project, writer: W): Unit =
+    writePretty[Project, W](project, writer)
+
+  def writePOM(
+    project: Project, os: OutputStream, enc: String = "UTF-8"): Unit =
+    writePretty[Project, OutputStreamWriter](
+      project, new OutputStreamWriter(os, enc))
 }
