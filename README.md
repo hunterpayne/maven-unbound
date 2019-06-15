@@ -71,5 +71,14 @@ on the fly and calling normal Maven.
 More unit tests are necessary but the basic functionality is finished and 
 works.  Perhaps there are a few places where defaults are not handled 
 correctly but mostly the code is working now.  Exotic configuration elements
-could also have issues.  Support for translating comments is coming.
+could also have issues.  But this is still pre-alpha for the next few days
+or so.
+
+Because we don't have code that directly translates Project to Config, we 
+can't support transforming XML comments.  This is because to generate HOCON, 
+we first generate JSON and load it into a Config which is then rendered 
+into HOCON.  JSON has no support for comments.  If in the future we create
+a way to directly translate Project into Config, we will add support for
+translating XML comments.
+
 Watch this space for more news.
