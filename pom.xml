@@ -3,11 +3,40 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.maven</groupId>
   <artifactId>unbound</artifactId>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
   <name>Unbound</name>
-  <url></url>
-  <version>1.0.0</version>
-
+  <description>
+    Maven Unbound is a file level translator of Apache Maven POM files to and
+    from JSON and HOCON POM formats.  It provides both a library to support
+    these translations and a command line interface to translate between
+    XML, JSON and HOCON formats of POMs.  The CLI can be called with
+    the mvnu script in this directory.  
+    &#8211;&#8211;generate&#8211;hocon and 
+    &#8211;&#8211;generate&#8211;json command line flags are added to
+    translate a Maven project from XML to JSON and/or HOCON.  Then mvnu can
+    be called just like mvn can but the JSON or HOCON POM files will generate
+    pom.xml files on the fly which will in turn be built using Maven.
+  </description>
+  <url>https://github.com/hunterpayne/maven-unbound</url>
+  <inceptionYear>2019</inceptionYear>
+  <licenses>
+    <license>
+      <name>Apache License Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>hunter</id>
+      <name>Hunter Payne</name>
+      <email>no-spam</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+  </developers>
   <properties>
     <!-- Resource identity sequence. -->
 <!--    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> -->
@@ -70,7 +99,7 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
-      <version>3.2.1</version>
+      <version>3.6.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -81,12 +110,6 @@
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${version.scala.epoch}</artifactId>
       <version>${version.scalatest}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.scalacheck</groupId>
-      <artifactId>scalacheck_${version.scala.epoch}</artifactId>
-      <version>1.14.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -201,6 +224,72 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-dependency-plugin</artifactId>
+	<version>3.1.1</version>
+	<executions>
+          <execution>
+            <id>copy</id>
+            <phase>package</phase>
+          </execution>
+	</executions>
+      </plugin>
+      <plugin>
+        <groupId>org.scalastyle</groupId>
+        <artifactId>scalastyle-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <verbose>false</verbose>
+          <failOnViolation>false</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <failOnWarning>false</failOnWarning>
+          <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
+          <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
+          <configLocation>${project.basedir}/scalastyle-config.xml</configLocation>
+          <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
+          <outputEncoding>UTF-8</outputEncoding>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.7.1</version>
+      </plugin>
+      <plugin>
+	<groupId>org.scoverage</groupId>
+	<artifactId>scoverage-maven-plugin</artifactId>
+	<version>1.1.1</version>
+	<configuration>
+          <scalaVersion>${version.scala.release}</scalaVersion>
+          <highlighting>true</highlighting>
+          <minimumCoverage>0</minimumCoverage>
+          <failOnMinimumCoverage>true</failOnMinimumCoverage>
+	</configuration>
+	<executions>
+          <execution>
+            <id>scoverage_unit</id>
+            <goals>
+              <goal>check</goal> <!-- or integration-check -->
+            </goals>
+            <phase>prepare-package</phase> <!-- or any other phase -->
+          </execution>
+          <execution>
+            <id>scoverage_integration</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>integration-test</phase>
+          </execution> 
+	</executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -216,6 +305,119 @@
             <jvmArg>-Xmx1024m</jvmArg>
           </jvmArgs>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>3.0.0</version>
+	<reportSets>
+          <reportSet>
+            <reports>
+	      <!-- select reports -->
+	      <report>index</report>
+	      <report>summary</report>
+              <report>dependencies</report>
+              <report>dependency-info</report>
+              <report>dependency-convergence</report>
+              <report>team</report>
+              <report>licenses</report>
+              <report>plugins</report>
+              <report>scm</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>3.0.0-M3</version>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-dependency-plugin</artifactId>
+	<version>3.1.1</version>
+	<reportSets>
+          <reportSet>
+            <reports>
+              <report>analyze-report</report>
+            </reports>
+          </reportSet>
+	</reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>3.0.5</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>taglist-maven-plugin</artifactId>
+        <version>2.4</version>
+	<configuration>
+	  <sourceFileLocale>src/main/scala</sourceFileLocale>
+	  <tags>
+            <tag>TODO</tag>
+            <tag>FIXME</tag>
+            <tag>@todo</tag>
+            <tag>@deprecated</tag>
+          </tags>
+	  <tagListOptions>
+            <tagClasses>
+              <tagClass>
+		<displayName>Documentation Work</displayName>
+		<tags>
+                  <tag>
+                    <matchString>DOCUMENT_ME</matchString>
+                    <matchType>exact</matchType>
+                  </tag>
+                  <tag>
+                    <matchString>NOT_YET_DOCUMENTED</matchString>
+                    <matchType>exact</matchType>
+                  </tag>
+		</tags>
+              </tagClass>
+              <tagClass>
+		<displayName>Code Work</displayName>
+		<tags>
+                  <tag>
+                    <matchString>FIXME</matchString>
+                    <matchType>exact</matchType>
+                  </tag>
+                  <tag>
+                    <matchString>TODO</matchString>
+                    <matchType>exact</matchType>
+                  </tag>
+		</tags>
+              </tagClass>
+            </tagClasses>
+          </tagListOptions>
+	</configuration>
+      </plugin>
+      <!--
+      <plugin>
+        <groupId>org.scalastyle</groupId>
+        <artifactId>scalastyle-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      -->
+      <plugin>
+        <groupId>org.scoverage</groupId>
+        <artifactId>scoverage-maven-plugin</artifactId>
+        <version>1.1.1</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
       </plugin>
     </plugins>
   </reporting>

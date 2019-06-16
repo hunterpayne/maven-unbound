@@ -7,8 +7,6 @@ import scala.xml.Elem
 
 import com.typesafe.config.{ Config, ConfigObject, ConfigFactory }
 
-import org.apache.maven.shared.utils.xml.Xpp3DomBuilder
-
 import org.json4s._
 
 case object Build extends CommonJsonReader {

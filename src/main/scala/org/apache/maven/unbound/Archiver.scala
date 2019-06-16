@@ -7,7 +7,7 @@ import com.typesafe.config.ConfigFactory
 
 import org.json4s._
 
-case object Archiver extends CommonJsonReader {
+protected[unbound] case object Archiver extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
@@ -43,7 +43,7 @@ case object Archiver extends CommonJsonReader {
   ))
 }
 
-case class Archiver(
+protected[unbound] case class Archiver(
   addMavenDescriptor: Boolean = true,
   compress: Boolean = true,
   forced: Boolean = true,
