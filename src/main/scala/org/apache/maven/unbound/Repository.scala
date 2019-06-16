@@ -42,7 +42,7 @@ case object DistributionRepository extends CommonJsonReader {
 
 case class DistributionRepository(
   uniqueVersion: Boolean = true, 
-  releases: RepositoryPolicy, snapshots: RepositoryPolicy,
+  releases: RepositoryPolicy = null, snapshots: RepositoryPolicy = null,
   id: String, name: String, url: String, layout: String = SL.DefaultStr) {
 
   def this(elem: Elem) = this(
@@ -57,21 +57,36 @@ case class DistributionRepository(
     emptyToNull((elem \ SL.UrlStr).text), 
     emptyToDefault((elem \ SL.Layout).text, SL.DefaultStr))
 
-  lazy val xml = <distributionRepository>
-                   <uniqueVersion>{uniqueVersion}</uniqueVersion>
-                   { if (releases != null) releases.releasesXml }
-                   { if (snapshots != null) snapshots.snapshotsXml }
-                   <id>{id}</id>
-                   <name>{name}</name>
-                   <url>{url}</url>
-                   <layout>{layout}</layout>
-                 </distributionRepository>
+  lazy val repositoryXml = 
+    <repository>
+      { if (!uniqueVersion) <uniqueVersion>false</uniqueVersion> }
+      { if (releases != null) releases.releasesXml }
+      { if (snapshots != null) snapshots.snapshotsXml }
+      { if (id != null) <id>{id}</id> }
+      { if (name != null) <name>{name}</name> }
+      { if (url != null) <url>{url}</url> }
+      { if (layout != null && layout != SL.DefaultStr.toString) 
+        <layout>{layout}</layout> }
+    </repository>
+
+  lazy val snapshotXml = 
+    <snapshotRepository>
+      { if (!uniqueVersion) <uniqueVersion>false</uniqueVersion> }
+      { if (releases != null) releases.releasesXml }
+      { if (snapshots != null) snapshots.snapshotsXml }
+      { if (id != null) <id>{id}</id> }
+      { if (name != null) <name>{name}</name> }
+      { if (url != null) <url>{url}</url> }
+      { if (layout != null && layout != SL.DefaultStr.toString) 
+        <layout>{layout}</layout> }
+    </snapshotRepository>
 
   def makeModelObject(): org.apache.maven.model.DeploymentRepository = {
     val repo = new org.apache.maven.model.DeploymentRepository()
     repo.setUniqueVersion(uniqueVersion)
     if (releases != null) repo.setReleases(releases.makeModelObject())
     if (snapshots != null) repo.setSnapshots(snapshots.makeModelObject())
+    //else repo.setSnapshots(releases.makeModelObject())
     repo.setId(id)
     repo.setName(name)
     repo.setUrl(url)
@@ -169,7 +184,7 @@ case object Repository extends CommonJsonReader {
 }
 
 case class Repository(
-  releases: RepositoryPolicy, snapshots: RepositoryPolicy,
+  releases: RepositoryPolicy = null, snapshots: RepositoryPolicy = null,
   id: String, name: String, url: String, layout: String = SL.DefaultStr) {
 
   def this(elem: Elem) = this(
@@ -177,18 +192,21 @@ case class Repository(
       new RepositoryPolicy(e) }.headOption.getOrElse(null),
     (elem \ SL.Snapshots).map { case e: Elem => 
       new RepositoryPolicy(e) }.headOption.getOrElse(null),
-    emptyToNull((elem \ SL.Id).text), emptyToNull((elem \ SL.Name).text),
+    emptyToNull((elem \ SL.Id).text), 
+    emptyToNull((elem \ SL.Name).text),
     emptyToNull((elem \ SL.UrlStr).text), 
     emptyToDefault((elem \ SL.Layout).text, SL.DefaultStr))
 
-  lazy val xml = <repository>
-                   { if (releases != null) releases.releasesXml }
-                   { if (snapshots != null) snapshots.snapshotsXml }
-                   <id>{id}</id>
-                   <name>{name}</name>
-                   <url>{url}</url>
-                   <layout>{layout}</layout>
-                 </repository>
+  lazy val xml = 
+    <repository>
+      { if (releases != null) releases.releasesXml }
+      { if (snapshots != null) snapshots.snapshotsXml }
+      { if (id != null) <id>{id}</id> }
+      { if (name != null) <name>{name}</name> }
+      { if (url != null) <url>{url}</url> }
+      { if (layout != null && layout != SL.DefaultStr.toString) 
+        <layout>{layout}</layout> }
+    </repository>
 
   def makeModelObject(): org.apache.maven.model.Repository = {
     val repo = new org.apache.maven.model.Repository()

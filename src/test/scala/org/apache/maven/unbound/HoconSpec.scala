@@ -16,11 +16,7 @@ class HoconSpec extends FlatSpec with Matchers {
 
   it should "load from hocon" in {
 
-    val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
-    val project1 = readPOM(ConfigFactory.load(
-      "pom-conf", ConfigParseOptions.defaults(), resolveOpts))
-
-    project1.toXmlString should be ("""<project 
+    val correct = """<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -187,15 +183,195 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </plugins>
   </reporting>
 </project>
-""")
+"""
+
+    val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
+    val project1 = readPOM(ConfigFactory.load(
+      "pom-conf", ConfigParseOptions.defaults(), resolveOpts))
+    project1.toXmlString should be (correct)
 
     val project2 = new Project(scala.xml.XML.loadString(project1.toXmlString))
-    //println(project2)
-
-    println(project2.toXmlString)
-    // doesn't work because Ficus creates Vectors which aren't equal to the
+    // required because Ficus creates Vectors which aren't equal to the
     // Lists created by the XML DOM reading constructors
-    //project1 should be(project2)
+    val removedVectors = 
+      project1.toString.replaceAllLiterally("Vector(", "List(")
+    project2.toString should be (removedVectors)
+  }
+
+  it should "load another pom from hocon" in {
+    val correct = """<project 
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.example</groupId>
+  <artifactId>jpademo</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+  <name>jpademo</name>
+  <url>http://maven.apache.org</url>
+  <scm>
+    <connection>scm:git:ssh://my.git.server.internal/home/git/jpademo</connection>
+    <developerConnection>
+      scm:git:ssh://my.git.server.internal/home/git/jpademo
+    </developerConnection>
+  </scm>
+  <ciManagement>
+    <system>jenkins</system>
+    <url>https://my.jenkins.internal/jenkins</url>
+  </ciManagement>
+  <distributionManagement>
+    <repository>
+      <id>My_Artifactory_Releases</id>
+      <name>My_Artifactory-releases</name>
+      <url>http://my.maven.repository.internal/artifactory/release</url>
+    </repository>
+    <snapshotRepository>
+      <id>My_Artifactory_Snapshots</id>
+      <name>My_Artifactory-snapshots</name>
+      <url>http://my.maven.repository.internal/artifactory/snapshot</url>
+    </snapshotRepository>
+  </distributionManagement>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>3.6.3.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate</artifactId>
+      <version>3.2.5.ga</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+      <version>3.3.2.GA</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.sql</groupId>
+      <artifactId>jdbc-stdext</artifactId>
+      <version>2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.transaction</groupId>
+      <artifactId>jta</artifactId>
+      <version>1.0.1B</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>ejb3-persistence</artifactId>
+      <version>1.0.1.GA</version>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.14</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+  </dependencies>
+  <repositories>
+    <repository>
+      <id>hibernate-support</id>
+      <name>Repository for library Library[hibernate-support]</name>
+      <url>http://download.java.net/maven/2/</url>
+    </repository>
+  </repositories>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <id>jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <archive>
+            <manifestFile>src/main/resources/Manifest.txt</manifestFile>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>com.footballradar.jpademo.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <finalName>${project.artifactId}-${project.version}</finalName>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+"""
+
+    val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
+    val project1 = readPOM(ConfigFactory.load(
+      "pom2-conf", ConfigParseOptions.defaults(), resolveOpts))
+    project1.toXmlString should be (correct)
+
+    val project2 = new Project(scala.xml.XML.loadString(project1.toXmlString))
+    // required because Ficus creates Vectors which aren't equal to the
+    // Lists created by the XML DOM reading constructors
+    val removedVectors = 
+      project1.toString.replaceAllLiterally("Vector(", "List(")
+    project2.toString should be (removedVectors)
+
+    val is = getClass().getClassLoader.getResourceAsStream("pom2-conf.xml")
+    try {
+      val project3 = new Project(scala.xml.XML.load(is))
+      project3.toString should be (removedVectors)
+
+    } finally {
+      is.close()
+    }
   }
 }
 

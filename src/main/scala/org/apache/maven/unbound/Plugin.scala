@@ -154,7 +154,8 @@ case class Execution(
       elemToConfig(e) }.getOrElse(null))
 
   lazy val xml = <execution>
-                   <id>{id}</id>
+                   { if (id != null && id != SL.DefaultStr.toString) 
+                     <id>{id}</id> }
                    { if (phase != null) <phase>{phase}</phase> }
                    { if (!goals.isEmpty) <goals>
                      { goals.map { Goal(_).xml } }

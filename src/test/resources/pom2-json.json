@@ -1,0 +1,157 @@
+{
+  "project":{
+    "groupId":"org.example",
+    "artifactId":"jpademo",
+    "version":"1.0",
+    "name":"jpademo",
+    "url":"http://maven.apache.org",
+    "scm":{
+      "connection" : "scm:git:ssh://my.git.server.internal/home/git/jpademo",
+      "developerConnection" : "scm:git:ssh://my.git.server.internal/home/git/jpademo"
+    },
+    "ciManagement":{
+      "system":"jenkins"
+      "url":"https://my.jenkins.internal/jenkins"
+    },
+    "distributionManagement":{
+        "repository" : {
+            "id" : "My_Artifactory_Releases",
+            "name" : "My_Artifactory-releases",
+            "url" : "http://my.maven.repository.internal/artifactory/release"
+        },
+        "snapshotRepository" : {
+	    "id" : "My_Artifactory_Snapshots",
+	    "name" : "My_Artifactory-snapshots",
+	    "url" : "http://my.maven.repository.internal/artifactory/snapshot"
+	}
+    },
+    "properties":{
+      "project.build.sourceEncoding":"UTF-8"
+    },
+    "dependencies":[
+      {
+        "groupId":"junit",
+        "artifactId":"junit",
+        "version":"3.8.1",
+        "scope":"test"
+      },
+      {
+        "groupId":"org.hibernate",
+        "artifactId":"hibernate-core",
+        "version":"3.6.3.Final"
+      },
+      {
+        "groupId":"org.hibernate",
+        "artifactId":"hibernate",
+        "version":"3.2.5.ga"
+      },
+      {
+        "groupId":"org.hibernate",
+        "artifactId":"hibernate-entitymanager",
+        "version":"3.3.2.GA"
+      },
+      {
+        "groupId":"javax.sql",
+        "artifactId":"jdbc-stdext",
+        "version":"2.0"
+      },
+      {
+        "groupId":"javax.transaction",
+        "artifactId":"jta",
+        "version":"1.0.1B"
+      },
+      {
+        "groupId":"org.hibernate",
+        "artifactId":"ejb3-persistence",
+        "version":"1.0.1.GA"
+      },
+      {
+        "groupId":"mysql",
+        "artifactId":"mysql-connector-java",
+        "version":"5.1.14"
+      },
+      {
+        "groupId":"org.slf4j",
+        "artifactId":"slf4j-api",
+        "version":"1.6.1"
+      },
+      {
+        "groupId":"org.slf4j",
+        "artifactId":"log4j-over-slf4j",
+        "version":"1.6.1"
+      },
+      {
+        "groupId":"org.slf4j",
+        "artifactId":"slf4j-simple",
+        "version":"1.6.1"
+      }
+    ],
+    "repositories":[
+      {
+        "id":"hibernate-support",
+        "name":"Repository for library Library[hibernate-support]",
+        "url":"http://download.java.net/maven/2/"
+      }
+    ],
+    "build":{
+      "outputDirectory":"target/classes",
+      "testResources":[
+        {
+          "targetPath":"src/test/resources",
+          "includes":[
+            "src/test/resources"
+          ]
+        }
+      ],
+      "plugins":[
+        {
+          "groupId":"org.apache.maven.plugins",
+          "artifactId":"maven-compiler-plugin",
+          "version":"2.3.2",
+          "configuration":{
+            "source":1.6,
+            "target":1.6
+          }
+        },
+        {
+          "groupId":"org.apache.maven.plugins",
+          "artifactId":"maven-jar-plugin",
+          "version":"2.2",
+          "executions":[
+            {
+              "id":"jar",
+              "goals":[
+                "jar"
+              ]
+            }
+          ],
+          "configuration":{
+	    "archive" : {
+              "manifestFile":"src/main/resources/Manifest.txt",
+              "manifest":{
+                "addClasspath": true,
+                "mainClass":"com.footballradar.jpademo.App"
+	      }
+	    }
+          }
+        },
+        {
+          "groupId":"org.apache.maven.plugins",
+          "artifactId":"maven-shade-plugin",
+          "version":"1.4",
+          "executions":[
+            {
+              "phase":"package",
+              "goals":[
+                "shade"
+              ]
+            }
+          ],
+          "configuration":{
+            "finalName":"${project.artifactId}-${project.version}"
+          }
+        }
+      ]
+    }
+  }
+}

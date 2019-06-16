@@ -7,9 +7,14 @@ import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import net.ceedubs.ficus.readers.ValueReader
 
+/**
+  * Cannot generate a config value reader for type 
+  * Option[org.apache.maven.unbound.CIManagement], because value readers 
+  * cannot be auto-generated for types with type parameters
+  */
 trait HoconProjectReader {
 
-  implicit val developerConfigReader: ValueReader[Developer] = 
+  implicit val developerConfigReader: ValueReader[Developer] =
     ValueReader.relative { config =>
       Developer(
         config.as[String]("id"),
@@ -39,9 +44,10 @@ trait HoconProjectReader {
   implicit val ciManagementConfigReader: ValueReader[CIManagement] = 
     ValueReader.relative { config =>
       CIManagement(
-        config.as[String]("system"),
-        config.as[String]("url"),
-        config.as[Seq[Notifier]]("notifiers"))
+        if (config.hasPath("system")) config.getString("system") else null,
+        if (config.hasPath("url")) config.getString("url") else null,
+        if (config.hasPath("notifiers")) config.as[Seq[Notifier]]("notifiers")
+        else Seq[Notifier]())
     }
 
   implicit val profileConfigReader: ValueReader[Profile] = 

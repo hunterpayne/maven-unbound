@@ -27,6 +27,9 @@ package object unbound {
 
   def emptyToDefault(s: String, d: String): String = if (s != "") s else d
 
+  def emptyToDefaultBool(s: String, d: Boolean): Boolean = 
+    if (s != "") (s == "true") else d
+
   def loadConfig(files: File*): Config = {
     require(!files.isEmpty)
 
@@ -45,16 +48,27 @@ package object unbound {
   // - Seq[Dependency]
   def elemToConfig(elem: Elem): Config = {
     import scala.collection.JavaConverters._
+    def toAnyRef(s: String): Any = s match {
+      case "true" => true
+      case "false" => false
+      case s => 
+        try { s.toInt } catch {
+          case nfe: NumberFormatException =>
+            try { s.toDouble } catch {
+              case nfe2: NumberFormatException => s
+            }
+        }
+    }
 
     def appendNode(path: String, parent: Config, el: Node): ConfigValue =
       el match {
         case e: Elem =>
           // a simple value
           if (e.child.forall { _.isInstanceOf[Text] }) {
-            //ConfigValueFactory.fromAnyRef(e.text)
-            ConfigValueFactory.fromAnyRef(e.child.map { 
-              _.text
-            }.mkString(scala.compat.Platform.EOL))
+            ConfigValueFactory.fromAnyRef(toAnyRef(e.text.trim))
+            //ConfigValueFactory.fromAnyRef(e.child.map { 
+              //_.text
+            //}.mkString(scala.compat.Platform.EOL))
 
             // a Dependency object
           } else if (e.child.forall {
@@ -109,10 +123,14 @@ package object unbound {
             }
           }
         case t: Text =>
-          if (t.text.trim != "") ConfigValueFactory.fromAnyRef(t.text.trim)
+          if (t.text.trim != "") 
+            ConfigValueFactory.fromAnyRef(toAnyRef(t.text.trim))
           else null
         case c: Comment =>
-          null // TODO put comment into ConfigValue
+          val epty = ConfigFactory.empty()
+          val list = new java.util.ArrayList[java.lang.String]()
+          list.add(c.text)
+          epty.root().withOrigin(epty.origin().withComments(list))
         case n: Node => {
           println("n " + n)
           assert(false)
@@ -132,8 +150,10 @@ package object unbound {
     else s.substring(0, s.length - 1)
 
   private def removeQuotes(s: String): String =
-    if (!s.startsWith("\"") || !s.endsWith("\"")) s
-    else s.substring(1, s.length - 1)
+    if (!s.startsWith("\"") || !s.endsWith("\"")) 
+      s.replaceAllLiterally("\\n", scala.compat.Platform.EOL)
+    else s.substring(1, s.length - 1).replaceAllLiterally(
+      "\\n", scala.compat.Platform.EOL)
 
   private def isDependencyProperty(key: String): Boolean = key match {
     case "groupId" | "artifactId" | "version" | "scope" | "optional" => true
@@ -143,11 +163,12 @@ package object unbound {
   def configToElem(config: Config): Elem = {
     import scala.collection.JavaConverters._
 
-    val children: Seq[java.util.Map.Entry[String, ConfigValue]] =
-      config.entrySet().asScala.toSeq
+    val children: Seq[(String, ConfigValue)] =
+      config.root().asScala.toSeq
+    //config.entrySet().asScala.toSeq
 
     def makeElem(key: String, value: ConfigValue): Elem = value match {
-      case l: ConfigList => 
+      case l: ConfigList =>
         val childElems = l.asScala.map { it => makeElem(singular(key), it) }
         new Elem(null, key, Null, TopScope, childElems: _*)
       case m: ConfigObject =>
@@ -194,11 +215,12 @@ package object unbound {
           }
         new Elem(null, elemKey, attrs, TopScope, childElems: _*)
       case v: ConfigValue => 
-        new Elem(null, key, Null, TopScope, new Text(removeQuotes(v.render())))
+        val value = removeQuotes(v.render())
+        new Elem(null, key, Null, TopScope, new Text(value))
     }
 
     val childElems: Seq[Elem] =
-      children.map { entry => makeElem(entry.getKey(), entry.getValue()) }
+      children.map { entry => makeElem(entry._1, entry._2) }
     new Elem(null, SL.Configuration, Null, TopScope, childElems: _*)
   }
 
@@ -207,7 +229,8 @@ package object unbound {
 
     def fromJson(v: JValue): Any =
       v match {
-        case s: JString => s.s
+        case s: JString => 
+          s.s //.replaceAllLiterally("\n", scala.compat.Platform.EOL)
         case b: JBool => b.value
         case d: JDecimal => d.num
         case d: JDouble => d.num
@@ -244,16 +267,19 @@ package object unbound {
         case l: java.lang.Long => JDecimal(new java.math.BigDecimal(l.toLong))
         case f: java.lang.Float => JDouble(f.toDouble)
         case d: java.lang.Double => JDouble(d.toDouble)
-        case s: String => JString(s)
+        case s: String => 
+          JString(s) //.replaceAllLiterally("\n", scala.compat.Platform.EOL))
         case _ => ???
       }
 
-    def makeJValue(value: ConfigValue): JValue = value match {
-      case l: ConfigList => 
-        JArray(l.asScala.map { it => makeJValue(it) }.toList)
-      case m: ConfigObject =>
-        JObject(m.asScala.map { it => (it._1, makeJValue(it._2)) }.toList)
-      case _ => makeJValuePrimitive(value)
+    def makeJValue(value: ConfigValue): JValue = {
+      value match {
+        case l: ConfigList =>
+          JArray(l.asScala.map { it => makeJValue(it) }.toList)
+        case m: ConfigObject =>
+          JObject(m.asScala.map { it => (it._1, makeJValue(it._2)) }.toList)
+        case _ => makeJValuePrimitive(value)
+      }
     }
 
     if (conf != null) {

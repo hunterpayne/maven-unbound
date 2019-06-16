@@ -7,18 +7,44 @@ import com.typesafe.config.ConfigFactory
 
 import org.json4s._
 
+case object CIManagement extends CommonJsonReader {
+
+  implicit val formats = JsonReader.formats
+  def None = "none"
+
+  class CIManagementSerializer 
+      extends CustomSerializer[CIManagement](format => (
+    {
+      case obj @ JObject(fields) =>
+        new CIManagement(
+          readStr(fields, SystemStr).getOrElse(null),
+          readStr(fields, UrlStr).getOrElse(null),
+          readObjectSequence[Notifier](fields, Notifiers)
+        )
+    },
+    {
+      case c: CIManagement =>
+        JObject(Seq[Option[JField]](
+          writeStr(SystemStr, c.system),
+          writeStr(UrlStr, c.url),
+          writeObjectSequence(Notifiers, c.notifiers)
+        ).flatten.toList)
+    }
+  ))
+}     
+
 case class CIManagement(
   system: String, url: String, notifiers: Seq[Notifier] = Seq[Notifier]()) {
 
   def this(elem: Elem) = this(
-    emptyToNull(
-      (elem \ SL.SystemStr).text), emptyToNull((elem \ SL.UrlStr).text),
+    emptyToNull((elem \ SL.SystemStr).text),
+    emptyToNull((elem \ SL.UrlStr).text),
     (elem \ SL.Notifiers \ SL.NotifierStr).map { case n: Elem => 
       new Notifier(n) })
 
   lazy val xml = <ciManagement>
-                   <system>{system}</system>
-                   <url>{url}</url>
+                   { if (system != null) <system>{system}</system> }
+                   { if (url != null) <url>{url}</url> }
                    { if (!notifiers.isEmpty) <notifiers>
                      { notifiers.map { _.xml } }
                    </notifiers> }
@@ -26,8 +52,8 @@ case class CIManagement(
 
   def makeModelObject(): org.apache.maven.model.CiManagement = {
     val cim = new org.apache.maven.model.CiManagement()
-    cim.setSystem(system)
-    cim.setUrl(url)
+    if (system != null) cim.setSystem(system)
+    if (url != null) cim.setUrl(url)
     notifiers.foreach { n => cim.getNotifiers().add(n.makeModelObject()) }
     cim
   }

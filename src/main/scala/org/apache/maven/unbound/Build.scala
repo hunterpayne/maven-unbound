@@ -110,7 +110,8 @@ case class Build(
     emptyToDefault((elem \ SL.ScriptSourceDirectory).text, Build.defScriptDir),
     emptyToDefault((elem \ SL.TestSourceDirectory).text, Build.defTestDir),
     emptyToDefault((elem \ SL.OutputDirectory).text, Build.defOutputDir),
-    emptyToDefault((elem \ SL.TestOutputDirectory).text, Build.defTestOutputDir),
+    emptyToDefault(
+      (elem \ SL.TestOutputDirectory).text, Build.defTestOutputDir),
     (elem \ SL.Extensions \ SL.ExtensionStr).map { case e: Elem => 
       new Extension(e)},
     emptyToNull((elem \ SL.DefaultGoal).text),
@@ -122,7 +123,7 @@ case class Build(
       (elem \ SL.TestResources \ SL.TestResource).map { case e: Elem =>
         new Resource(e) },
       new Resource(Build.defTestResourcesDir)),
-    emptyToNull((elem \ SL.DirectoryStr).text), 
+    emptyToDefault((elem \ SL.DirectoryStr).text, SL.Target), 
     emptyToNull((elem \ SL.FinalName).text),
     (elem \ SL.Filters \ SL.FilterStr).map { _.text },
     (elem \ SL.PluginManagement \ SL.Plugins \ SL.PluginStr).map { 

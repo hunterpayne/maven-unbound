@@ -125,7 +125,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
         </executions>
         <configuration>
           <zincOptionsScala>
-            -Xsource:${version.scala.epoch} -withVersionClasspathValidator:false -compileorder:Mixed -language:implicitConversions -usejavacp
+            -Xsource:${version.scala.epoch}
+                           -withVersionClasspathValidator:false
+                           -compileorder:Mixed
+                           -language:implicitConversions
+                           -usejavacp
           </zincOptionsScala>
           <defineBridge>
             <dependency>
@@ -186,118 +190,54 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
     val is = getClass().getClassLoader.getResourceAsStream("pom-json.json")
     try {
-      val jsonStr = Source.fromInputStream(is, "UTF-8").getLines.mkString
-      val project1: Project = readPOM(jsonStr)
+      val project1: Project = readPOM(is)
       val xmlStr = project1.toXmlString
 
       xmlStr should be (correct)
 
       val project2 = new Project(scala.xml.XML.loadString(xmlStr))
-      println(project2.toXmlString)
-      // TODO need to make the order of the properties and configurations
-      // deterministic to make this test work
-      //project2.toXmlString should be (correct)
+      project2.toString should be (project1.toString)
 
     } finally {
       is.close()
     }
   }
 
-  /*
   it should "load another pom from json" in {
-    val correct = """<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    val correct = """<project 
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>org.example</groupId>
   <artifactId>jpademo</artifactId>
   <version>1.0</version>
   <packaging>jar</packaging>
-
-  <scm>
-      <connection>scm:git:ssh://my.git.server.internal/home/git/jpademo</connection>
-      <developerConnection>scm:git:ssh://my.git.server.internal/home/git/jpademo</developerConnection>
-  </scm>
-  <ciManagement>
-      <system>jenkins</system>
-      <url>https://my.jenkins.internal/jenkins</url>
-  </ciManagement>
-  
-  
   <name>jpademo</name>
   <url>http://maven.apache.org</url>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <id>jar</id>
-                    </execution>
-                </executions>
-                <configuration>
-                      <archive>
-                        <manifestFile>src/main/resources/Manifest.txt</manifestFile>
-                        <manifest>
-                          <addClasspath>true</addClasspath>
-                         
-                          <mainClass>com.footballradar.jpademo.App</mainClass>
-                          
-                        </manifest>
-                      </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>1.4</version>
-                    <executions>
-                        <execution>
-                                <phase>package</phase>
-                                <goals>
-                                        <goal>shade</goal>
-                                </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                            <finalName>${project.artifactId}-${project.version}</finalName>
-                    </configuration>
-            </plugin>
-            
-        </plugins>
-
-    </build>
-
-    <repositories>
+  <scm>
+    <connection>scm:git:ssh://my.git.server.internal/home/git/jpademo</connection>
+    <developerConnection>
+      scm:git:ssh://my.git.server.internal/home/git/jpademo
+    </developerConnection>
+  </scm>
+  <ciManagement>
+    <system>jenkins</system>
+    <url>https://my.jenkins.internal/jenkins</url>
+  </ciManagement>
+  <distributionManagement>
     <repository>
-      <url>http://download.java.net/maven/2/</url>
-      <id>hibernate-support</id>
-      <layout>default</layout>
-      <name>Repository for library Library[hibernate-support]</name>
+      <id>My_Artifactory_Releases</id>
+      <name>My_Artifactory-releases</name>
+      <url>http://my.maven.repository.internal/artifactory/release</url>
     </repository>
-  </repositories>
-  
-
-  
+    <snapshotRepository>
+      <id>My_Artifactory_Snapshots</id>
+      <name>My_Artifactory-snapshots</name>
+      <url>http://my.maven.repository.internal/artifactory/snapshot</url>
+    </snapshotRepository>
+  </distributionManagement>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -330,51 +270,112 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <artifactId>jta</artifactId>
       <version>1.0.1B</version>
     </dependency>
-      <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>ejb3-persistence</artifactId>
-          <version>1.0.1.GA</version>
-      </dependency>
-      <dependency>
-          <groupId>mysql</groupId>
-          <artifactId>mysql-connector-java</artifactId>
-          <version>5.1.14</version>
-      </dependency>
-      <dependency>
-          <artifactId>slf4j-api</artifactId>
-          <groupId>org.slf4j</groupId>
-          <type>jar</type>
-          <version>1.6.1</version>
-      </dependency>
-      <dependency>
-          <groupId>org.slf4j</groupId>
-          <artifactId>log4j-over-slf4j</artifactId>
-          <version>1.6.1</version>
-      </dependency>
-      <dependency>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-simple</artifactId>
-          <version>1.6.1</version>
-      </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>ejb3-persistence</artifactId>
+      <version>1.0.1.GA</version>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.14</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.6.1</version>
+    </dependency>
   </dependencies>
-  
- <distributionManagement>
+  <repositories>
     <repository>
-        <id>My_Artifactory_Releases</id>
-        <name>My_Artifactory-releases</name>
-        <url>http://my.maven.repository.internal/artifactory/release</url>
+      <id>hibernate-support</id>
+      <name>Repository for library Library[hibernate-support]</name>
+      <url>http://download.java.net/maven/2/</url>
     </repository>
-    
-    <snapshotRepository>
-        <id>My_Artifactory_Snapshots</id>
-        <name>My_Artifactory-snapshots</name>
-        <url>http://my.maven.repository.internal/artifactory/snapshot</url>
-    </snapshotRepository>
+  </repositories>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <id>jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <archive>
+            <manifestFile>src/main/resources/Manifest.txt</manifestFile>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>com.footballradar.jpademo.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <finalName>${project.artifactId}-${project.version}</finalName>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+"""
 
-</distributionManagement>
+    val is = getClass().getClassLoader.getResourceAsStream("pom2-json.json")
+    try {
+      val project1: Project = readPOM(is)
+      val xmlStr = project1.toXmlString
+      xmlStr should be (correct)
 
-</project>"""
-   }
-   */
+      val project2 = new Project(scala.xml.XML.loadString(xmlStr))
+      project2.toString should be (project1.toString)
 
+      val is2 = getClass().getClassLoader.getResourceAsStream("pom2-json.xml")
+      try {
+        val project3 = new Project(scala.xml.XML.load(is2))
+        project3.toString should be (project1.toString)
+
+      } finally {
+        is2.close()
+      }
+    } finally {
+      is.close()
+    }
+  }
 }

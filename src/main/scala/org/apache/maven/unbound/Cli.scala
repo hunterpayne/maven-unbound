@@ -20,7 +20,7 @@ object Cli {
     val writer = new FileWriter(new File(at + hoconFileName))
     val options = ConfigRenderOptions.defaults().setOriginComments(false)
     try {
-      writer.write(hocon.atKey(SL.ProjectStr).root().render(options))
+      writer.write(hocon.root().render(options))
       writer.flush()
       println(s"generated ${at}${hoconFileName} from ${at}${xmlFileName}")
     } finally {
@@ -128,12 +128,6 @@ object Cli {
     } else {
 
       recurse(".")
-      if (!args.isEmpty) {
-        val cmd = args.mkString("mvn ", " ", "")
-
-        import sys.process._
-        cmd!
-      }
     }
   }
 }

@@ -1,2 +1,10 @@
-#!/bin/sh
-java -jar target/unbound-1.0.0-exec.jar $@
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+java -jar $DIR/target/unbound-1.0.0-exec.jar $@
+
+if [[ "$*" == *--generate-hocon* ]] || [[ "$*" == *--generate-json* ]] 
+then
+  echo "done"
+else
+  mvn $@
+fi

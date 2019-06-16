@@ -15,72 +15,79 @@ case object Project extends CommonJsonReader {
 
   class ProjectSerializer extends CustomSerializer[Project](format => (
     {
-      case obj @ JObject(fields) =>
-        new Project(
-          readBool(fields, ChildInheritUrl).getOrElse(true),
-          readStr(fields, ModelVersion).getOrElse(DefaultModelVersion),
-          readObject[Parent](obj, ParentStr),
-          readStr(fields, GroupId).get,
-          readStr(fields, ArtifactId).get,
-          readStr(fields, Version).getOrElse(null),
-          readStr(fields, Packaging).getOrElse(JarStr),
-          readStr(fields, Name).getOrElse(null),
-          readStr(fields, Description).getOrElse(null),
-          readStr(fields, UrlStr).getOrElse(null),
-          readStr(fields, InceptionYear).getOrElse(null),
-          readObject[Organization](obj, OrganizationStr),
-          readObjectSequence[License](fields, Licenses),
-          readObjectSequence[Developer](fields, Developers),
-          readObjectSequence[Contributor](fields, Contributors),
-          readObjectSequence[MailingList](fields, MailingLists),
-          readStringSequence(fields, Modules),
-          readObject[Scm](obj, ScmStr),
-          readObject[IssueManagement](obj, IssueManagementStr),
-          readObject[CIManagement](obj, CIManagementStr),
-          readObject[DistributionManagement](obj, DistributionManagementStr),
-          readProperties(obj),
-          readObjectSequence[Dependency](fields, DependencyManagementStr),
-          readObjectSequence[Dependency](fields, Dependencies),
-          readObjectSequence[Repository](fields, Repositories),
-          readObjectSequence[Repository](fields, PluginRepositories),
-          readObject[Build](obj, BuildStr),
-          readObject[Reporting](obj, ReportingStr),
-          readObjectSequence[Profile](fields, Profiles)
-        )
+      case topObj @ JObject(topFields) => 
+        (topObj \ ProjectStr.toString) match {
+          case obj @ JObject(fields) =>
+            new Project(
+              readBool(fields, ChildInheritUrl).getOrElse(true),
+              readStr(fields, ModelVersion).getOrElse(DefaultModelVersion),
+              readObject[Parent](obj, ParentStr),
+              readStr(fields, GroupId).get,
+              readStr(fields, ArtifactId).get,
+              readStr(fields, Version).getOrElse(null),
+              readStr(fields, Packaging).getOrElse(JarStr),
+              readStr(fields, Name).getOrElse(null),
+              readStr(fields, Description).getOrElse(null),
+              readStr(fields, UrlStr).getOrElse(null),
+              readStr(fields, InceptionYear).getOrElse(null),
+              readObject[Organization](obj, OrganizationStr),
+              readObjectSequence[License](fields, Licenses),
+              readObjectSequence[Developer](fields, Developers),
+              readObjectSequence[Contributor](fields, Contributors),
+              readObjectSequence[MailingList](fields, MailingLists),
+              readStringSequence(fields, Modules),
+              readObject[Scm](obj, ScmStr),
+              readObject[IssueManagement](obj, IssueManagementStr),
+              readObject[CIManagement](obj, CIManagementStr),
+              readObject[DistributionManagement](
+                obj, DistributionManagementStr),
+              readProperties(obj),
+              readObjectSequence[Dependency](fields, DependencyManagementStr),
+              readObjectSequence[Dependency](fields, Dependencies),
+              readObjectSequence[Repository](fields, Repositories),
+              readObjectSequence[Repository](fields, PluginRepositories),
+              readObject[Build](obj, BuildStr),
+              readObject[Reporting](obj, ReportingStr),
+              readObjectSequence[Profile](fields, Profiles)
+            )
+        }
     },
     {
       case p: Project =>
-        JObject(Seq[Option[JField]](
-          writeBool(ChildInheritUrl, p.childInheritUrl, true),
-          writeStr(ModelVersion, p.modelVersion, "4.0.0"),
-          writeObject(ParentStr, p.parent),
-          writeStr(GroupId, p.groupId),
-          writeStr(ArtifactId, p.artifactId),
-          writeStr(Version, p.version),
-          writeStr(Packaging, p.packaging, SL.JarStr),
-          writeStr(Name, p.name),
-          writeStr(Description, p.description),
-          writeStr(UrlStr, p.url),
-          writeStr(InceptionYear, p.inceptionYear),
-          writeObject(OrganizationStr, p.organization),
-          writeObjectSequence(Licenses, p.licenses),
-          writeObjectSequence(Developers, p.developers),
-          writeObjectSequence(Contributors, p.contributors),
-          writeObjectSequence(MailingLists, p.mailingLists),
-          writeStringSequence(Modules, p.modules),
-          writeObject(ScmStr, p.scm),
-          writeObject(IssueManagementStr, p.issueManagement),
-          writeObject(CIManagementStr, p.ciManagement),
-          writeObject(DistributionManagementStr, p.distributionManagement),
-          writeProperties(PropertiesStr, p.properties),
-          writeObjectSequence(DependencyManagementStr, p.dependencyManagement),
-          writeObjectSequence(Dependencies, p.dependencies),
-          writeObjectSequence(Repositories, p.repositories),
-          writeObjectSequence(PluginRepositories, p.pluginRepositories),
-          writeObject(BuildStr, p.build),
-          writeObject(ReportingStr, p.reporting),
-          writeObjectSequence(Profiles, p.profiles)
-        ).flatten.toList)
+        JObject(
+          ("project", 
+            JObject(Seq[Option[JField]](
+              writeBool(ChildInheritUrl, p.childInheritUrl, true),
+              writeStr(ModelVersion, p.modelVersion, "4.0.0"),
+              writeObject(ParentStr, p.parent),
+              writeStr(GroupId, p.groupId),
+              writeStr(ArtifactId, p.artifactId),
+              writeStr(Version, p.version),
+              writeStr(Packaging, p.packaging, SL.JarStr),
+              writeStr(Name, p.name),
+              writeStr(Description, p.description),
+              writeStr(UrlStr, p.url),
+              writeStr(InceptionYear, p.inceptionYear),
+              writeObject(OrganizationStr, p.organization),
+              writeObjectSequence(Licenses, p.licenses),
+              writeObjectSequence(Developers, p.developers),
+              writeObjectSequence(Contributors, p.contributors),
+              writeObjectSequence(MailingLists, p.mailingLists),
+              writeStringSequence(Modules, p.modules),
+              writeObject(ScmStr, p.scm),
+              writeObject(IssueManagementStr, p.issueManagement),
+              writeObject(CIManagementStr, p.ciManagement),
+              writeObject(DistributionManagementStr, p.distributionManagement),
+              writeProperties(PropertiesStr, p.properties),
+              writeObjectSequence(
+                DependencyManagementStr, p.dependencyManagement),
+              writeObjectSequence(Dependencies, p.dependencies),
+              writeObjectSequence(Repositories, p.repositories),
+              writeObjectSequence(PluginRepositories, p.pluginRepositories),
+              writeObject(BuildStr, p.build),
+              writeObject(ReportingStr, p.reporting),
+              writeObjectSequence(Profiles, p.profiles)
+            ).flatten.toList)) :: Nil)
     }
   ))
 }
@@ -110,8 +117,9 @@ case class Project(
     extends Writeable with HoconProjectReader {
 
   def this(elem: Elem) = this(
-    elem.attribute(SL.ChildInheritProjectFP).map { _.text }.
-      getOrElse(SL.TrueStr.toString).toLowerCase == SL.TrueStr.toString,
+    emptyToDefaultBool((elem \ SL.ChildInheritProjectFP).text, true),
+    //elem.attribute(SL.ChildInheritProjectFP).map { _.text }.
+      //getOrElse(SL.TrueStr.toString).toLowerCase == SL.TrueStr.toString,
     emptyToNull((elem \ SL.ModelVersion).text),
     (elem \ SL.ParentStr).map { case e: Elem => 
       new Parent(e) }.headOption.getOrElse(null),
@@ -134,13 +142,13 @@ case class Project(
       new MailingList(e) },
     (elem \ SL.Modules \ SL.Module).map { _.text },
     (elem \ SL.ScmStr).map { case e: Elem => 
-      new Scm(elem) }.headOption.getOrElse(null),
+      new Scm(e) }.headOption.getOrElse(null),
     (elem \ SL.IssueManagementStr).map { case e: Elem => 
-      new IssueManagement(elem) }.headOption.getOrElse(null),
+      new IssueManagement(e) }.headOption.getOrElse(null),
     (elem \ SL.CIManagementStr).map { case e: Elem => 
-      new CIManagement(elem) }.headOption.getOrElse(null),
+      new CIManagement(e) }.headOption.getOrElse(null),
     (elem \ SL.DistributionManagementStr).map { case e: Elem => 
-      new DistributionManagement(elem) }.headOption.getOrElse(null),
+      new DistributionManagement(e) }.headOption.getOrElse(null),
     (elem \ SL.PropertiesStr).headOption.map(
       _.child.filter(_.isInstanceOf[Elem]).map { e => 
         (e.label, e.text.trim) }.toMap).getOrElse(Map[String, String]()),

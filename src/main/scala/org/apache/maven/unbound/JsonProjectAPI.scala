@@ -24,7 +24,11 @@ trait CommonJsonReader extends Labels {
     fields.filter { _._1 == key }.headOption.map { case(_, v) => v.as[Boolean] }
 
   protected def readStr(fields: List[JField], key: String): Option[String] = 
-    fields.filter { _._1 == key }.headOption.map { case(_, v) => v.as[String] }
+    fields.filter { _._1 == key }.headOption.map { case(_, v) => v match {
+      case JString(s) => s.replaceAllLiterally("\n", scala.compat.Platform.EOL)
+      case v =>
+        v.as[String].replaceAllLiterally("\n", scala.compat.Platform.EOL)
+    }}
 
   protected def readObject[T](obj: JObject, key: String, defVa: T = null)(
     implicit m: Manifest[T]): T =
@@ -100,6 +104,7 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     new Reporting.ReportingSerializer + 
     new ReportPlugin.ReportPluginSerializer + 
     new Resource.ResourceSerializer +
+    new CIManagement.CIManagementSerializer +
     new Notifier.NotifierSerializer +
     new Contributor.ContributorSerializer +
     new Developer.DeveloperSerializer +
@@ -107,6 +112,7 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     new Parent.ParentSerializer +
     new License.LicenseSerializer +
     new Scm.ScmSerializer +
+    new IssueManagement.IssueManagementSerializer +
     new Site.SiteSerializer +
     new DistributionManagement.DistributionManagementSerializer +
     new Relocation.RelocationSerializer +

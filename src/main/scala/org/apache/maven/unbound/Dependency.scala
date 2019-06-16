@@ -54,7 +54,7 @@ case class Dependency(
     emptyToNull((elem \ SL.Version).text),
     emptyToDefault((elem \ SL.TypeStr).text, SL.JarStr),
     emptyToNull((elem \ SL.Classifier).text), 
-    emptyToNull((elem \ SL.Scope).text),
+    emptyToDefault((elem \ SL.Scope).text, SL.Compile),
     emptyToNull((elem \ SL.SystemPath).text),
     (elem \ SL.Exclusions \ SL.ExclusionStr).map { case e: Elem => 
       new Exclusion(e) },

@@ -118,9 +118,10 @@ case class License(
   distribution: String = License.Repo, comments: String = "") {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.Name).text), emptyToNull((elem \ SL.UrlStr).text),
-    emptyToDefault((elem \ SL.Distribution).text, License.Repo), 
-    (elem \ SL.Comments).text)
+    emptyToNull((elem \ SL.Name).text.trim), 
+    emptyToNull((elem \ SL.UrlStr).text.trim),
+    emptyToDefault((elem \ SL.Distribution).text.trim, License.Repo), 
+    (elem \ SL.Comments).text.trim)
 
   lazy val xml = <license>
                    <name>{name}</name>
@@ -151,10 +152,10 @@ case object Scm extends CommonJsonReader {
           readBool(fields, ChildInheritConnection).getOrElse(true),
           readBool(fields, ChildInheritDeveloperConnection).getOrElse(true),
           readBool(fields, ChildInheritUrl).getOrElse(true),
-          readStr(fields, Connection).get,
-          readStr(fields, DeveloperConnection).get,
+          readStr(fields, Connection).getOrElse(null),
+          readStr(fields, DeveloperConnection).getOrElse(null),
           readStr(fields, Tag).getOrElse(Head),
-          readStr(fields, UrlStr).getOrElse("")
+          readStr(fields, UrlStr).getOrElse(null)
         )
     },
     {
@@ -179,40 +180,62 @@ case class Scm(
   childInheritConnection: Boolean = true,
   childInheritDeveloperConnection: Boolean = true,
   childInheritUrl: Boolean = true,
-  connection: String, developerConnection: String, tag: String = Scm.Head, 
-  url: String) {
+  connection: String = null, developerConnection: String = null, 
+  tag: String = Scm.Head, url: String = null) {
 
   def this(elem: Elem) = this(
-    elem.attribute(SL.ChildInheritConnectionFP).map { _.text }.
-      getOrElse(SL.TrueStr.toString).toLowerCase == SL.TrueStr.toString,
-    elem.attribute(SL.ChildInheritDeveloperConnectionFP).
-      map { _.text }.getOrElse(SL.TrueStr.toString).toLowerCase == 
-      SL.TrueStr.toString,
-    elem.attribute(SL.ChildInheritScmUrlFP).map { _.text }.
-      getOrElse(SL.TrueStr.toString).toLowerCase == SL.TrueStr.toString,
-    emptyToNull((elem \ SL.Connection).text), 
-    emptyToNull((elem \ SL.DeveloperConnection).text),
-    emptyToDefault((elem \ SL.Tag).text, Scm.Head), 
-    emptyToNull((elem \ SL.UrlStr).text))
+    emptyToDefaultBool((elem \ SL.ChildInheritConnectionFP).text.trim, true),
+    emptyToDefaultBool(
+      (elem \ SL.ChildInheritDeveloperConnectionFP).text.trim, true),
+    emptyToDefaultBool((elem \ SL.ChildInheritScmUrlFP).text.trim, true),
+    emptyToNull((elem \ SL.Connection).text.trim),
+    emptyToNull((elem \ SL.DeveloperConnection).text.trim),
+    emptyToDefault((elem \ SL.Tag).text.trim, Scm.Head), 
+    emptyToNull((elem \ SL.UrlStr).text.trim))
 
   lazy val xml = 
-    <scm child.scm.connection.inherit.append.path={if (childInheritConnection) SL.TrueStr else SL.FalseStr} 
-         child.scm.developerConnection.inherit.append.path={if (childInheritConnection) SL.TrueStr else SL.FalseStr} 
-         child.scm.url.inherit.append.path={if (childInheritConnection) SL.TrueStr else SL.FalseStr}>
-      <connection>{connection}</connection>
-      <developerConnection>{developerConnection}</developerConnection>
-      <tag>{tag}</tag>
-      <url>{url}</url>
+    <scm> 
+      { if (!childInheritConnection) <child.scm.connection.inherit.append.path>false</child.scm.connection.inherit.append.path> }
+      { if (!childInheritDeveloperConnection) <child.scm.developerConnection.inherit.append.path>false</child.scm.developerConnection.inherit.append.path> }
+      { if (!childInheritUrl) <child.scm.url.inherit.append.path>false</child.scm.url.inherit.append.path> }
+      { if (connection != null) <connection>{connection}</connection> }
+      { if (developerConnection != null) <developerConnection>{developerConnection}</developerConnection> }
+      { if (tag != null && tag != Scm.Head.toString) <tag>{tag}</tag> }
+      { if (url != null) <url>{url}</url> }
     </scm>
 
   def makeModelObject(): org.apache.maven.model.Scm = {
     val scm = new org.apache.maven.model.Scm()
-    scm.setConnection(connection)
-    scm.setDeveloperConnection(developerConnection)
+    if (connection != null) scm.setConnection(connection)
+    if (developerConnection != null) 
+      scm.setDeveloperConnection(developerConnection)
     scm.setTag(tag)
-    scm.setUrl(url)
+    if (url != null) scm.setUrl(url)
     scm
   }
+}
+
+case object IssueManagement extends CommonJsonReader {
+
+  implicit val formats = JsonReader.formats
+
+  class IssueManagementSerializer 
+      extends CustomSerializer[IssueManagement](format => (
+        {
+          case obj @ JObject(fields) =>
+            new IssueManagement(
+              readStr(fields, SystemStr).getOrElse(null),
+              readStr(fields, UrlStr).getOrElse(null)
+            )
+        },
+        {
+          case i: IssueManagement =>
+            JObject(Seq[Option[JField]](
+              writeStr(SystemStr, i.system),
+              writeStr(UrlStr, i.url)
+            ).flatten.toList)
+        }
+      ))
 }
 
 case class IssueManagement(system: String, url: String) {
@@ -222,14 +245,14 @@ case class IssueManagement(system: String, url: String) {
     emptyToNull((elem \ SL.UrlStr).text))
 
   lazy val xml = <issueManagement>
-                   <system>{system}</system>
-                   <url>{url}</url>
+                   { if (system != null) <system>{system}</system> }
+                   { if (url != null) <url>{url}</url> }
                  </issueManagement>
 
   def makeModelObject(): org.apache.maven.model.IssueManagement = {
     val im = new org.apache.maven.model.IssueManagement()
-    im.setSystem(system)
-    im.setUrl(url)
+    if (system != null) im.setSystem(system)
+    if (url != null) im.setUrl(url)
     im
   }
 }
@@ -275,18 +298,19 @@ case class DistributionManagement(
   def this(elem: Elem) = this(
     (elem \ SL.RepositoryStr).map { case e: Elem => 
       new DistributionRepository(e) }.headOption.getOrElse(null),
-    (elem \ SL.SnapshotRepository).map { case e: Elem => 
+    (elem \ SL.SnapshotRepository.toString).map { case e: Elem => 
       new DistributionRepository(e) }.headOption.getOrElse(null),
-    (elem \ SL.SiteStr).map { case e: Elem => 
+    (elem \ SL.SiteStr.toString).map { case e: Elem => 
       new Site(e) }.headOption.getOrElse(null),
     emptyToNull((elem \ SL.DownloadUrl).text),
-    (elem \ SL.RelocationStr).map { case e: Elem => 
+    (elem \ SL.RelocationStr.toString).map { case e: Elem => 
       new Relocation(e) }.headOption.getOrElse(null),
     emptyToDefault((elem \ SL.Status).text, DistributionManagement.None))
 
   lazy val xml = <distributionManagement>
-                   { repository.xml }
-                   { if (snapshotRepository != null) snapshotRepository.xml }
+                   { if (repository != null) repository.repositoryXml }
+                   { if (snapshotRepository != null) 
+                     snapshotRepository.snapshotXml }
                    { if (site != null) site.xml }
                  </distributionManagement>
 
