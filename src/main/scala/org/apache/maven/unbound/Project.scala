@@ -27,7 +27,7 @@ case object Project extends CommonJsonReader {
               readStr(fields, Version).getOrElse(null),
               readStr(fields, Packaging).getOrElse(JarStr),
               readStr(fields, Name).getOrElse(null),
-              readStr(fields, Description).getOrElse(null),
+              readStr(fields, Description).map { _.trim }.getOrElse(null),
               readStr(fields, UrlStr).getOrElse(null),
               readStr(fields, InceptionYear).getOrElse(null),
               readObject[Organization](obj, OrganizationStr),
@@ -117,20 +117,18 @@ case class Project(
     extends Writeable with HoconProjectReader {
 
   def this(elem: Elem) = this(
-    emptyToDefaultBool((elem \ SL.ChildInheritProjectFP).text, true),
-    //elem.attribute(SL.ChildInheritProjectFP).map { _.text }.
-      //getOrElse(SL.TrueStr.toString).toLowerCase == SL.TrueStr.toString,
-    emptyToNull((elem \ SL.ModelVersion).text),
+    emptyToDefaultBool((elem \ SL.ChildInheritProjectFP).text.trim, true),
+    emptyToNull((elem \ SL.ModelVersion).text.trim),
     (elem \ SL.ParentStr).map { case e: Elem => 
       new Parent(e) }.headOption.getOrElse(null),
-    emptyToNull((elem \ SL.GroupId).text),
-    emptyToNull((elem \ SL.ArtifactId).text),
-    emptyToNull((elem \ SL.Version).text),
-    emptyToDefault((elem \ SL.Packaging).text, SL.JarStr),
-    emptyToNull((elem \ SL.Name).text),
-    emptyToNull((elem \ SL.Description).text),
-    emptyToNull((elem \ SL.UrlStr).text),
-    emptyToNull((elem \ SL.InceptionYear).text),
+    emptyToNull((elem \ SL.GroupId).text.trim),
+    emptyToNull((elem \ SL.ArtifactId).text.trim),
+    emptyToNull((elem \ SL.Version).text.trim),
+    emptyToDefault((elem \ SL.Packaging).text.trim, SL.JarStr),
+    emptyToNull((elem \ SL.Name).text.trim),
+    emptyToNull((elem \ SL.Description).text.trim),
+    emptyToNull((elem \ SL.UrlStr).text.trim),
+    emptyToNull((elem \ SL.InceptionYear).text.trim),
     (elem \ SL.OrganizationStr).map { case e: Elem =>
       new Organization(e) }.headOption.getOrElse(null),
     (elem \ SL.Licenses \ SL.LicenseStr).map { case e: Elem => new License(e) },
@@ -152,7 +150,7 @@ case class Project(
     (elem \ SL.PropertiesStr).headOption.map(
       _.child.filter(_.isInstanceOf[Elem]).map { e => 
         (e.label, e.text.trim) }.toMap).getOrElse(Map[String, String]()),
-    (elem \ SL.DependencyManagementStr \ SL.Dependencies \ 
+    (elem \ SL.DependencyManagementStr \ SL.Dependencies \
       SL.DependencyStr).map { case e: Elem => new Dependency(e) },
     (elem \ SL.Dependencies \ SL.DependencyStr).map { case e: Elem =>
       new Dependency(e) },
@@ -201,7 +199,7 @@ case class Project(
                    { if (distributionManagement != null) distributionManagement.xml }
                    { if (!properties.isEmpty) <properties>
                      { properties.map { case(k, v) => 
-                         PropertyValue(k, v).xml } }
+                       PropertyValue(k, v).xml } }
                    </properties> }
                    { if (!dependencyManagement.isEmpty) <dependencyManagement>
                      <dependencies>

@@ -70,6 +70,11 @@ package object unbound {
               //_.text
             //}.mkString(scala.compat.Platform.EOL))
 
+            // an Archiver
+          } else if (e.label == "archive") {
+            val a = new Archiver(e)
+            ConfigFactory.parseString(JsonWriter.writeArchiver(a)).root()
+
             // a Dependency object
           } else if (e.child.forall {
             case ele: Elem => ele.label == SL.DependencyStr.toString
@@ -163,61 +168,71 @@ package object unbound {
   def configToElem(config: Config): Elem = {
     import scala.collection.JavaConverters._
 
-    val children: Seq[(String, ConfigValue)] =
-      config.root().asScala.toSeq
-    //config.entrySet().asScala.toSeq
+    val children: Seq[(String, ConfigValue)] = config.root().asScala.toSeq
 
-    def makeElem(key: String, value: ConfigValue): Elem = value match {
-      case l: ConfigList =>
-        val childElems = l.asScala.map { it => makeElem(singular(key), it) }
-        new Elem(null, key, Null, TopScope, childElems: _*)
-      case m: ConfigObject =>
-        val mS = m.asScala
-        var elemKey = key
-        var attrs: MetaData = Null
-        val childElems =
-          if (mS.values.forall { v => 
-            v.valueType() == ConfigValueType.STRING }) {
-            if (mS.keySet.forall { isDependencyProperty(_) }) {
-              // a Dependency object (for configurations)
-              elemKey = SL.DependencyStr
-              mS.map { case(k, v) => new Elem(
-                null, k, Null, TopScope, Text(removeQuotes(v.render()))) 
-              }.toSeq
-            } else if (mS.keySet.find { 
-              _ == SL.Implementation.toString }.isDefined) {
-              // a resource transformer
-              elemKey = SL.Transformer
-              val impl = 
-                mS.find { case(k, v) => 
-                  k == SL.Implementation.toString }.map { _._2 }.get
-              attrs = new UnprefixedAttribute(
-                SL.Implementation, removeQuotes(impl.render()), Null)
-              mS.filter { case(k, _) =>
-                k != SL.Implementation.toString }.map { case(k, v) => 
-                  new Elem(
+    def makeElem(key: String, value: ConfigValue): Elem =
+      if (key == "archive") {
+        HoconReader.readArchiver(value.atKey("archive")).xml
+      } else {
+        value match {
+          case l: ConfigList =>
+            val childElems = l.asScala.map { it => makeElem(singular(key), it) }
+            new Elem(null, key, Null, TopScope, childElems: _*)
+          case m: ConfigObject =>
+            val mS = m.asScala
+            var elemKey = key
+            var attrs: MetaData = Null
+            val childElems =
+              if (mS.values.forall { v =>
+                v.valueType() == ConfigValueType.STRING }) {
+                if (mS.keySet.forall { isDependencyProperty(_) }) {
+                  // a Dependency object (for configurations)
+                  elemKey = SL.DependencyStr
+                  mS.map { case(k, v) => new Elem(
                     null, k, Null, TopScope, Text(removeQuotes(v.render())))
-              }.toSeq
-            } else {
-              // a Properties object
-              mS.map { case(k, v) =>
-                new Elem(
-                  null, SL.PropertyStr, Null, TopScope,
-                  new Elem(null, SL.Name, Null, TopScope, new Text(k)),
-                  new Elem(
-                    null, SL.ValueStr, Null, TopScope,
-                    new Text(removeQuotes(v.render()))))
-              }.toSeq
-            }
-          } else {
-            // a normal Map (ie non-string value type)
-            mS.map { case(k, v) => makeElem(k, v) }.toSeq
-          }
-        new Elem(null, elemKey, attrs, TopScope, childElems: _*)
-      case v: ConfigValue => 
-        val value = removeQuotes(v.render())
-        new Elem(null, key, Null, TopScope, new Text(value))
-    }
+                  }.toSeq
+                } else if (mS.keySet.find {
+                  _ == SL.Implementation.toString }.isDefined) {
+                  // a resource transformer
+                  elemKey = SL.Transformer
+                  val impl =
+                    mS.find { case(k, v) =>
+                      k == SL.Implementation.toString }.map { _._2 }.get
+                  attrs = new UnprefixedAttribute(
+                    SL.Implementation, removeQuotes(impl.render()), Null)
+                  mS.filter { case(k, _) =>
+                    k != SL.Implementation.toString }.map { case(k, v) =>
+                      new Elem(
+                        null, k, Null, TopScope, Text(removeQuotes(v.render())))
+                  }.toSeq
+                } else if (mS.keySet.find { 
+                  _ == SL.Archive.toString }.isDefined) {
+                  // a Maven archiver
+                  val arch = HoconReader.readArchiver(m.toConfig())
+                  Seq(arch.xml) ++
+                  mS.filter { _._1 == "archive" }.map { case(k, v) =>
+                    makeElem(k, v) }
+                } else {
+                  // a Properties object
+                  mS.map { case(k, v) =>
+                    new Elem(
+                      null, SL.PropertyStr, Null, TopScope,
+                      new Elem(null, SL.Name, Null, TopScope, new Text(k)),
+                      new Elem(
+                        null, SL.ValueStr, Null, TopScope,
+                        new Text(removeQuotes(v.render()))))
+                  }.toSeq
+                }
+              } else {
+                // a normal Map (ie non-string value type)
+                mS.map { case(k, v) => makeElem(k, v) }.toSeq
+              }
+            new Elem(null, elemKey, attrs, TopScope, childElems: _*)
+          case v: ConfigValue =>
+            val value = removeQuotes(v.render())
+            new Elem(null, key, Null, TopScope, new Text(value))
+        }
+      }
 
     val childElems: Seq[Elem] =
       children.map { entry => makeElem(entry._1, entry._2) }
@@ -229,8 +244,7 @@ package object unbound {
 
     def fromJson(v: JValue): Any =
       v match {
-        case s: JString => 
-          s.s //.replaceAllLiterally("\n", scala.compat.Platform.EOL)
+        case s: JString => s.s
         case b: JBool => b.value
         case d: JDecimal => d.num
         case d: JDouble => d.num

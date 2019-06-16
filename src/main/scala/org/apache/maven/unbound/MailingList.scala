@@ -15,9 +15,9 @@ case object MailingList extends CommonJsonReader {
     {
       case JObject(fields) =>
         new MailingList(
-          readStr(fields, Name).get,
-          readStr(fields, Subscribe).get,
-          readStr(fields, Unsubscribe).get,
+          readStr(fields, Name).getOrElse(null),
+          readStr(fields, Subscribe).getOrElse(null),
+          readStr(fields, Unsubscribe).getOrElse(null),
           readStr(fields, Post).getOrElse(null),
           readStr(fields, Archive).getOrElse(null),
           readStringSequence(fields, OtherArchives)
@@ -42,17 +42,20 @@ case class MailingList(
   archive: String = null, otherArchives: Seq[String] = Seq[String]()) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.Name).text), emptyToNull((elem \ SL.Subscribe).text),
-    emptyToNull((elem \ SL.Unsubscribe).text),
-    emptyToNull((elem \ SL.Post).text),
-    emptyToNull((elem \ SL.Archive).text),
-    (elem \ SL.OtherArchives).map(e => (e \ SL.OtherArchive).text))
+    emptyToNull((elem \ SL.Name).text.trim), 
+    emptyToNull((elem \ SL.Subscribe).text.trim),
+    emptyToNull((elem \ SL.Unsubscribe).text.trim),
+    emptyToNull((elem \ SL.Post).text.trim),
+    emptyToNull((elem \ SL.Archive).text.trim),
+    (elem \ SL.OtherArchives \ SL.OtherArchive).map { case e: Elem => 
+      e.text.trim }
+  )
 
   lazy val xml = <mailingList>
                    <name>{name}</name>
                    <subscribe>{subscribe}</subscribe>
                    <unsubscribe>{unsubscribe}</unsubscribe>
-                   <post>{post}</post>
+                   { if (post != null) <post>{post}</post> }
                    { if (archive != null) <archive>{archive}</archive> }
                    { if (!otherArchives.isEmpty) <otherArchives>
                      { otherArchives.map { OtherArchive(_).xml } }

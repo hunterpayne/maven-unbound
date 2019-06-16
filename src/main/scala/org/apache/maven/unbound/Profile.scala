@@ -364,14 +364,14 @@ case class BuildBase(
         <resources> { resources.map { _.xml } } </resources> }
       { if (!Build.isDefaultTestResources(testResources))
         <testResources> { testResources.map { _.testXml } } </testResources> }
-      <directory>{directory}</directory>
+      { if (directory != null && directory != SL.Target.toString)
+        <directory>{directory}</directory> }
       { if (!filters.isEmpty) 
         <filters> { filters.map { Filter(_).xml } } </filters> }
       { if (!pluginManagement.isEmpty) <pluginManagement>
         { pluginManagement.map { _.xml } }
         </pluginManagement> }
-      { if (!plugins.isEmpty) 
-        <plugins> { plugins.map { _.xml } } </plugins> }
+      { if (!plugins.isEmpty) <plugins> { plugins.map { _.xml } } </plugins> }
     </build>
 
   def makeModelObject(): org.apache.maven.model.BuildBase = {

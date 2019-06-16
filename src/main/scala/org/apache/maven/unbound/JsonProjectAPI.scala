@@ -123,7 +123,10 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     new BuildBase.BuildBaseSerializer +
     new Activation.ActivationSerializer +
     new ActivationOS.ActivationOSSerializer +
-    new Profile.ProfileSerializer
+    new Profile.ProfileSerializer +
+    new Archiver.ArchiverSerializer +
+    new ManifestObj.ManifestSerializer +
+    new ManifestSection.ManifestSectionSerializer
 }
 
 object JsonReader extends JsonProjectAPI {
@@ -149,4 +152,6 @@ object JsonWriter extends JsonProjectAPI {
     project: Project, os: OutputStream, enc: String = "UTF-8"): Unit =
     writePretty[Project, OutputStreamWriter](
       project, new OutputStreamWriter(os, enc))
+
+  def writeArchiver(archiver: Archiver): String = writePretty(archiver)
 }

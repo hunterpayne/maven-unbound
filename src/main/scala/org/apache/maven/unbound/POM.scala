@@ -337,8 +337,8 @@ case object Site extends CommonJsonReader {
       case obj @ JObject(fields) =>
         new Site(
           readBool(fields, ChildInheritUrl).getOrElse(true),
-          readStr(fields, Id).get,
-          readStr(fields, Name).get,
+          readStr(fields, Id).getOrElse(null),
+          readStr(fields, Name).getOrElse(null),
           readStr(fields, UrlStr).getOrElse(null)
         )
     },
@@ -358,23 +358,25 @@ case class Site(
   childInheritUrl: Boolean = true, id: String, name: String, url: String) {
 
   def this(elem: Elem) = this(
-    elem.attribute(SL.ChildInheritSiteUrlFP).map { _.text }.
-      getOrElse(SL.TrueStr.toString).toLowerCase == SL.TrueStr.toString,
-    emptyToNull((elem \ SL.Id).text), 
-    emptyToNull((elem \ SL.Name).text), 
-    emptyToNull((elem \ SL.UrlStr).text))
+    emptyToDefaultBool((elem \ SL.ChildInheritSiteUrlFP).text.trim, true),
+    //elem.attribute(SL.ChildInheritSiteUrlFP).map { _.text }.
+    //getOrElse(SL.TrueStr.toString).toLowerCase == SL.TrueStr.toString,
+    emptyToNull((elem \ SL.Id).text.trim), 
+    emptyToNull((elem \ SL.Name).text.trim), 
+    emptyToNull((elem \ SL.UrlStr).text.trim))
 
   lazy val xml = 
-    <site child.site.url.inherit.append.path={if (childInheritUrl) SL.TrueStr else SL.FalseStr}>
-      <id>{id}</id>
-      <name>{name}</name>
+    <site>
+      { if (!childInheritUrl) <child.site.url.inherit.append.path>false</child.site.url.inherit.append.path> }
+      { if (id != null) <id>{id}</id> }
+      { if (name != null) <name>{name}</name> }
       { if (url != null) <url>{url}</url> }
     </site>
 
   def makeModelObject(): org.apache.maven.model.Site = {
     val site = new org.apache.maven.model.Site()
-    site.setId(id)
-    site.setName(name)
+    if (id != null) site.setId(id)
+    if (name != null) site.setName(name)
     if (url != null) site.setUrl(url)
     site
   }

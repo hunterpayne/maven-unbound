@@ -66,7 +66,16 @@ trait HoconProjectReader {
         config.as[Reporting]("reporting"))
     }
 
+  implicit val manifestSectionConfigReader: ValueReader[ManifestSection] = 
+    ValueReader.relative { config =>
+      ManifestSection(
+        config.as[String]("name"),
+        config.as[Map[String, String]]("manifestEntries"))
+    }
+
   def readPOM(conf: Config): Project = conf.as[Project]("project")
+
+  def readArchiver(conf: Config): Archiver = conf.as[Archiver]("archive")
 }
 
 object HoconReader extends HoconProjectReader

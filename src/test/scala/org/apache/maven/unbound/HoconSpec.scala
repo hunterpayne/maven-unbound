@@ -323,11 +323,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
         </executions>
         <configuration>
           <archive>
-            <manifestFile>src/main/resources/Manifest.txt</manifestFile>
             <manifest>
               <addClasspath>true</addClasspath>
               <mainClass>com.footballradar.jpademo.App</mainClass>
             </manifest>
+            <manifestFile>src/main/resources/Manifest.txt</manifestFile>
           </archive>
         </configuration>
       </plugin>

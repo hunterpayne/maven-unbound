@@ -160,9 +160,9 @@ case class Build(
       { if (!filters.isEmpty) <filters>
         { filters.map { Filter(_).xml } }
         </filters> }
-      { if (!pluginManagement.isEmpty) <pluginManagement>
+      { if (!pluginManagement.isEmpty) <pluginManagement><plugins>
         { pluginManagement.map { _.xml } }
-        </pluginManagement> }
+        </plugins></pluginManagement> }
       { if (!plugins.isEmpty) <plugins>
         { plugins.map { _.xml } }
         </plugins> }

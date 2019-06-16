@@ -328,11 +328,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
         </executions>
         <configuration>
           <archive>
-            <manifestFile>src/main/resources/Manifest.txt</manifestFile>
             <manifest>
               <addClasspath>true</addClasspath>
               <mainClass>com.footballradar.jpademo.App</mainClass>
             </manifest>
+            <manifestFile>src/main/resources/Manifest.txt</manifestFile>
           </archive>
         </configuration>
       </plugin>
@@ -367,6 +367,722 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       project2.toString should be (project1.toString)
 
       val is2 = getClass().getClassLoader.getResourceAsStream("pom2-json.xml")
+      try {
+        val project3 = new Project(scala.xml.XML.load(is2))
+        project3.toString should be (project1.toString)
+
+      } finally {
+        is2.close()
+      }
+    } finally {
+      is.close()
+    }
+  }
+
+  it should "load a 3rd pom from json" in {
+    val correct = """<project 
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.maven.lifecycle.test</groupId>
+  <artifactId>mojo-configuration</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+  <name>project-with-additional-lifecycle-elements</name>
+  <url>http://maven.apache.org</url>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.its.plugins</groupId>
+        <artifactId>maven-it-plugin</artifactId>
+        <version>0.1</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>xpp3-reader</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+"""
+
+    val is = getClass().getClassLoader.getResourceAsStream("pom3-json.json")
+    try {
+      val project1: Project = readPOM(is)
+      val xmlStr = project1.toXmlString
+      xmlStr should be (correct)
+
+      val project2 = new Project(scala.xml.XML.loadString(xmlStr))
+      project2.toString should be (project1.toString)
+
+      val is2 = getClass().getClassLoader.getResourceAsStream("pom3-json.xml")
+      try {
+        val project3 = new Project(scala.xml.XML.load(is2))
+        project3.toString should be (project1.toString)
+
+      } finally {
+        is2.close()
+      }
+    } finally {
+      is.close()
+    }
+  }
+
+  it should "load a 4th pom from json" in {
+    val correct = """<project 
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-parent</artifactId>
+    <version>11</version>
+    <relativePath>../pom/maven/pom.xml</relativePath>
+  </parent>
+  <groupId>org.apache.maven</groupId>
+  <artifactId>maven</artifactId>
+  <version>3.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Apache Maven</name>
+  <description>
+    Maven is a project development management and
+    comprehension tool. Based on the concept of a project object model:
+    builds, dependency management, documentation creation, site
+    publication, and distribution publication are all controlled from
+    the declarative file. Maven can be extended by plugins to utilise a
+    number of other development tools for reporting or the build
+    process.
+  </description>
+  <url>http://maven.apache.org/</url>
+  <inceptionYear>2001</inceptionYear>
+  <mailingLists>
+    <mailingList>
+      <name>Maven Developer List</name>
+      <subscribe>dev-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@maven.apache.org</unsubscribe>
+      <post>dev@maven.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-dev</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/dev@maven.apache.org/</otherArchive>
+        <otherArchive>http://www.nabble.com/Maven-Developers-f179.html</otherArchive>
+        <otherArchive>http://maven.dev.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven User List</name>
+      <subscribe>users-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>users-unsubscribe@maven.apache.org</unsubscribe>
+      <post>users@maven.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-users</archive>
+      <otherArchives>
+        <otherArchive>
+          http://www.mail-archive.com/users@maven.apache.org/
+        </otherArchive>
+        <otherArchive>http://www.nabble.com/Maven---Users-f178.html</otherArchive>
+        <otherArchive>http://maven.users.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Issues List</name>
+      <subscribe>issues-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>issues-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-issues/</archive>
+      <otherArchives>
+        <otherArchive>
+          http://www.mail-archive.com/issues@maven.apache.org
+        </otherArchive>
+        <otherArchive>http://www.nabble.com/Maven---Issues-f15573.html</otherArchive>
+        <otherArchive>http://maven.issues.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Commits List</name>
+      <subscribe>commits-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-commits</archive>
+      <otherArchives>
+        <otherArchive>
+          http://www.mail-archive.com/commits@maven.apache.org
+        </otherArchive>
+        <otherArchive>http://www.nabble.com/Maven---Commits-f15575.html</otherArchive>
+        <otherArchive>http://maven.commits.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Announcements List</name>
+      <subscribe>announce-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>announce-unsubscribe@maven.apache.org</unsubscribe>
+      <post>announce@maven.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-announce/</archive>
+      <otherArchives>
+        <otherArchive>
+          http://www.mail-archive.com/announce@maven.apache.org
+        </otherArchive>
+        <otherArchive>
+          http://www.nabble.com/Maven-Announcements-f15617.html
+        </otherArchive>
+        <otherArchive>http://maven.announce.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Notifications List</name>
+      <subscribe>notifications-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>notifications-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>
+        http://mail-archives.apache.org/mod_mbox/maven-notifications/
+      </archive>
+      <otherArchives>
+        <otherArchive>
+          http://www.mail-archive.com/notifications@maven.apache.org
+        </otherArchive>
+        <otherArchive>
+          http://www.nabble.com/Maven---Notifications-f15574.html
+        </otherArchive>
+        <otherArchive>http://maven.notifications.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+  <modules>
+    <module>maven-core</module>
+    <module>apache-maven</module>
+    <module>maven-model</module>
+    <module>maven-plugin-api</module>
+    <module>maven-project</module>
+    <module>maven-reporting-api</module>
+    <module>maven-project-builder</module>
+    <module>maven-mercury</module>
+    <module>maven-embedder</module>
+    <module>maven-toolchain</module>
+    <module>maven-compat</module>
+    <module>maven-repository</module>
+    <module>maven-repository-mercury</module>
+  </modules>
+  <scm>
+    <connection>
+      scm:svn:http://svn.apache.org/repos/asf/maven/components/trunk
+    </connection>
+    <developerConnection>
+      scm:svn:https://svn.apache.org/repos/asf/maven/components/trunk
+    </developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/maven/components/trunk</url>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.codehaus.org/browse/MNG</url>
+  </issueManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scp://people.apache.org/www/maven.apache.org/ref/${project.version}/</url>
+    </site>
+  </distributionManagement>
+  <properties>
+    <securityDispatcherVersion>1.2</securityDispatcherVersion>
+    <commonsCliVersion>1.0</commonsCliVersion>
+    <plexusInteractivityVersion>1.0-alpha-6</plexusInteractivityVersion>
+    <plexusUtilsVersion>1.5.8</plexusUtilsVersion>
+    <modelloVersion>1.0.1-SNAPSHOT</modelloVersion>
+    <easyMockVersion>1.2_Java1.3</easyMockVersion>
+    <modelBuilderVersion>1.7-SNAPSHOT</modelBuilderVersion>
+    <plexusJetty6Version>1.6</plexusJetty6Version>
+    <plexusWebdavVersion>1.0</plexusWebdavVersion>
+    <jxpathVersion>1.3</jxpathVersion>
+    <junitVersion>3.8.1</junitVersion>
+    <plexusPluginManagerVersion>1.0-alpha-1</plexusPluginManagerVersion>
+    <plexusInterpolationVersion>1.1</plexusInterpolationVersion>
+    <mercuryMp3Version>1.0-alpha-1</mercuryMp3Version>
+    <mercuryVersion>1.0-alpha-6-SNAPSHOT</mercuryVersion>
+    <wagonVersion>1.0-beta-4</wagonVersion>
+    <classWorldsVersion>1.3</classWorldsVersion>
+    <woodstoxVersion>3.2.6</woodstoxVersion>
+    <doxiaVersion>1.0-alpha-9</doxiaVersion>
+    <plexusVersion>1.0-beta-3.0.7</plexusVersion>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-mercury</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-lifecycle</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-reporting-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-profile</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-project</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-toolchain</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-embedder</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-project-builder</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-repository</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-compat</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>${plexusUtilsVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-container-default</artifactId>
+        <version>${plexusVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-component-annotations</artifactId>
+        <version>${plexusVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-classworlds</artifactId>
+        <version>${classWorldsVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-interpolation</artifactId>
+        <version>${plexusInterpolationVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-interactivity-api</artifactId>
+        <version>${plexusInteractivityVersion}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-component-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.plexus</groupId>
+        <artifactId>plexus-jetty6</artifactId>
+        <version>${plexusJetty6Version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.spice</groupId>
+        <artifactId>plexus-webdav</artifactId>
+        <version>${plexusWebdavVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-provider-api</artifactId>
+        <version>${wagonVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-file</artifactId>
+        <version>${wagonVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-http-lightweight</artifactId>
+        <version>${wagonVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>${wagonVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh-external</artifactId>
+        <version>${wagonVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-sink-api</artifactId>
+        <version>${doxiaVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.spice</groupId>
+        <artifactId>model-builder</artifactId>
+        <version>${modelBuilderVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.woodstox</groupId>
+        <artifactId>wstx-asl</artifactId>
+        <version>${woodstoxVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-cli</groupId>
+        <artifactId>commons-cli</artifactId>
+        <version>${commonsCliVersion}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>commons-jxpath</groupId>
+        <artifactId>commons-jxpath</artifactId>
+        <version>${jxpathVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-artifact</artifactId>
+        <version>${mercuryVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-external</artifactId>
+        <version>${mercuryVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-plexus</artifactId>
+        <version>${mercuryVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-repo-virtual</artifactId>
+        <version>${mercuryVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.mercury</groupId>
+        <artifactId>mercury-mp3-cli</artifactId>
+        <version>${mercuryMp3Version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.plexus</groupId>
+        <artifactId>plexus-sec-dispatcher</artifactId>
+        <version>${securityDispatcherVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-repo-local-m2</artifactId>
+        <version>${mercuryVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-repo-remote-m2</artifactId>
+        <version>${mercuryVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-md-sat</artifactId>
+        <version>${mercuryVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-util</artifactId>
+        <version>${mercuryVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-transport-http</artifactId>
+        <version>${mercuryVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-transport-http</artifactId>
+        <version>${mercuryVersion}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.plexus</groupId>
+        <artifactId>plexus-plugin-manager</artifactId>
+        <version>${plexusPluginManagerVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>easymock</groupId>
+        <artifactId>easymock</artifactId>
+        <version>${easyMockVersion}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junitVersion}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-component-metadata</artifactId>
+          <version>${plexusVersion}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>generate-metadata</goal>
+                <goal>generate-test-metadata</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.0.2</version>
+          <configuration>
+            <source>1.5</source>
+            <target>1.5</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <tagBase>https://svn.apache.org/repos/asf/maven/components/tags</tagBase>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.modello</groupId>
+          <artifactId>modello-maven-plugin</artifactId>
+          <version>${modelloVersion}</version>
+          <executions>
+            <execution>
+              <id>site-docs</id>
+              <phase>pre-site</phase>
+              <goals>
+                <goal>xdoc</goal>
+                <goal>xsd</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>standard</id>
+              <goals>
+                <goal>java</goal>
+                <goal>xpp3-reader</goal>
+                <goal>xpp3-writer</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <useJava5>true</useJava5>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>1.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.4.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2-beta-2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.4-SNAPSHOT</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  <profiles>
+    <profile>
+      <id>osgi</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>maven-bundle-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>manifest</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.1</version>
+            <configuration>
+              <archive>
+                <manifestFile>
+                  ${project.build.outputDirectory}/META-INF/MANIFEST.MF
+                </manifestFile>
+              </archive>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>make-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+              </execution>
+            </executions>
+            <inherited>false</inherited>
+            <configuration>
+              <finalName>maven-${project.version}-src</finalName>
+              <tarLongFileMode>gnu</tarLongFileMode>
+              <descriptors>
+                <descriptor>src/main/assembly/src.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>strict</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <version>1.0-alpha-3</version>
+            <executions>
+              <execution>
+                <id>enforce-jdk-15</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireJavaVersion>
+                      <version>1.5</version>
+                    </requireJavaVersion>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
+"""
+
+    val is = getClass().getClassLoader.getResourceAsStream("pom4-json.json")
+    try {
+      val project1: Project = readPOM(is)
+      val xmlStr = project1.toXmlString
+      xmlStr should be (correct)
+
+      val project2 = new Project(scala.xml.XML.loadString(xmlStr))
+      project2.toString should be (project1.toString)
+
+      val is2 = getClass().getClassLoader.getResourceAsStream("pom4-json.xml")
       try {
         val project3 = new Project(scala.xml.XML.load(is2))
         project3.toString should be (project1.toString)
