@@ -1,12 +1,28 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.maven.unbound
 
 import java.io.StringReader
+import java.util.Locale
 
 import scala.xml.Elem
 
-import com.typesafe.config.{ Config, ConfigObject, ConfigFactory }
-
+import com.typesafe.config.{ Config, ConfigFactory, ConfigObject }
 import org.json4s._
 
 case object Build extends CommonJsonReader {
@@ -34,10 +50,10 @@ case object Build extends CommonJsonReader {
           readObjectSequence[Extension](fields, Extensions),
           readStr(fields, DefaultGoal).getOrElse(null),
           readObjectSequence[Resource](
-            fields, Resources, 
+            fields, Resources,
             Seq[Resource](new Resource(defResourcesDir))),
           readObjectSequence[Resource](
-            fields, TestResources, 
+            fields, TestResources,
             Seq[Resource](new Resource(defTestResourcesDir))),
           readStr(fields, DirectoryStr).getOrElse(Target),
           readStr(fields, FinalName).getOrElse(null),
@@ -58,10 +74,10 @@ case object Build extends CommonJsonReader {
             TestOutputDirectory, b.testOutputDirectory, defTestOutputDir),
           writeObjectSequence(Extensions, b.extensions),
           writeStr(DefaultGoal, b.defaultGoal),
-          if (!isDefaultResources(b.resources)) 
+          if (!isDefaultResources(b.resources))
             writeObjectSequence(Resources, b.resources)
           else None,
-          if (!isDefaultResources(b.testResources)) 
+          if (!isDefaultResources(b.testResources))
             writeObjectSequence(TestResources, b.testResources)
           else None,
           writeStr(DirectoryStr, b.directory, Target),
@@ -87,20 +103,20 @@ case object Build extends CommonJsonReader {
 }
 
 case class Build(
-  sourceDirectory: String = Build.defSourceDir, 
+  sourceDirectory: String = Build.defSourceDir,
   scriptSourceDirectory: String = Build.defScriptDir,
   testSourceDirectory: String = Build.defTestDir,
-  outputDirectory: String = Build.defOutputDir, 
+  outputDirectory: String = Build.defOutputDir,
   testOutputDirectory: String = Build.defTestOutputDir,
-  extensions: Seq[Extension] = Seq[Extension](), 
+  extensions: Seq[Extension] = Seq[Extension](),
   defaultGoal: String = null,
   resources: Seq[Resource] = Seq[Resource](new Resource(Build.defResourcesDir)),
-  testResources: Seq[Resource] = 
+  testResources: Seq[Resource] =
     Seq[Resource](new Resource(Build.defTestResourcesDir)),
-  directory: String = SL.Target, 
-  finalName: String = null, /*${artifactId}-${version} */
-  filters: Seq[String] = Seq[String](), 
-  pluginManagement: Seq[Plugin] = Seq[Plugin](), 
+  directory: String = SL.Target,
+  finalName: String = null, /* ${artifactId}-${version} */
+  filters: Seq[String] = Seq[String](),
+  pluginManagement: Seq[Plugin] = Seq[Plugin](),
   plugins: Seq[Plugin] = Seq[Plugin]()) {
 
   def this(elem: Elem) = this(
@@ -110,46 +126,46 @@ case class Build(
     emptyToDefault((elem \ SL.OutputDirectory).text, Build.defOutputDir),
     emptyToDefault(
       (elem \ SL.TestOutputDirectory).text, Build.defTestOutputDir),
-    (elem \ SL.Extensions \ SL.ExtensionStr).map { case e: Elem => 
+    (elem \ SL.Extensions \ SL.ExtensionStr).map { case e: Elem =>
       new Extension(e)},
     emptyToNull((elem \ SL.DefaultGoal).text),
     ensureDefault(
-      (elem \ SL.Resources \ SL.ResourceStr).map { case e: Elem => 
+      (elem \ SL.Resources \ SL.ResourceStr).map { case e: Elem =>
         new Resource(e) },
       new Resource(Build.defResourcesDir)),
     ensureDefault(
       (elem \ SL.TestResources \ SL.TestResource).map { case e: Elem =>
         new Resource(e) },
       new Resource(Build.defTestResourcesDir)),
-    emptyToDefault((elem \ SL.DirectoryStr).text, SL.Target), 
+    emptyToDefault((elem \ SL.DirectoryStr).text, SL.Target),
     emptyToNull((elem \ SL.FinalName).text),
     (elem \ SL.Filters \ SL.FilterStr).map { _.text },
-    (elem \ SL.PluginManagement \ SL.Plugins \ SL.PluginStr).map { 
+    (elem \ SL.PluginManagement \ SL.Plugins \ SL.PluginStr).map {
       case e: Elem => new Plugin(e) },
     (elem \ SL.Plugins \ SL.PluginStr).map { case e: Elem => new Plugin(e) })
 
-  lazy val xml = 
+  lazy val xml =
     <build>
-      { if (sourceDirectory != null && sourceDirectory != Build.defSourceDir) 
+      { if (sourceDirectory != null && sourceDirectory != Build.defSourceDir)
         <sourceDirectory>{sourceDirectory}</sourceDirectory> }
-      { if (scriptSourceDirectory != null && 
+      { if (scriptSourceDirectory != null &&
         scriptSourceDirectory != Build.defScriptDir)
         <scriptSourceDirectory>{scriptSourceDirectory}</scriptSourceDirectory> }
-      { if (testSourceDirectory != null && 
+      { if (testSourceDirectory != null &&
         testSourceDirectory != Build.defTestDir)
         <testSourceDirectory>{testSourceDirectory}</testSourceDirectory> }
-      { if (outputDirectory != null && outputDirectory != Build.defOutputDir) 
+      { if (outputDirectory != null && outputDirectory != Build.defOutputDir)
         <outputDirectory>{outputDirectory}</outputDirectory> }
-      { if (testOutputDirectory != null && 
+      { if (testOutputDirectory != null &&
         testOutputDirectory != Build.defTestOutputDir)
         <testOutputDirectory>{testOutputDirectory}</testOutputDirectory> }
       { if (!extensions.isEmpty) <extensions>
         { extensions.map { _.xml } }
         </extensions> }
       { if (defaultGoal != null) <defaultGoal>{defaultGoal}</defaultGoal> }
-      { if (!resources.isEmpty && !Build.isDefaultResources(resources)) 
+      { if (!resources.isEmpty && !Build.isDefaultResources(resources))
         <resources> { resources.map { _.xml } } </resources> }
-      { if (!testResources.isEmpty && 
+      { if (!testResources.isEmpty &&
         !Build.isDefaultTestResources(testResources))
         <testResources> { testResources.map { _.testXml } } </testResources> }
       { if (directory != null && directory != SL.Target.toString)
@@ -189,13 +205,13 @@ case class Build(
 }
 
 case class Filter(filter: String) {
-  lazy val xml = <filter>{filter}</filter> 
+  lazy val xml = <filter>{filter}</filter>
 }
 
 case class Extension(groupId: String, artifactId: String, version: String) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.GroupId).text), 
+    emptyToNull((elem \ SL.GroupId).text),
     emptyToNull((elem \ SL.ArtifactId).text),
     emptyToNull((elem \ SL.Version).text))
 
@@ -249,8 +265,9 @@ case class Resource(
   def this(name: String) = this(name, false, SL.Dot, Seq[String](name))
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.TargetPath).text), 
-    emptyToDefault((elem \ SL.Filtering).text.toLowerCase, SL.FalseStr) == 
+    emptyToNull((elem \ SL.TargetPath).text),
+    emptyToDefault(
+      (elem \ SL.Filtering).text.toLowerCase(Locale.ROOT), SL.FalseStr) ==
       SL.TrueStr.toString,
     emptyToDefault((elem \ SL.DirectoryStr).text, SL.Dot),
     (elem \ SL.Includes \ SL.IncludeStr).map { _.text },

@@ -1,10 +1,27 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.maven.unbound
+
+import java.util.Locale
 
 import scala.xml.Elem
 
 import com.typesafe.config.ConfigFactory
-
 import org.json4s._
 
 case object Profile extends CommonJsonReader {
@@ -48,10 +65,10 @@ case object Profile extends CommonJsonReader {
 }
 
 case class Profile(
-  id: String = SL.DefaultStr, activation: Activation, build: BuildBase = null, 
+  id: String = SL.DefaultStr, activation: Activation, build: BuildBase = null,
   modules: Seq[String] = Seq[String](),
-  distributionManagement: DistributionManagement = null, 
-  properties: Map[String, String] = Map[String, String](), 
+  distributionManagement: DistributionManagement = null,
+  properties: Map[String, String] = Map[String, String](),
   dependencyManagement: Seq[Dependency] = Seq[Dependency](),
   dependencies: Seq[Dependency] = Seq[Dependency](),
   repositories: Seq[Repository] = Seq[Repository](),
@@ -60,23 +77,23 @@ case class Profile(
 
   def this(elem: Elem) = this(
     emptyToDefault((elem \ SL.Id).text, SL.DefaultStr),
-    (elem \ SL.ActivationStr).map { case e: Elem => 
+    (elem \ SL.ActivationStr).map { case e: Elem =>
       new Activation(e) }.headOption.getOrElse(null),
-    (elem \ SL.BuildStr).map { case e: Elem => 
+    (elem \ SL.BuildStr).map { case e: Elem =>
       new BuildBase(e) }.headOption.getOrElse(null),
     (elem \ SL.Modules \ SL.Module).map { _.text },
     (elem \ SL.DistributionManagementStr).map { case e: Elem =>
       new DistributionManagement(e) }.headOption.getOrElse(null),
     (elem \ SL.PropertiesStr).flatMap(_.map { e => (e.label, e.text) }).toMap,
-    (elem \ SL.DependencyManagementStr \ SL.Dependencies \ 
+    (elem \ SL.DependencyManagementStr \ SL.Dependencies \
       SL.DependencyStr).map { case e: Elem => new Dependency(e) },
     (elem \ SL.Dependencies \ SL.DependencyStr).map { case e: Elem =>
       new Dependency(e) },
     (elem \ SL.Repositories \ SL.RepositoryStr).map { case e: Elem =>
       new Repository(e) },
-    (elem \ SL.PluginRepositories \ 
+    (elem \ SL.PluginRepositories \
       SL.PluginRepositoryStr).map { case e: Elem => new Repository(e) },
-    (elem \ SL.ReportingStr).map { case e: Elem => 
+    (elem \ SL.ReportingStr).map { case e: Elem =>
       new Reporting(e) }.headOption.getOrElse(null))
 
   lazy val xml = <profile>
@@ -88,7 +105,7 @@ case class Profile(
                    </modules> }
                    { if (distributionManagement != null) distributionManagement.xml }
                    { if (!properties.isEmpty) <properties>
-                     { properties.map { case(k, v) => 
+                     { properties.map { case(k, v) =>
                          PropertyValue(k, v).xml } }
                    </properties> }
                    { if (!dependencyManagement.isEmpty) <dependencyManagement>
@@ -114,7 +131,7 @@ case class Profile(
     profile.setActivation(activation.makeModelObject())
     if (build != null) profile.setBuild(build.makeModelObject())
     modules.foreach { module => profile.addModule(module) }
-    if (distributionManagement != null) 
+    if (distributionManagement != null)
       profile.setDistributionManagement(
         distributionManagement.makeModelObject())
     properties.foreach { case(k, v) => profile.addProperty(k, v) }
@@ -124,7 +141,7 @@ case class Profile(
     profile.setDependencyManagement(mgmt)
     dependencies.foreach { d => profile.addDependency(d.makeModelObject()) }
     repositories.foreach { r => profile.addRepository(r.makeModelObject()) }
-    pluginRepositories.foreach { repo => 
+    pluginRepositories.foreach { repo =>
       profile.addPluginRepository(repo.makeModelObject()) }
     if (reporting != null) profile.setReporting(reporting.makeModelObject())
     profile
@@ -160,22 +177,23 @@ case object Activation extends CommonJsonReader {
 }
 
 case class Activation(
-  activeByDefault: Boolean = false, jdk: String = null, 
+  activeByDefault: Boolean = false, jdk: String = null,
   os: ActivationOS = null, property: ActivationProperty = null,
   file: ActivationFile = null) {
 
   def this(elem: Elem) = this(
-    emptyToDefault((elem \ SL.ActiveByDefault).text.toLowerCase, SL.FalseStr) ==
+    emptyToDefault(
+      (elem \ SL.ActiveByDefault).text.toLowerCase(Locale.ROOT), SL.FalseStr) ==
       SL.TrueStr.toString,
-    emptyToNull((elem \ SL.JDK).text), 
-    (elem \ SL.OS).map { case e: Elem => 
+    emptyToNull((elem \ SL.JDK).text),
+    (elem \ SL.OS).map { case e: Elem =>
       new ActivationOS(e) }.headOption.getOrElse(null),
-    (elem \ SL.PropertyStr).map { case e: Elem => 
+    (elem \ SL.PropertyStr).map { case e: Elem =>
       new ActivationProperty(e) }.headOption.getOrElse(null),
-    (elem \ SL.FileStr).map { case e: Elem => 
+    (elem \ SL.FileStr).map { case e: Elem =>
       new ActivationFile(e) }.headOption.getOrElse(null))
 
-  lazy val xml = 
+  lazy val xml =
     <activation>
       <activeByDefault>{ if (activeByDefault) SL.TrueStr else SL.FalseStr }</activeByDefault>
       { if (jdk != null) <jdk>{jdk}</jdk> }
@@ -199,7 +217,7 @@ case object ActivationOS extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
-  class ActivationOSSerializer 
+  class ActivationOSSerializer
       extends CustomSerializer[ActivationOS](format => (
     {
       case obj @ JObject(fields) =>
@@ -223,7 +241,7 @@ case object ActivationOS extends CommonJsonReader {
 }
 
 case class ActivationOS(
-  name: String, 
+  name: String,
   family: String = null, arch: String = null, version: String = null) {
 
   def this(elem: Elem) = this(
@@ -268,7 +286,7 @@ case class ActivationProperty(name: String, value: String) {
 case class ActivationFile(missing: String, exists: String) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.Missing).text), 
+    emptyToNull((elem \ SL.Missing).text),
     emptyToNull((elem \ SL.Exists).text))
 
   lazy val xml = <file>
@@ -297,10 +315,10 @@ case object BuildBase extends CommonJsonReader {
         new BuildBase(
           readStr(fields, DefaultGoal).getOrElse(null),
           readObjectSequence[Resource](
-            fields, Resources, 
+            fields, Resources,
             Seq[Resource](new Resource(defResourcesDir))),
           readObjectSequence[Resource](
-            fields, TestResources, 
+            fields, TestResources,
             Seq[Resource](new Resource(defTestResourcesDir))),
           readStr(fields, DirectoryStr).getOrElse(Target),
           readStr(fields, FinalName).getOrElse(null),
@@ -313,7 +331,7 @@ case object BuildBase extends CommonJsonReader {
       case b: BuildBase =>
         JObject(Seq[Option[JField]](
           writeStr(DefaultGoal, b.defaultGoal),
-          if (!Build.isDefaultResources(b.resources)) 
+          if (!Build.isDefaultResources(b.resources))
             writeObjectSequence(Resources, b.resources)
           else None,
           if (!Build.isDefaultResources(b.testResources))
@@ -330,12 +348,12 @@ case object BuildBase extends CommonJsonReader {
 }
 
 case class BuildBase(
-  defaultGoal: String, 
-  resources: Seq[Resource] = 
+  defaultGoal: String,
+  resources: Seq[Resource] =
     Seq[Resource](new Resource(BuildBase.defResourcesDir)),
-  testResources: Seq[Resource] = 
+  testResources: Seq[Resource] =
     Seq[Resource](new Resource(BuildBase.defTestResourcesDir)),
-  directory: String = SL.Target, finalName: String, 
+  directory: String = SL.Target, finalName: String,
   filters: Seq[String] = Seq[String](),
   pluginManagement: Seq[Plugin] = Seq[Plugin](),
   plugins: Seq[Plugin] = Seq[Plugin]()) {
@@ -343,7 +361,7 @@ case class BuildBase(
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.DefaultGoal).text),
     ensureDefault(
-      (elem \ SL.Resources \ SL.ResourceStr).map { case e: Elem => 
+      (elem \ SL.Resources \ SL.ResourceStr).map { case e: Elem =>
         new Resource(e) },
       new Resource(BuildBase.defResourcesDir)),
     ensureDefault(
@@ -353,11 +371,11 @@ case class BuildBase(
     emptyToDefault((elem \ SL.DirectoryStr).text, SL.Target),
     emptyToNull((elem \ SL.FinalName).text),
     (elem \ SL.Filters \ SL.FilterStr).map { _.text },
-    (elem \ SL.PluginManagement \ SL.Plugins \ SL.PluginStr).map { 
+    (elem \ SL.PluginManagement \ SL.Plugins \ SL.PluginStr).map {
       case e: Elem => new Plugin(e) },
     (elem \ SL.Plugins \ SL.PluginStr).map { case e: Elem => new Plugin(e) })
 
-  lazy val xml = 
+  lazy val xml =
     <build>
       { if (defaultGoal != null) <defaultGoal>{defaultGoal}</defaultGoal> }
       { if (!Build.isDefaultResources(resources))
@@ -366,7 +384,7 @@ case class BuildBase(
         <testResources> { testResources.map { _.testXml } } </testResources> }
       { if (directory != null && directory != SL.Target.toString)
         <directory>{directory}</directory> }
-      { if (!filters.isEmpty) 
+      { if (!filters.isEmpty)
         <filters> { filters.map { Filter(_).xml } } </filters> }
       { if (!pluginManagement.isEmpty) <pluginManagement>
         { pluginManagement.map { _.xml } }

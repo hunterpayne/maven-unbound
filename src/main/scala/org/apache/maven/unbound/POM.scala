@@ -1,10 +1,25 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.maven.unbound
 
-import scala.xml.{ Elem, Text, XML, Null, TopScope }
+import scala.xml.{ Elem, Null, Text, TopScope, XML }
 
 import com.typesafe.config.ConfigFactory
-
 import org.json4s._
 
 case class PropertyValue(key: String, value: String) {
@@ -36,23 +51,23 @@ case object Parent extends CommonJsonReader {
         ).flatten.toList)
     }
   ))
-}     
+}
 
 case class Parent(
-  groupId: String, artifactId: String, version: String = null, 
+  groupId: String, artifactId: String, version: String = null,
   relativePath: String = Parent.DefRelativePath) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.GroupId).text), 
+    emptyToNull((elem \ SL.GroupId).text),
     emptyToNull((elem \ SL.ArtifactId).text),
-    emptyToNull((elem \ SL.Version).text), 
+    emptyToNull((elem \ SL.Version).text),
     emptyToDefault((elem \ SL.RelativePath).text, Parent.DefRelativePath))
 
   lazy val xml = <parent>
                    <groupId>{groupId}</groupId>
                    <artifactId>{artifactId}</artifactId>
                    { if (version != null) <version>{version}</version> }
-                   { if (relativePath != null && 
+                   { if (relativePath != null &&
                          !Parent.DefRelativePath.toString.equals(relativePath))
                      <relativePath>{relativePath}</relativePath>
                    }
@@ -111,16 +126,16 @@ case object License extends CommonJsonReader {
         ).flatten.toList)
     }
   ))
-}     
+}
 
 case class License(
-  name: String, url: String, 
+  name: String, url: String,
   distribution: String = License.Repo, comments: String = "") {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.Name).text.trim), 
+    emptyToNull((elem \ SL.Name).text.trim),
     emptyToNull((elem \ SL.UrlStr).text.trim),
-    emptyToDefault((elem \ SL.Distribution).text.trim, License.Repo), 
+    emptyToDefault((elem \ SL.Distribution).text.trim, License.Repo),
     (elem \ SL.Comments).text.trim)
 
   lazy val xml = <license>
@@ -163,8 +178,8 @@ case object Scm extends CommonJsonReader {
         JObject(Seq[Option[JField]](
           writeBool(ChildInheritConnection, s.childInheritConnection, true),
           writeBool(
-            ChildInheritDeveloperConnection, 
-            s.childInheritDeveloperConnection, 
+            ChildInheritDeveloperConnection,
+            s.childInheritDeveloperConnection,
             true),
           writeBool(ChildInheritUrl, s.childInheritUrl, true),
           writeStr(Connection, s.connection),
@@ -174,13 +189,13 @@ case object Scm extends CommonJsonReader {
         ).flatten.toList)
     }
   ))
-}     
+}
 
 case class Scm(
   childInheritConnection: Boolean = true,
   childInheritDeveloperConnection: Boolean = true,
   childInheritUrl: Boolean = true,
-  connection: String = null, developerConnection: String = null, 
+  connection: String = null, developerConnection: String = null,
   tag: String = Scm.Head, url: String = null) {
 
   def this(elem: Elem) = this(
@@ -190,16 +205,22 @@ case class Scm(
     emptyToDefaultBool((elem \ SL.ChildInheritScmUrlFP).text.trim, true),
     emptyToNull((elem \ SL.Connection).text.trim),
     emptyToNull((elem \ SL.DeveloperConnection).text.trim),
-    emptyToDefault((elem \ SL.Tag).text.trim, Scm.Head), 
+    emptyToDefault((elem \ SL.Tag).text.trim, Scm.Head),
     emptyToNull((elem \ SL.UrlStr).text.trim))
 
-  lazy val xml = 
-    <scm> 
-      { if (!childInheritConnection) <child.scm.connection.inherit.append.path>false</child.scm.connection.inherit.append.path> }
-      { if (!childInheritDeveloperConnection) <child.scm.developerConnection.inherit.append.path>false</child.scm.developerConnection.inherit.append.path> }
-      { if (!childInheritUrl) <child.scm.url.inherit.append.path>false</child.scm.url.inherit.append.path> }
+  lazy val xml =
+    <scm>
+      { if (!childInheritConnection)
+        <child.scm.connection.inherit.append.path>false</child.scm.connection.inherit.append.path> }
+      { if (!childInheritDeveloperConnection)
+        new Elem(
+          null, SL.ChildInheritDeveloperConnectionFP, Null, TopScope,
+          new Text("false")) }
+      { if (!childInheritUrl)
+        <child.scm.url.inherit.append.path>false</child.scm.url.inherit.append.path> }
       { if (connection != null) <connection>{connection}</connection> }
-      { if (developerConnection != null) <developerConnection>{developerConnection}</developerConnection> }
+      { if (developerConnection != null)
+        <developerConnection>{developerConnection}</developerConnection> }
       { if (tag != null && tag != Scm.Head.toString) <tag>{tag}</tag> }
       { if (url != null) <url>{url}</url> }
     </scm>
@@ -207,7 +228,7 @@ case class Scm(
   def makeModelObject(): org.apache.maven.model.Scm = {
     val scm = new org.apache.maven.model.Scm()
     if (connection != null) scm.setConnection(connection)
-    if (developerConnection != null) 
+    if (developerConnection != null)
       scm.setDeveloperConnection(developerConnection)
     scm.setTag(tag)
     if (url != null) scm.setUrl(url)
@@ -219,7 +240,7 @@ case object IssueManagement extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
-  class IssueManagementSerializer 
+  class IssueManagementSerializer
       extends CustomSerializer[IssueManagement](format => (
         {
           case obj @ JObject(fields) =>
@@ -241,7 +262,7 @@ case object IssueManagement extends CommonJsonReader {
 case class IssueManagement(system: String, url: String) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.SystemStr).text), 
+    emptyToNull((elem \ SL.SystemStr).text),
     emptyToNull((elem \ SL.UrlStr).text))
 
   lazy val xml = <issueManagement>
@@ -260,9 +281,9 @@ case class IssueManagement(system: String, url: String) {
 case object DistributionManagement extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
-  def None = "none"
+  protected def None = "none"
 
-  class DistributionManagementSerializer 
+  class DistributionManagementSerializer
       extends CustomSerializer[DistributionManagement](format => (
     {
       case obj @ JObject(fields) =>
@@ -287,29 +308,29 @@ case object DistributionManagement extends CommonJsonReader {
         ).flatten.toList)
     }
   ))
-}     
+}
 
 case class DistributionManagement(
-  repository: DistributionRepository, 
+  repository: DistributionRepository,
   snapshotRepository: DistributionRepository = null,
-  site: Site = null, downloadUrl: String = null, 
+  site: Site = null, downloadUrl: String = null,
   relocation: Relocation = null, status: String = DistributionManagement.None) {
 
   def this(elem: Elem) = this(
-    (elem \ SL.RepositoryStr).map { case e: Elem => 
+    (elem \ SL.RepositoryStr).map { case e: Elem =>
       new DistributionRepository(e) }.headOption.getOrElse(null),
-    (elem \ SL.SnapshotRepository.toString).map { case e: Elem => 
+    (elem \ SL.SnapshotRepository.toString).map { case e: Elem =>
       new DistributionRepository(e) }.headOption.getOrElse(null),
-    (elem \ SL.SiteStr.toString).map { case e: Elem => 
+    (elem \ SL.SiteStr.toString).map { case e: Elem =>
       new Site(e) }.headOption.getOrElse(null),
     emptyToNull((elem \ SL.DownloadUrl).text),
-    (elem \ SL.RelocationStr.toString).map { case e: Elem => 
+    (elem \ SL.RelocationStr.toString).map { case e: Elem =>
       new Relocation(e) }.headOption.getOrElse(null),
     emptyToDefault((elem \ SL.Status).text, DistributionManagement.None))
 
   lazy val xml = <distributionManagement>
                    { if (repository != null) repository.repositoryXml }
-                   { if (snapshotRepository != null) 
+                   { if (snapshotRepository != null)
                      snapshotRepository.snapshotXml }
                    { if (site != null) site.xml }
                  </distributionManagement>
@@ -317,7 +338,7 @@ case class DistributionManagement(
   def makeModelObject(): org.apache.maven.model.DistributionManagement = {
     val mgmt = new org.apache.maven.model.DistributionManagement()
     mgmt.setRepository(repository.makeModelObject())
-    if (snapshotRepository != null) 
+    if (snapshotRepository != null)
       mgmt.setSnapshotRepository(snapshotRepository.makeModelObject())
     else mgmt.setSnapshotRepository(repository.makeModelObject())
     if (site != null) mgmt.setSite(site.makeModelObject())
@@ -359,15 +380,14 @@ case class Site(
 
   def this(elem: Elem) = this(
     emptyToDefaultBool((elem \ SL.ChildInheritSiteUrlFP).text.trim, true),
-    //elem.attribute(SL.ChildInheritSiteUrlFP).map { _.text }.
-    //getOrElse(SL.TrueStr.toString).toLowerCase == SL.TrueStr.toString,
-    emptyToNull((elem \ SL.Id).text.trim), 
-    emptyToNull((elem \ SL.Name).text.trim), 
+    emptyToNull((elem \ SL.Id).text.trim),
+    emptyToNull((elem \ SL.Name).text.trim),
     emptyToNull((elem \ SL.UrlStr).text.trim))
 
-  lazy val xml = 
+  lazy val xml =
     <site>
-      { if (!childInheritUrl) <child.site.url.inherit.append.path>false</child.site.url.inherit.append.path> }
+      { if (!childInheritUrl)
+        <child.site.url.inherit.append.path>false</child.site.url.inherit.append.path> }
       { if (id != null) <id>{id}</id> }
       { if (name != null) <name>{name}</name> }
       { if (url != null) <url>{url}</url> }
@@ -408,13 +428,13 @@ case object Relocation extends CommonJsonReader {
 }
 
 case class Relocation(
-  groupId: String, artifactId: String, version: String, 
+  groupId: String, artifactId: String, version: String,
   message: String = null) {
 
   def this(elem: Elem) = this(
-    emptyToNull((elem \ SL.GroupId).text), 
+    emptyToNull((elem \ SL.GroupId).text),
     emptyToNull((elem \ SL.ArtifactId).text),
-    emptyToNull((elem \ SL.Version).text), 
+    emptyToNull((elem \ SL.Version).text),
     emptyToNull((elem \ SL.Message).text))
 
   lazy val xml = <relocation>

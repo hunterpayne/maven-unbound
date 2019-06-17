@@ -1,15 +1,31 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.maven.unbound
 
 import java.io.StringReader
+import java.util.Locale
 
 import scala.xml.Elem
 
-import com.typesafe.config.{ Config, ConfigObject, ConfigFactory }
+import com.typesafe.config.{ Config, ConfigFactory, ConfigObject }
+import org.json4s._
 
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder
-
-import org.json4s._
 
 case object Reporting extends CommonJsonReader {
 
@@ -36,18 +52,18 @@ case object Reporting extends CommonJsonReader {
 }
 
 case class Reporting(
-  excludeDefaults: Boolean = false, outputDirectory: String = SL.SiteStr, 
+  excludeDefaults: Boolean = false, outputDirectory: String = SL.SiteStr,
   plugins: Seq[ReportPlugin] = Seq[ReportPlugin]()) {
 
   def this(elem: Elem) = this(
     emptyToDefault(
-      (elem \ SL.ExcludeDefaults).text.toLowerCase, SL.FalseStr) == 
+      (elem \ SL.ExcludeDefaults).text.toLowerCase(Locale.ROOT), SL.FalseStr) ==
       SL.TrueStr.toString,
     emptyToDefault((elem \ SL.OutputDirectory).text, SL.SiteStr),
-    (elem \ SL.Plugins \ SL.PluginStr).map { case e: Elem => 
+    (elem \ SL.Plugins \ SL.PluginStr).map { case e: Elem =>
       new ReportPlugin(e) })
 
-  lazy val xml = 
+  lazy val xml =
     <reporting>
       { if (excludeDefaults) <excludeDefaults>true</excludeDefaults> }
       { if (outputDirectory != null && outputDirectory != SL.SiteStr.toString)
@@ -71,7 +87,7 @@ case object ReportPlugin extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
-  class ReportPluginSerializer 
+  class ReportPluginSerializer
       extends CustomSerializer[ReportPlugin](format => (
     {
       case obj @ JObject(fields) =>
@@ -83,7 +99,7 @@ case object ReportPlugin extends CommonJsonReader {
           readBool(fields, Inherited).getOrElse(true),
           (obj \ Configuration) match {
             case o: JObject => jsonToConfig(o)
-            case _ => null //ConfigFactory.empty()
+            case _ => null
           }
         )
     },
@@ -102,9 +118,9 @@ case object ReportPlugin extends CommonJsonReader {
 }
 
 case class ReportPlugin(
-  groupId: String = SL.DefaultPluginGroup, 
+  groupId: String = SL.DefaultPluginGroup,
   artifactId: String, version: String,
-  reportSets: Seq[ReportSet] = Seq[ReportSet](), 
+  reportSets: Seq[ReportSet] = Seq[ReportSet](),
   inherited: Boolean = true,
   configuration: Config = null) {
 
@@ -112,11 +128,12 @@ case class ReportPlugin(
     emptyToDefault((elem \ SL.GroupId).text, SL.DefaultPluginGroup),
     emptyToNull((elem \ SL.ArtifactId).text),
     emptyToNull((elem \ SL.Version).text),
-    (elem \ SL.ReportSets \ SL.ReportSetStr).map { case e: Elem => 
+    (elem \ SL.ReportSets \ SL.ReportSetStr).map { case e: Elem =>
       new ReportSet(e)},
-    emptyToDefault((elem \ SL.Inherited).text.toLowerCase, SL.TrueStr) == 
+    emptyToDefault(
+      (elem \ SL.Inherited).text.toLowerCase(Locale.ROOT), SL.TrueStr) ==
       SL.TrueStr.toString,
-    (elem \ SL.Configuration).headOption.map { case e: Elem => 
+    (elem \ SL.Configuration).headOption.map { case e: Elem =>
       elemToConfig(e) }.getOrElse(null))
 
   lazy val xml = <plugin>
@@ -137,7 +154,7 @@ case class ReportPlugin(
     plugin.setVersion(version)
     reportSets.foreach { rs => plugin.addReportSet(rs.makeModelObject()) }
     if (configuration != null) {
-      val xmlStr = 
+      val xmlStr =
         (new Writeable {
           val xml: Elem = configToElem(configuration)
         }).toXmlString
@@ -153,7 +170,7 @@ case object ReportSet extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
-  class ReportSetSerializer 
+  class ReportSetSerializer
       extends CustomSerializer[ReportSet](format => (
     {
       case obj @ JObject(fields) =>
@@ -163,7 +180,7 @@ case object ReportSet extends CommonJsonReader {
           readBool(fields, Inherited).getOrElse(true),
           (obj \ Configuration) match {
             case o: JObject => jsonToConfig(o)
-            case _ => null //ConfigFactory.empty()
+            case _ => null
           }
         )
     },
@@ -180,15 +197,16 @@ case object ReportSet extends CommonJsonReader {
 }
 
 case class ReportSet(
-  id: String = SL.DefaultStr, reports: Seq[String] = Seq[String](), 
+  id: String = SL.DefaultStr, reports: Seq[String] = Seq[String](),
   inherited: Boolean = true, configuration: Config = null) {
 
   def this(elem: Elem) = this(
     emptyToDefault((elem \ SL.Id).text, SL.DefaultStr),
     (elem \ SL.Reports \ SL.ReportStr).map { _.text },
-    emptyToDefault((elem \ SL.Inherited).text.toLowerCase, SL.TrueStr) == 
+    emptyToDefault(
+      (elem \ SL.Inherited).text.toLowerCase(Locale.ROOT), SL.TrueStr) ==
       SL.TrueStr.toString,
-    (elem \ SL.Configuration).headOption.map { case e: Elem => 
+    (elem \ SL.Configuration).headOption.map { case e: Elem =>
       elemToConfig(e) }.getOrElse(null))
 
   lazy val xml = <reportSet>
@@ -205,7 +223,7 @@ case class ReportSet(
     rs.setId(id)
     rs.setInherited(if (inherited) SL.TrueStr else SL.FalseStr)
     if (configuration != null) {
-      val xmlStr = 
+      val xmlStr =
         (new Writeable {
           val xml: Elem = configToElem(configuration)
         }).toXmlString

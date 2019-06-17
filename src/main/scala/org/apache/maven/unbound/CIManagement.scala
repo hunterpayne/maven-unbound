@@ -1,18 +1,35 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.maven.unbound
+
+import java.util.Locale
 
 import scala.xml.Elem
 
 import com.typesafe.config.ConfigFactory
-
 import org.json4s._
 
 case object CIManagement extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
-  def None = "none"
+  protected def None = "none"
 
-  class CIManagementSerializer 
+  class CIManagementSerializer
       extends CustomSerializer[CIManagement](format => (
     {
       case obj @ JObject(fields) =>
@@ -31,7 +48,7 @@ case object CIManagement extends CommonJsonReader {
         ).flatten.toList)
     }
   ))
-}     
+}
 
 case class CIManagement(
   system: String, url: String, notifiers: Seq[Notifier] = Seq[Notifier]()) {
@@ -39,7 +56,7 @@ case class CIManagement(
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.SystemStr).text),
     emptyToNull((elem \ SL.UrlStr).text),
-    (elem \ SL.Notifiers \ SL.NotifierStr).map { case n: Elem => 
+    (elem \ SL.Notifiers \ SL.NotifierStr).map { case n: Elem =>
       new Notifier(n) })
 
   lazy val xml = <ciManagement>
@@ -63,7 +80,7 @@ case object Notifier extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
-  class NotifierSerializer 
+  class NotifierSerializer
       extends CustomSerializer[Notifier](format => (
     {
       case obj @ JObject(fields) =>
@@ -91,24 +108,24 @@ case object Notifier extends CommonJsonReader {
 }
 
 case class Notifier(
-  `type`: String = SL.Mail, 
+  `type`: String = SL.Mail,
   sendOnError: Boolean = true, sendOnFailure: Boolean = true,
-  sendOnSuccess: Boolean = false, sendOnWarning: Boolean = false, 
+  sendOnSuccess: Boolean = false, sendOnWarning: Boolean = false,
   configuration: Map[String, String] = Map[String, String]()) {
 
   def this(elem: Elem) = this(
     emptyToDefault((elem \ SL.TypeStr).text, SL.Mail),
     emptyToDefault(
-      (elem \ SL.SendOnError).text.toLowerCase, SL.TrueStr) == 
+      (elem \ SL.SendOnError).text.toLowerCase(Locale.ROOT), SL.TrueStr) ==
       SL.TrueStr.toString,
     emptyToDefault(
-      (elem \ SL.SendOnFailure).text.toLowerCase, SL.TrueStr) == 
+      (elem \ SL.SendOnFailure).text.toLowerCase(Locale.ROOT), SL.TrueStr) ==
       SL.TrueStr.toString,
     emptyToDefault(
-      (elem \ SL.SendOnSuccess).text.toLowerCase, SL.FalseStr) == 
+      (elem \ SL.SendOnSuccess).text.toLowerCase(Locale.ROOT), SL.FalseStr) ==
       SL.TrueStr.toString,
     emptyToDefault(
-      (elem \ SL.SendOnWarning).text.toLowerCase, SL.FalseStr) == 
+      (elem \ SL.SendOnWarning).text.toLowerCase(Locale.ROOT), SL.FalseStr) ==
       SL.TrueStr.toString,
     (elem \ SL.Configuration).flatMap(_.map { e => (e.label, e.text) }).toMap)
 

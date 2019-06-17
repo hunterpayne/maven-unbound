@@ -1,10 +1,25 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.maven.unbound
 
 import scala.xml.Elem
 
 import com.typesafe.config.ConfigFactory
-
 import org.json4s._
 
 protected[unbound] case object Archiver extends CommonJsonReader {
@@ -63,7 +78,7 @@ protected[unbound] case class Archiver(
     (elem \ "manifest").map { case e: Elem =>
       new ManifestObj(e) }.headOption.getOrElse(null),
     (elem \ "manifestEntries").headOption.map(
-      _.child.filter(_.isInstanceOf[Elem]).map { e => 
+      _.child.filter(_.isInstanceOf[Elem]).map { e =>
         (e.label, e.text.trim) }.toMap).getOrElse(Map[String, String]()),
     emptyToNull((elem \ "manifestFile").text.trim),
     (elem \ "manifestSections" \ "manifestSection").map { case e: Elem =>
@@ -71,7 +86,7 @@ protected[unbound] case class Archiver(
     emptyToNull((elem \ "pomPropertiesFile").text)
   )
 
-  lazy val xml = 
+  lazy val xml =
     <archive>
       { if (!addMavenDescriptor) <addMavenDescriptor>false</addMavenDescriptor>}
       { if (!compress) <compress>false</compress> }
@@ -84,7 +99,7 @@ protected[unbound] case class Archiver(
       { if (manifestFile != null) <manifestFile>{manifestFile}</manifestFile> }
       { if (!manifestSections.isEmpty) <manifestSections>
         { manifestSections.map { _.xml } } </manifestSections> }
-      { if (pomPropertiesFile != null) 
+      { if (pomPropertiesFile != null)
         <pomPropertiesFile>{pomPropertiesFile}</pomPropertiesFile> }
     </archive>
 }
@@ -117,7 +132,7 @@ case object ManifestObj extends CommonJsonReader {
           writeBool("addClasspath", m.addClasspath, false),
           writeBool("addDefaultEntries", m.addDefaultEntries, true),
           writeBool(
-            "addDefaultImplementationEntries", 
+            "addDefaultImplementationEntries",
             m.addDefaultImplementationEntries, false),
           writeBool(
             "addDefaultSpecificationEntries", m.addDefaultSpecificationEntries,
@@ -169,11 +184,11 @@ case class ManifestObj(
     <manifest>
       { if (addClasspath) <addClasspath>true</addClasspath> }
       { if (!addDefaultEntries) <addDefaultEntries>false</addDefaultEntries> }
-      { if (addDefaultImplementationEntries) 
+      { if (addDefaultImplementationEntries)
         <addDefaultImplementationEntries>true</addDefaultImplementationEntries>}
-      { if (addDefaultSpecificationEntries) 
+      { if (addDefaultSpecificationEntries)
         <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries> }
-      { if (addBuildEnvironmentEntries) 
+      { if (addBuildEnvironmentEntries)
         <addBuildEnvironmentEntries>true</addBuildEnvironmentEntries> }
       { if (addExtensions) <addExtensions>true</addExtensions> }
       { if (classpathLayoutType != null && classpathLayoutType != "simple")
@@ -192,7 +207,7 @@ case object ManifestSection extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
-  class ManifestSectionSerializer 
+  class ManifestSectionSerializer
       extends CustomSerializer[ManifestSection](format => (
         {
           case obj @ JObject(fields) =>
@@ -212,7 +227,7 @@ case object ManifestSection extends CommonJsonReader {
 }
 
 case class ManifestSection(
-  name: String = null, 
+  name: String = null,
   manifestEntries: Map[String, String] = Map[String, String]()) {
 
   def this(elem: Elem) = this(
@@ -222,7 +237,7 @@ case class ManifestSection(
         (e.label, e.text.trim) }.toMap).getOrElse(Map[String, String]())
   )
 
-  lazy val xml = 
+  lazy val xml =
     <manifestSection>
       { if (name != null) <name>{name}</name> }
       { if (!manifestEntries.isEmpty) <manifestEntries>

@@ -1,14 +1,29 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.maven.unbound
 
-import java.io.{ 
-  InputStream, InputStreamReader, Reader, 
-  OutputStream, OutputStreamWriter, Writer }
+import java.io.{
+  InputStream, InputStreamReader,
+  OutputStream, OutputStreamWriter, Reader, Writer }
 
 import scala.reflect.Manifest
 
-import com.typesafe.config.{ Config, ConfigObject, ConfigFactory }
-
+import com.typesafe.config.{ Config, ConfigFactory, ConfigObject }
 import org.json4s._
 import org.json4s.native.JsonMethods
 import org.json4s.native.Serialization
@@ -20,10 +35,10 @@ trait CommonJsonReader extends Labels {
   implicit val boolReader = DefaultReaders.BooleanReader
   implicit val strReader = DefaultReaders.StringReader
 
-  protected def readBool(fields: List[JField], key: String): Option[Boolean] = 
+  protected def readBool(fields: List[JField], key: String): Option[Boolean] =
     fields.filter { _._1 == key }.headOption.map { case(_, v) => v.as[Boolean] }
 
-  protected def readStr(fields: List[JField], key: String): Option[String] = 
+  protected def readStr(fields: List[JField], key: String): Option[String] =
     fields.filter { _._1 == key }.headOption.map { case(_, v) => v match {
       case JString(s) => s.replaceAllLiterally("\n", scala.compat.Platform.EOL)
       case v =>
@@ -40,13 +55,13 @@ trait CommonJsonReader extends Labels {
   protected def readProperties(
     obj: JObject, key: String = "properties"): Map[String, String] =
     (obj \ key) match {
-      case JObject(fields) => 
+      case JObject(fields) =>
         fields.map { case((key, v)) => (key, v.as[String]) }.toMap
       case _ => Map[String, String]()
     }
 
   protected def readObjectSequence[T](
-    fields: List[JField], key: String, 
+    fields: List[JField], key: String,
     defVal: Seq[T] = Seq[T]())(implicit m: Manifest[T]): Seq[T] =
     fields.filter { _._1 == key }.headOption.map { e =>
       e._2.children.map { Extraction.extract[T](_) }}.getOrElse(defVal)
@@ -74,8 +89,8 @@ trait CommonJsonReader extends Labels {
     else None
 
   protected def writeProperties(
-    name: String, p: Map[String, String]): Option[JField] = 
-    if (!p.isEmpty) 
+    name: String, p: Map[String, String]): Option[JField] =
+    if (!p.isEmpty)
       Some((name, JObject(p.map { case(k, v) => (k, JString(v)) }.toList)))
     else None
 
@@ -95,14 +110,14 @@ trait CommonJsonReader extends Labels {
 trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
 
   implicit val formats =
-    Serialization.formats(NoTypeHints) + 
+    Serialization.formats(NoTypeHints) +
     new Project.ProjectSerializer +
-    new Build.BuildSerializer + 
+    new Build.BuildSerializer +
     new Plugin.PluginSerializer +
-    new Dependency.DependencySerializer + 
+    new Dependency.DependencySerializer +
     new Execution.ExecutionSerializer +
-    new Reporting.ReportingSerializer + 
-    new ReportPlugin.ReportPluginSerializer + 
+    new Reporting.ReportingSerializer +
+    new ReportPlugin.ReportPluginSerializer +
     new Resource.ResourceSerializer +
     new CIManagement.CIManagementSerializer +
     new Notifier.NotifierSerializer +
@@ -135,7 +150,7 @@ object JsonReader extends JsonProjectAPI {
 
   def readPOM(reader: Reader): Project = read[Project](reader)
 
-  def readPOM(in: InputStream, enc: String = "UTF-8"): Project = 
+  def readPOM(in: InputStream, enc: String = "UTF-8"): Project =
     read[Project](new InputStreamReader(in, enc))
 }
 

@@ -37,6 +37,15 @@
       <timezone>America/Los_Angeles</timezone>
     </developer>
   </developers>
+  <scm>
+    <connection>
+      scm:git:https://github.com/hunterpayne/maven-unbound.git
+    </connection>
+    <developerConnection>
+      scm:git:https://github.com/hunterpayne/maven-unbound.git
+    </developerConnection>
+    <url>https://github.com/hunterpayne/maven-unbound</url>
+  </scm>
   <properties>
     <!-- Resource identity sequence. -->
 <!--    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> -->
@@ -82,11 +91,6 @@
       <version>1.2.0</version>
     </dependency>
     <dependency>
-      <groupId>com.typesafe</groupId>
-      <artifactId>config</artifactId>
-      <version>1.3.0</version>
-    </dependency>
-    <dependency>
       <groupId>com.iheart</groupId>
       <artifactId>ficus_${version.scala.epoch}</artifactId>
       <version>1.4.6</version>
@@ -115,6 +119,8 @@
   </dependencies>
 
   <build>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/scala</testSourceDirectory>
     <plugins>
 
       <!-- Disable default compiler. -->
@@ -127,12 +133,28 @@
           <skipMain>true</skipMain>
         </configuration>
       </plugin>
-      
+
       <!-- Enable alternative compiler. -->
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>4.0.2</version>
+	<executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <scalaVersion>${version.scala.release}</scalaVersion>
+        </configuration>
+      </plugin>
+      <!--
       <plugin>
         <groupId>com.carrotgarden.maven</groupId>
         <artifactId>scalor-maven-plugin_2.12</artifactId>
-        <!-- <version>1.4.2.20180508161326</version> -->
   
         <configuration>
     
@@ -176,7 +198,7 @@
           </execution>
         </executions>
       </plugin>
-
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -241,13 +263,13 @@
         <version>1.0.0</version>
         <configuration>
           <verbose>false</verbose>
-          <failOnViolation>false</failOnViolation>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <failOnViolation>true</failOnViolation>
+          <includeTestSourceDirectory>false</includeTestSourceDirectory>
           <failOnWarning>false</failOnWarning>
           <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
           <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
           <configLocation>${project.basedir}/scalastyle-config.xml</configLocation>
-          <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
+          <outputFile>${project.build.directory}/site/scalastyle-output.xml</outputFile>
           <outputEncoding>UTF-8</outputEncoding>
         </configuration>
         <executions>
@@ -266,28 +288,23 @@
       <plugin>
 	<groupId>org.scoverage</groupId>
 	<artifactId>scoverage-maven-plugin</artifactId>
-	<version>1.1.1</version>
+	<version>1.4.0-RC1</version>
 	<configuration>
           <scalaVersion>${version.scala.release}</scalaVersion>
           <highlighting>true</highlighting>
           <minimumCoverage>0</minimumCoverage>
           <failOnMinimumCoverage>true</failOnMinimumCoverage>
+	  <excludedPackages>java..*;scala..*</excludedPackages>
 	</configuration>
 	<executions>
           <execution>
             <id>scoverage_unit</id>
             <goals>
-              <goal>check</goal> <!-- or integration-check -->
-            </goals>
-            <phase>prepare-package</phase> <!-- or any other phase -->
-          </execution>
-          <execution>
-            <id>scoverage_integration</id>
-            <goals>
               <goal>check</goal>
+              <goal>report</goal>
             </goals>
-            <phase>integration-test</phase>
-          </execution> 
+            <phase>prepare-package</phase>
+          </execution>
 	</executions>
       </plugin>
     </plugins>
@@ -298,7 +315,7 @@
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
-        <version>3.4.4</version>
+        <version>4.0.2</version>
         <configuration>
           <jvmArgs>
             <jvmArg>-Xms64m</jvmArg>
@@ -336,13 +353,6 @@
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-dependency-plugin</artifactId>
 	<version>3.1.1</version>
-	<reportSets>
-          <reportSet>
-            <reports>
-              <report>analyze-report</report>
-            </reports>
-          </reportSet>
-	</reportSets>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -410,11 +420,12 @@
       <plugin>
         <groupId>org.scoverage</groupId>
         <artifactId>scoverage-maven-plugin</artifactId>
-        <version>1.1.1</version>
-        <reportSets>
+	<version>1.4.0-RC1</version>
+	<reportSets>
           <reportSet>
             <reports>
               <report>report</report>
+              <!-- or <report>report-only</report> -->
             </reports>
           </reportSet>
         </reportSets>

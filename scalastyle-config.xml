@@ -105,13 +105,6 @@ This file is divided into 3 sections:
 
   <check level="error" class="org.scalastyle.scalariform.UppercaseLChecker" enabled="true"></check>
 
-  <check level="error" class="org.scalastyle.scalariform.IfBraceChecker" enabled="true">
-    <parameters>
-      <parameter name="singleLineAllowed"><![CDATA[true]]></parameter>
-      <parameter name="doubleLineAllowed"><![CDATA[true]]></parameter>
-    </parameters>
-  </check>
-
   <check level="error" class="org.scalastyle.scalariform.PublicMethodsHaveTypeChecker" enabled="true"></check>
 
   <check level="error" class="org.scalastyle.file.NewLineAtEofChecker" enabled="true"></check>
@@ -230,7 +223,7 @@ This file is divided into 3 sections:
 
   <check level="error" class="org.scalastyle.scalariform.ImportOrderChecker" enabled="true">
     <parameters>
-      <parameter name="groups">java,scala,3rdParty</parameter>
+      <parameter name="groups">java,scala,3rdParty,maven</parameter>
       <parameter name="group.java">javax?\..*</parameter>
       <parameter name="group.scala">scala\..*</parameter>
       <parameter name="group.3rdParty">(?!org\.apache\.maven\.).*</parameter>
@@ -251,10 +244,12 @@ This file is divided into 3 sections:
     ]]></customMessage>
   </check>
 
+  <!--
   <check customId="NoScalaDoc" level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
     <parameters><parameter name="regex">(?m)^(\s*)/[*][*].*$(\r|)\n^\1  [*]</parameter></parameters>
     <customMessage>Use Javadoc style indentation for multiline comments</customMessage>
   </check>
+  -->
 
   <check customId="OmitBracesInCase" level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
     <parameters><parameter name="regex">case[^\n>]*=>\s*\{</parameter></parameters>

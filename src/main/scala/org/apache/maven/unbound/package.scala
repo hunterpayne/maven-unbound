@@ -1,21 +1,35 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.maven
 
 import java.io.{ File, InputStream, IOException }
-
-import scala.xml.{ 
-  Comment, Elem, MetaData, Node, Null, Text, TopScope, UnprefixedAttribute }
-import javax.xml.parsers.{ 
+import javax.xml.parsers.{
   DocumentBuilder, DocumentBuilderFactory, ParserConfigurationException }
 
-import org.w3c.dom.{ 
-  Document, Element, Comment => DomComment, Node => DomNode, Text => DomText, 
-  ProcessingInstruction, Entity }
-import org.xml.sax.SAXException
-
-import org.json4s._
+import scala.xml.{
+  Comment, Elem, MetaData, Node, Null, Text, TopScope, UnprefixedAttribute }
 
 import com.typesafe.config._
+import org.json4s._
+import org.w3c.dom.{
+  Comment => DomComment, Document, Element, Entity, Node => DomNode,
+  ProcessingInstruction, Text => DomText }
+import org.xml.sax.SAXException
 
 package object unbound {
 
@@ -27,7 +41,7 @@ package object unbound {
 
   def emptyToDefault(s: String, d: String): String = if (s != "") s else d
 
-  def emptyToDefaultBool(s: String, d: Boolean): Boolean = 
+  def emptyToDefaultBool(s: String, d: Boolean): Boolean =
     if (s != "") (s == "true") else d
 
   def loadConfig(files: File*): Config = {
@@ -51,7 +65,7 @@ package object unbound {
     def toAnyRef(s: String): Any = s match {
       case "true" => true
       case "false" => false
-      case s => 
+      case s =>
         try { s.toInt } catch {
           case nfe: NumberFormatException =>
             try { s.toDouble } catch {
@@ -66,9 +80,6 @@ package object unbound {
           // a simple value
           if (e.child.forall { _.isInstanceOf[Text] }) {
             ConfigValueFactory.fromAnyRef(toAnyRef(e.text.trim))
-            //ConfigValueFactory.fromAnyRef(e.child.map { 
-              //_.text
-            //}.mkString(scala.compat.Platform.EOL))
 
             // an Archiver
           } else if (e.label == "archive") {
@@ -121,14 +132,14 @@ package object unbound {
             // resource transformer
             if (e.label == SL.Transformer.toString && !implAttr.isEmpty) {
               map.withValue(
-                SL.Implementation, 
+                SL.Implementation,
                 ConfigValueFactory.fromAnyRef(implAttr.text.trim))
             } else {
               map
             }
           }
         case t: Text =>
-          if (t.text.trim != "") 
+          if (t.text.trim != "")
             ConfigValueFactory.fromAnyRef(toAnyRef(t.text.trim))
           else null
         case c: Comment =>
@@ -136,26 +147,25 @@ package object unbound {
           val list = new java.util.ArrayList[java.lang.String]()
           list.add(c.text)
           epty.root().withOrigin(epty.origin().withComments(list))
-        case n: Node => {
+        case n: Node =>
           println("n " + n)
           assert(false)
           null
-        }
       }
 
     val empty = ConfigFactory.empty();
-    val childConfs = 
+    val childConfs =
       elem.child.map { ch => (ch.label, appendNode(ch.label, empty, ch)) }
     childConfs.foldLeft(ConfigFactory.empty()) { case(c, (k, v)) =>
       if (v != null) c.withValue(k, v) else c }
   }
 
-  private def singular(s: String): String = 
-    if (s.endsWith("ies")) s.substring(0, s.length - 3) + "y" 
+  private def singular(s: String): String =
+    if (s.endsWith("ies")) s.substring(0, s.length - 3) + "y"
     else s.substring(0, s.length - 1)
 
   private def removeQuotes(s: String): String =
-    if (!s.startsWith("\"") || !s.endsWith("\"")) 
+    if (!s.startsWith("\"") || !s.endsWith("\""))
       s.replaceAllLiterally("\\n", scala.compat.Platform.EOL)
     else s.substring(1, s.length - 1).replaceAllLiterally(
       "\\n", scala.compat.Platform.EOL)
@@ -205,7 +215,7 @@ package object unbound {
                       new Elem(
                         null, k, Null, TopScope, Text(removeQuotes(v.render())))
                   }.toSeq
-                } else if (mS.keySet.find { 
+                } else if (mS.keySet.find {
                   _ == SL.Archive.toString }.isDefined) {
                   // a Maven archiver
                   val arch = HoconReader.readArchiver(m.toConfig())
@@ -244,6 +254,7 @@ package object unbound {
 
     def fromJson(v: JValue): Any =
       v match {
+        case JNull => null
         case s: JString => s.s
         case b: JBool => b.value
         case d: JDecimal => d.num
@@ -253,7 +264,7 @@ package object unbound {
         case a: JArray =>
           val iter = a.arr.map { fromJson(_) }.asJava
           ConfigValueFactory.fromIterable(iter)
-        case v: JValue => ???
+        case v: JValue => assert(false); null
       }
 
     def fromJsonObject(jobj: JObject): java.util.Map[String, Any] =
@@ -281,9 +292,8 @@ package object unbound {
         case l: java.lang.Long => JDecimal(new java.math.BigDecimal(l.toLong))
         case f: java.lang.Float => JDouble(f.toDouble)
         case d: java.lang.Double => JDouble(d.toDouble)
-        case s: String => 
-          JString(s) //.replaceAllLiterally("\n", scala.compat.Platform.EOL))
-        case _ => ???
+        case s: String => JString(s)
+        case _ => assert(false); null
       }
 
     def makeJValue(value: ConfigValue): JValue = {
@@ -304,7 +314,6 @@ package object unbound {
       new JObject(childElems.toList)
     } else {
       null
-      //JNull
     }
   }
 
