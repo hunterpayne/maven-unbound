@@ -29,7 +29,7 @@ import org.json4s.native.JsonMethods
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{ read, write, writePretty }
 
-trait CommonJsonReaderHelper {
+trait CommonJsonReader extends Labels {
 
   implicit val formats: Formats
   implicit val boolReader = DefaultReaders.BooleanReader
@@ -106,8 +106,6 @@ trait CommonJsonReaderHelper {
       Some((name, JArray(v.map { JString(_) }.toList)))
     else None
 }
-
-trait CommonJsonReader extends CommonJsonReaderHelper with Labels
 
 trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
 

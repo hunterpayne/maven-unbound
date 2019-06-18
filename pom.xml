@@ -98,6 +98,18 @@
       <groupId>com.iheart</groupId>
       <artifactId>ficus_${version.scala.epoch}</artifactId>
       <version>1.4.6</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.scala-lang</groupId>
+	  <artifactId>scala-library</artifactId>
+	</exclusion>
+	<!--
+	<exclusion>
+	  <groupId>org.scala-lang.modules</groupId>
+	  <artifactId>scala-xml_${version.scala.epoch}</artifactId>
+	</exclusion>
+	-->
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.json4s</groupId>
@@ -119,6 +131,12 @@
       <artifactId>scalatest_${version.scala.epoch}</artifactId>
       <version>${version.scalatest}</version>
       <scope>test</scope>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.scala-lang.modules</groupId>
+	  <artifactId>scala-xml_${version.scala.epoch}</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
