@@ -17,6 +17,7 @@
 
 package org.apache.maven.unbound
 
+import java.io.{ ObjectInputStream, ObjectOutputStream }
 import java.util.Properties
 
 import scala.xml.Elem
@@ -27,6 +28,12 @@ import org.json4s._
 case object Project extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ProjectSerializer extends CustomSerializer[Project](format => (
     {
@@ -65,6 +72,7 @@ case object Project extends CommonJsonReader {
               readObject[Reporting](obj, ReportingStr),
               readObjectSequence[Profile](fields, Profiles)
             )
+          case _ => assert(false); null
         }
     },
     {

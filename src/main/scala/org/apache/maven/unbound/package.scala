@@ -75,85 +75,89 @@ package object unbound {
     }
 
     def appendNode(path: String, parent: Config, el: Node): ConfigValue =
-      el match {
-        case e: Elem =>
-          // a simple value
-          if (e.child.forall { _.isInstanceOf[Text] }) {
-            ConfigValueFactory.fromAnyRef(toAnyRef(e.text.trim))
+      if (el != null) {
+        el match {
+          case e: Elem =>
+            // a simple value
+            if (e.child.forall { _.isInstanceOf[Text] }) {
+              ConfigValueFactory.fromAnyRef(toAnyRef(e.text.trim))
 
-            // an Archiver
-          } else if (e.label == "archive") {
-            val a = new Archiver(e)
-            ConfigFactory.parseString(JsonWriter.writeArchiver(a)).root()
+              // an Archiver
+            } else if (e.label == SL.Archive.toString) {
+              val a = new Archiver(e)
+              ConfigFactory.parseString(JsonWriter.writeArchiver(a)).root()
 
-            // a Dependency object
-          } else if (e.child.forall {
-            case ele: Elem => ele.label == SL.DependencyStr.toString
-            case t: Text => t.text.trim == ""
-            case _ => false
-          }) {
-            val listInJava = e.child.map {
-              appendNode(path, parent, _) }.filter { _ != null}.asJava
-            ConfigValueFactory.fromIterable(listInJava)
+              // a Dependency object
+            } else if (e.child.forall {
+              case ele: Elem => ele.label == SL.DependencyStr.toString
+              case t: Text => t.text.trim == ""
+              case _ => false
+            }) {
+              val listInJava = e.child.map {
+                appendNode(path, parent, _) }.filter { _ != null}.asJava
+              ConfigValueFactory.fromIterable(listInJava)
 
-            // a property map (ie Map[String, String])
-          } else if (e.child.forall {
-            case el: Elem => el.label == SL.PropertyStr.toString
-            case t: Text => t.text.trim == ""
-            case _ => false
-          }) {
-            val mapInJava = (e \ SL.PropertyStr).map { el =>
-              ((el \ SL.Name).text, (el \ SL.ValueStr).text) }.toMap.asJava
-            ConfigValueFactory.fromMap(mapInJava)
+              // a property map (ie Map[String, String])
+            } else if (e.child.forall {
+              case el: Elem => el.label == SL.PropertyStr.toString
+              case t: Text => t.text.trim == ""
+              case _ => false
+            }) {
+              val mapInJava = (e \ SL.PropertyStr).map { el =>
+                ((el \ SL.Name).text, (el \ SL.ValueStr).text) }.toMap.asJava
+              ConfigValueFactory.fromMap(mapInJava)
 
-            // a list
-          } else if (e.child.forall {
-            case el: Elem => e.label.startsWith(el.label)
-            case t: Text => t.text.trim == ""
-            case _ => false
-          }) {
-            val listInJava = e.child.map {
-              appendNode(path, parent, _) }.filter { _ != null }.asJava
-            ConfigValueFactory.fromIterable(listInJava)
+              // a list
+            } else if (e.child.forall {
+              case el: Elem => e.label.startsWith(el.label)
+              case t: Text => t.text.trim == ""
+              case _ => false
+            }) {
+              val listInJava = e.child.map {
+                appendNode(path, parent, _) }.filter { _ != null }.asJava
+              ConfigValueFactory.fromIterable(listInJava)
 
-          } else {
-            val implAttr = (e \ ("@" + SL.Implementation))
-            val mapInScala: Map[String, ConfigValue] =
-              e.child.map {
-                case ele: Elem =>
-                  val newPath =
-                    if (path != "") path + "." + ele.label else ele.label
-                  (ele.label, appendNode(newPath, parent, ele))
-                case t: Text => (SL.TextStr.toString, null)
-              }.filter { case(k, v) => v != null }.toMap
-            val map = mapInScala.foldLeft(parent) { case(c, (k, v)) =>
-              c.withValue(k, v) }.root()
-
-            // resource transformer
-            if (e.label == SL.Transformer.toString && !implAttr.isEmpty) {
-              map.withValue(
-                SL.Implementation,
-                ConfigValueFactory.fromAnyRef(implAttr.text.trim))
             } else {
-              map
+              val implAttr = (e \ ("@" + SL.Implementation))
+              val mapInScala: Map[String, ConfigValue] =
+                e.child.map {
+                  case ele: Elem =>
+                    val newPath =
+                      if (path != "") path + "." + ele.label else ele.label
+                    (ele.label, appendNode(newPath, parent, ele))
+                  case t: Text => (SL.TextStr.toString, null)
+                }.filter { case(k, v) => v != null }.toMap
+              val map = mapInScala.foldLeft(parent) { case(c, (k, v)) =>
+                c.withValue(k, v) }.root()
+
+              // resource transformer
+              if (e.label == SL.Transformer.toString && !implAttr.isEmpty) {
+                map.withValue(
+                  SL.Implementation,
+                  ConfigValueFactory.fromAnyRef(implAttr.text.trim))
+              } else {
+                map
+              }
             }
-          }
-        case t: Text =>
-          if (t.text.trim != "")
-            ConfigValueFactory.fromAnyRef(toAnyRef(t.text.trim))
-          else null
-        case c: Comment =>
-          val epty = ConfigFactory.empty()
-          val list = new java.util.ArrayList[java.lang.String]()
-          list.add(c.text)
-          epty.root().withOrigin(epty.origin().withComments(list))
-        case n: Node =>
-          println("n " + n)
-          assert(false)
-          null
+          case t: Text =>
+            if (t.text.trim != "")
+              ConfigValueFactory.fromAnyRef(toAnyRef(t.text.trim))
+            else null
+          case c: Comment =>
+            val epty = ConfigFactory.empty()
+            val list = new java.util.ArrayList[java.lang.String]()
+            list.add(c.text)
+            epty.root().withOrigin(epty.origin().withComments(list))
+          case n: Node =>
+            println("n " + n)
+            assert(false)
+            null
+        }
+      } else {
+        null
       }
 
-    val empty = ConfigFactory.empty();
+    val empty = ConfigFactory.empty()
     val childConfs =
       elem.child.map { ch => (ch.label, appendNode(ch.label, empty, ch)) }
     childConfs.foldLeft(ConfigFactory.empty()) { case(c, (k, v)) =>
@@ -181,9 +185,9 @@ package object unbound {
     val children: Seq[(String, ConfigValue)] = config.root().asScala.toSeq
 
     def makeElem(key: String, value: ConfigValue): Elem =
-      if (key == "archive") {
-        HoconReader.readArchiver(value.atKey("archive")).xml
-      } else {
+      if (key == SL.Archive.toString) {
+        HoconReader.readArchiver(value.atKey(SL.Archive)).xml
+      } else if (value != null) {
         value match {
           case l: ConfigList =>
             val childElems = l.asScala.map { it => makeElem(singular(key), it) }
@@ -220,7 +224,7 @@ package object unbound {
                   // a Maven archiver
                   val arch = HoconReader.readArchiver(m.toConfig())
                   Seq(arch.xml) ++
-                  mS.filter { _._1 == "archive" }.map { case(k, v) =>
+                  mS.filter { _._1 == SL.Archive.toString }.map { case(k, v) =>
                     makeElem(k, v) }
                 } else {
                   // a Properties object
@@ -242,6 +246,8 @@ package object unbound {
             val value = removeQuotes(v.render())
             new Elem(null, key, Null, TopScope, new Text(value))
         }
+      } else {
+        null
       }
 
     val childElems: Seq[Elem] =
@@ -253,18 +259,22 @@ package object unbound {
     import scala.collection.JavaConverters._
 
     def fromJson(v: JValue): Any =
-      v match {
-        case JNull => null
-        case s: JString => s.s
-        case b: JBool => b.value
-        case d: JDecimal => d.num
-        case d: JDouble => d.num
-        case i: JInt => i.num
-        case o: JObject => ConfigValueFactory.fromMap(fromJsonObject(o))
-        case a: JArray =>
-          val iter = a.arr.map { fromJson(_) }.asJava
-          ConfigValueFactory.fromIterable(iter)
-        case v: JValue => assert(false); null
+      if (v != null) {
+        v match {
+          case JNull => null
+          case s: JString => s.s
+          case b: JBool => b.value
+          case d: JDecimal => d.num
+          case d: JDouble => d.num
+          case i: JInt => i.num
+          case o: JObject => ConfigValueFactory.fromMap(fromJsonObject(o))
+          case a: JArray =>
+            val iter = a.arr.map { fromJson(_) }.asJava
+            ConfigValueFactory.fromIterable(iter)
+          case v: JValue => assert(false); null
+        }
+      } else {
+        null
       }
 
     def fromJsonObject(jobj: JObject): java.util.Map[String, Any] =

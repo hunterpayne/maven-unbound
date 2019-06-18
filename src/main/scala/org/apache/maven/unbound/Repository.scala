@@ -17,6 +17,7 @@
 
 package org.apache.maven.unbound
 
+import java.io.{ ObjectInputStream, ObjectOutputStream }
 import java.util.Locale
 
 import scala.xml.Elem
@@ -27,6 +28,12 @@ import org.json4s._
 case object DistributionRepository extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class DistributionRepositorySerializer
       extends CustomSerializer[DistributionRepository](format => (
@@ -119,6 +126,12 @@ case object RepositoryPolicy extends CommonJsonReader {
   val Warn = "warn"
   val Daily = "daily"
 
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
+
   class RepositoryPolicySerializer
       extends CustomSerializer[RepositoryPolicy](format => (
     {
@@ -175,6 +188,12 @@ case object Repository extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
+
   class RepositorySerializer
       extends CustomSerializer[Repository](format => (
     {
@@ -182,8 +201,8 @@ case object Repository extends CommonJsonReader {
         new Repository(
           readObject[RepositoryPolicy](obj, Releases),
           readObject[RepositoryPolicy](obj, Snapshots),
-          readStr(fields, Id).get,
-          readStr(fields, Name).get,
+          readStr(fields, Id).getOrElse(null),
+          readStr(fields, Name).getOrElse(null),
           readStr(fields, UrlStr).getOrElse(null),
           readStr(fields, Layout).getOrElse(DefaultStr)
         )

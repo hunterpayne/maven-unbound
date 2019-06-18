@@ -16,6 +16,8 @@
  */
 package org.apache.maven.unbound
 
+import java.io.{ ObjectInputStream, ObjectOutputStream }
+
 import scala.xml.Elem
 
 import com.typesafe.config.ConfigFactory
@@ -24,6 +26,12 @@ import org.json4s._
 case object MailingList extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class MailingListSerializer extends CustomSerializer[MailingList](format => (
     {

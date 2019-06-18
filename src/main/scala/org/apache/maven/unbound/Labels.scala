@@ -17,15 +17,17 @@
 
 package org.apache.maven.unbound
 
+import java.io.{ ObjectInputStream, ObjectOutputStream }
+
 trait Labels {
 
   sealed trait Str
   implicit def strToString(s: Str): String = s.toString
 
-  object ParentStr extends Str {
+  protected[unbound] object ParentStr extends Str {
     override def toString(): String = "parent"
   }
-  object OrganizationStr extends Str {
+  protected[unbound] object OrganizationStr extends Str {
     override def toString(): String = "organization"
   }
   object BuildStr extends Str {
@@ -467,6 +469,75 @@ trait Labels {
   }
   object Implementation extends Str {
     override def toString(): String = "implementation"
+  }
+  object AddMavenDescriptor extends Str {
+    override def toString(): String = "addMavenDescriptor"
+  }
+  object Compress extends Str {
+    override def toString(): String = "compress"
+  }
+  object Forced extends Str {
+    override def toString(): String = "forced"
+  }
+  object Index extends Str {
+    override def toString(): String = "index"
+  }
+  object ManifestStr extends Str {
+    override def toString(): String = "manifest"
+  }
+  object ManifestEntries extends Str {
+    override def toString(): String = "manifestEntries"
+  }
+  object ManifestFile extends Str {
+    override def toString(): String = "manifestFile"
+  }
+  object ManifestSections extends Str {
+    override def toString(): String = "manifestSections"
+  }
+  object ManifestSectionStr extends Str {
+    override def toString(): String = "manifestSection"
+  }
+  object PomPropertiesFile extends Str {
+    override def toString(): String = "pomPropertiesFile"
+  }
+  object AddClasspath extends Str {
+    override def toString(): String = "addClasspath"
+  }
+  object AddDefaultEntries extends Str {
+    override def toString(): String = "addDefaultEntries"
+  }
+  object AddDefaultImplementationEntries extends Str {
+    override def toString(): String = "addDefaultImplementationEntries"
+  }
+  object AddDefaultSpecificationEntries extends Str {
+    override def toString(): String = "addDefaultSpecificationEntries"
+  }
+  object AddBuildEnvironmentEntries extends Str {
+    override def toString(): String = "addBuildEnvironmentEntries"
+  }
+  object AddExtensions extends Str {
+    override def toString(): String = "addExtensions"
+  }
+  object ClasspathLayoutType extends Str {
+    override def toString(): String = "classpathLayoutType"
+  }
+  object ClasspathPrefix extends Str {
+    override def toString(): String = "classpathPrefix"
+  }
+  object CustomClasspathLayout extends Str {
+    override def toString(): String = "customClasspathLayout"
+  }
+  object MainClass extends Str {
+    override def toString(): String = "mainClass"
+  }
+  object PackageName extends Str {
+    override def toString(): String = "packageName"
+  }
+  object UseUniqueVersions extends Str {
+    override def toString(): String = "useUniqueVersions"
+  }
+  object Simple extends Str {
+    override def toString(): String = "simple"
   }
 
 

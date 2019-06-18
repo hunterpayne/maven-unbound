@@ -18,7 +18,7 @@
 package org.apache.maven.unbound
 
 import java.io.{
-  InputStream, InputStreamReader,
+  InputStream, InputStreamReader, ObjectInputStream, ObjectOutputStream,
   OutputStream, OutputStreamWriter, Reader, Writer }
 
 import scala.reflect.Manifest
@@ -29,7 +29,7 @@ import org.json4s.native.JsonMethods
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{ read, write, writePretty }
 
-trait CommonJsonReader extends Labels {
+trait CommonJsonReaderHelper {
 
   implicit val formats: Formats
   implicit val boolReader = DefaultReaders.BooleanReader
@@ -53,7 +53,7 @@ trait CommonJsonReader extends Labels {
     }
 
   protected def readProperties(
-    obj: JObject, key: String = "properties"): Map[String, String] =
+    obj: JObject, key: String = SL.PropertiesStr): Map[String, String] =
     (obj \ key) match {
       case JObject(fields) =>
         fields.map { case((key, v)) => (key, v.as[String]) }.toMap
@@ -106,6 +106,8 @@ trait CommonJsonReader extends Labels {
       Some((name, JArray(v.map { JString(_) }.toList)))
     else None
 }
+
+trait CommonJsonReader extends CommonJsonReaderHelper with Labels
 
 trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
 

@@ -17,7 +17,7 @@
 
 package org.apache.maven.unbound
 
-import java.io.{ File, FileWriter, Writer }
+import java.io.{ File, FileOutputStream, OutputStreamWriter, Writer }
 
 import scala.util.Try
 import scala.xml.{ Elem, PrettyPrinter, XML }
@@ -38,7 +38,8 @@ trait Writeable {
   def writePOM(writer: Writer): Unit = writer.write(toXmlString)
 
   def writePOM(filename: String): Unit = {
-    val writer = new FileWriter(new File(filename))
+    val writer =
+      new OutputStreamWriter(new FileOutputStream(new File(filename)), "UTF-8")
     try { writePOM(writer) } finally { writer.close() }
   }
 }

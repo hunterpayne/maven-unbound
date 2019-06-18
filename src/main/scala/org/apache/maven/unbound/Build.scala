@@ -17,7 +17,7 @@
 
 package org.apache.maven.unbound
 
-import java.io.StringReader
+import java.io.{ ObjectInputStream, ObjectOutputStream, StringReader }
 import java.util.Locale
 
 import scala.xml.Elem
@@ -35,6 +35,12 @@ case object Build extends CommonJsonReader {
   val defTestOutputDir = "target/test-classes"
   val defResourcesDir = "src/main/resources"
   val defTestResourcesDir = "src/test/resources"
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class BuildSerializer extends CustomSerializer[Build](format => (
     {
@@ -233,6 +239,12 @@ case class Extension(groupId: String, artifactId: String, version: String) {
 case object Resource extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ResourceSerializer extends CustomSerializer[Resource](format => (
     {

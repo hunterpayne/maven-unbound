@@ -71,7 +71,11 @@ on the fly and calling normal Maven.
 More unit tests are necessary but the basic functionality is finished and 
 works.  Perhaps there are a few places where defaults are not handled 
 correctly but mostly the code is working now.  Exotic configuration elements
-could also have issues.  But this is alpha code for the next few days or so.
+could also have issues.  This is beta code for the next week at least.
+
+We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
+to Security CVE reports.  A basic maven site now can be generated via
+```mvn site```
 
 Because we don't have code that directly translates Project to Config, we 
 can't support transforming XML comments.  This is because to generate HOCON, 

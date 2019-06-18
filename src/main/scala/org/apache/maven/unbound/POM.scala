@@ -17,6 +17,8 @@
 
 package org.apache.maven.unbound
 
+import java.io.{ ObjectInputStream, ObjectOutputStream }
+
 import scala.xml.{ Elem, Null, Text, TopScope, XML }
 
 import com.typesafe.config.ConfigFactory
@@ -30,6 +32,12 @@ case object Parent extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
   val DefRelativePath = "../pom.xml"
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ParentSerializer extends CustomSerializer[Parent](format => (
     {
@@ -106,6 +114,12 @@ case object License extends CommonJsonReader {
   implicit val formats = JsonReader.formats
   val Repo = "repo"
 
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
+
   class LicenseSerializer extends CustomSerializer[License](format => (
     {
       case obj @ JObject(fields) =>
@@ -159,6 +173,12 @@ case object Scm extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
   val Head = "HEAD"
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ScmSerializer extends CustomSerializer[Scm](format => (
     {
@@ -240,6 +260,12 @@ case object IssueManagement extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
+
   class IssueManagementSerializer
       extends CustomSerializer[IssueManagement](format => (
         {
@@ -282,6 +308,12 @@ case object DistributionManagement extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
   protected def None = "none"
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class DistributionManagementSerializer
       extends CustomSerializer[DistributionManagement](format => (
@@ -337,10 +369,11 @@ case class DistributionManagement(
 
   def makeModelObject(): org.apache.maven.model.DistributionManagement = {
     val mgmt = new org.apache.maven.model.DistributionManagement()
-    mgmt.setRepository(repository.makeModelObject())
+    if (repository != null) mgmt.setRepository(repository.makeModelObject())
     if (snapshotRepository != null)
       mgmt.setSnapshotRepository(snapshotRepository.makeModelObject())
-    else mgmt.setSnapshotRepository(repository.makeModelObject())
+    else if (repository != null)
+      mgmt.setSnapshotRepository(repository.makeModelObject())
     if (site != null) mgmt.setSite(site.makeModelObject())
     if (downloadUrl != null) mgmt.setDownloadUrl(downloadUrl)
     if (relocation != null) mgmt.setRelocation(relocation.makeModelObject())
@@ -352,6 +385,12 @@ case class DistributionManagement(
 case object Site extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class SiteSerializer extends CustomSerializer[Site](format => (
     {
@@ -405,6 +444,12 @@ case class Site(
 case object Relocation extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class RelocationSerializer extends CustomSerializer[Relocation](format => (
     {

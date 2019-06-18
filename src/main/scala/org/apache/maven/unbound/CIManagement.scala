@@ -17,6 +17,7 @@
 
 package org.apache.maven.unbound
 
+import java.io.{ ObjectInputStream, ObjectOutputStream }
 import java.util.Locale
 
 import scala.xml.Elem
@@ -28,6 +29,12 @@ case object CIManagement extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
   protected def None = "none"
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class CIManagementSerializer
       extends CustomSerializer[CIManagement](format => (
@@ -79,6 +86,12 @@ case class CIManagement(
 case object Notifier extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class NotifierSerializer
       extends CustomSerializer[Notifier](format => (

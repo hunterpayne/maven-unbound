@@ -17,6 +17,7 @@
 
 package org.apache.maven.unbound
 
+import java.io.{ ObjectInputStream, ObjectOutputStream }
 import java.util.Locale
 
 import scala.xml.Elem
@@ -27,6 +28,12 @@ import org.json4s._
 case object Profile extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ProfileSerializer extends CustomSerializer[Profile](format => (
     {
@@ -128,7 +135,7 @@ case class Profile(
   def makeModelObject(): org.apache.maven.model.Profile = {
     val profile = new org.apache.maven.model.Profile()
     profile.setId(id)
-    profile.setActivation(activation.makeModelObject())
+    if (activation != null) profile.setActivation(activation.makeModelObject())
     if (build != null) profile.setBuild(build.makeModelObject())
     modules.foreach { module => profile.addModule(module) }
     if (distributionManagement != null)
@@ -151,6 +158,12 @@ case class Profile(
 case object Activation extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ActivationSerializer extends CustomSerializer[Activation](format => (
     {
@@ -216,6 +229,12 @@ case class Activation(
 case object ActivationOS extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ActivationOSSerializer
       extends CustomSerializer[ActivationOS](format => (
@@ -308,6 +327,12 @@ case object BuildBase extends CommonJsonReader {
   implicit val formats = JsonReader.formats
   val defResourcesDir = "src/main/resources"
   val defTestResourcesDir = "src/test/resources"
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class BuildBaseSerializer extends CustomSerializer[BuildBase](format => (
     {

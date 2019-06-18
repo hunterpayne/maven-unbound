@@ -213,6 +213,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
       val project2 = new Project(scala.xml.XML.loadString(xmlStr))
       project2.toString should be (project1.toString)
+      project2.makeModelObject() // just to make sure it doesn't NPE
 
     } finally {
       is.close()
@@ -381,6 +382,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
       val project2 = new Project(scala.xml.XML.loadString(xmlStr))
       project2.toString should be (project1.toString)
+      project2.makeModelObject() // just to make sure it doesn't NPE
 
       val is2 = getClass().getClassLoader.getResourceAsStream("pom2-json.xml")
       try {
@@ -472,6 +474,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
       val project2 = new Project(scala.xml.XML.loadString(xmlStr))
       project2.toString should be (project1.toString)
+      project2.makeModelObject() // just to make sure it doesn't NPE
 
       val is2 = getClass().getClassLoader.getResourceAsStream("pom3-json.xml")
       try {
@@ -1097,6 +1100,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
       val project2 = new Project(scala.xml.XML.loadString(xmlStr))
       project2.toString should be (project1.toString)
+      project2.makeModelObject() // just to make sure it doesn't NPE
 
       val is2 = getClass().getClassLoader.getResourceAsStream("pom4-json.xml")
       try {

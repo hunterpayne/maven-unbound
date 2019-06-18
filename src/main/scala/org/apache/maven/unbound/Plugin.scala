@@ -17,7 +17,7 @@
 
 package org.apache.maven.unbound
 
-import java.io.StringReader
+import java.io.{ ObjectInputStream, ObjectOutputStream, StringReader }
 import java.util.Locale
 
 import scala.xml.Elem
@@ -30,6 +30,12 @@ import org.apache.maven.shared.utils.xml.Xpp3DomBuilder
 case object Plugin extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class PluginSerializer extends CustomSerializer[Plugin](format => (
     {
@@ -129,6 +135,12 @@ case class Plugin(
 case object Execution extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ExecutionSerializer extends CustomSerializer[Execution](format => (
     {

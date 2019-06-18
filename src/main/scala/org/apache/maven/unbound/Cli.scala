@@ -17,7 +17,7 @@
 
 package org.apache.maven.unbound
 
-import java.io.{ File, FileInputStream, FileWriter }
+import java.io.{ File, FileInputStream, FileOutputStream, OutputStreamWriter }
 
 import scala.io.Source
 import scala.xml.XML
@@ -33,7 +33,8 @@ object Cli {
   def createPomHoconFiles(at: String, project: Project): Unit = {
 
     val hocon = ConfigFactory.parseString(JsonWriter.writeConcisePOM(project))
-    val writer = new FileWriter(new File(at + hoconFileName))
+    val writer = new OutputStreamWriter(
+      new FileOutputStream(new File(at + hoconFileName)), "UTF-8")
     val options = ConfigRenderOptions.defaults().setOriginComments(false)
     try {
       writer.write(hocon.root().render(options))
@@ -50,7 +51,8 @@ object Cli {
   def createPomJsonFiles(at: String, project: Project): Unit = {
 
     val jsonStr = JsonWriter.writePOM(project)
-    val writer = new FileWriter(new File(at + jsonFileName))
+    val writer = new OutputStreamWriter(
+      new FileOutputStream(new File(at + jsonFileName)), "UTF-8")
     try {
       writer.write(jsonStr)
       writer.flush()
@@ -76,6 +78,8 @@ object Cli {
         createFile(s, project)
       } catch {
         case e: Exception => e.printStackTrace()
+      } finally {
+        xmlIn.close()
       }
     } else {
 
@@ -86,7 +90,8 @@ object Cli {
   def createPomXmlFiles(at: String, project: Project, from: String): Unit = {
 
     val xmlStr = project.toXmlString
-    val writer = new FileWriter(new File(at + xmlFileName))
+    val writer = new OutputStreamWriter(
+      new FileOutputStream(new File(at + xmlFileName)), "UTF-8")
     try {
       writer.write(xmlStr)
       writer.flush()

@@ -17,48 +17,56 @@
 
 package org.apache.maven.unbound
 
+import java.io.{ ObjectInputStream, ObjectOutputStream }
+
 import scala.xml.Elem
 
 import com.typesafe.config.ConfigFactory
 import org.json4s._
 
-protected[unbound] case object Archiver extends CommonJsonReader {
+protected[unbound] object Archiver extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ArchiverSerializer extends CustomSerializer[Archiver](format => (
     {
       case obj @ JObject(fields) =>
         new Archiver(
-          readBool(fields, "addMavenDescriptor").getOrElse(true),
-          readBool(fields, "compress").getOrElse(true),
-          readBool(fields, "forced").getOrElse(true),
-          readBool(fields, "index").getOrElse(false),
-          readObject[ManifestObj](obj, "manifest"),
-          readProperties(obj, "manifestEntries"),
-          readStr(fields, "manifestFile").getOrElse(null),
-          readObjectSequence[ManifestSection](fields, "manifestSections"),
-          readStr(fields, "pomPropertiesFile").getOrElse(null)
+          readBool(fields, AddMavenDescriptor).getOrElse(true),
+          readBool(fields, Compress).getOrElse(true),
+          readBool(fields, Forced).getOrElse(true),
+          readBool(fields, Index).getOrElse(false),
+          readObject[ManifestObj](obj, ManifestStr),
+          readProperties(obj, ManifestEntries),
+          readStr(fields, ManifestFile).getOrElse(null),
+          readObjectSequence[ManifestSection](fields, ManifestSections),
+          readStr(fields, PomPropertiesFile).getOrElse(null)
         )
     },
     {
       case a: Archiver =>
         JObject(Seq[Option[JField]](
-          writeBool("addMavenDescriptor", a.addMavenDescriptor, true),
-          writeBool("compress", a.compress, true),
-          writeBool("forced", a.forced, true),
-          writeBool("index", a.index, false),
-          writeObject("manifest", a.manifest),
-          writeProperties("manifestEntries", a.manifestEntries),
-          writeStr("manifestFile", a.manifestFile),
-          writeObjectSequence("manifestSections", a.manifestSections),
-          writeStr("pomPropertiesFile", a.pomPropertiesFile)
+          writeBool(AddMavenDescriptor, a.addMavenDescriptor, true),
+          writeBool(Compress, a.compress, true),
+          writeBool(Forced, a.forced, true),
+          writeBool(Index, a.index, false),
+          writeObject(ManifestStr, a.manifest),
+          writeProperties(ManifestEntries, a.manifestEntries),
+          writeStr(ManifestFile, a.manifestFile),
+          writeObjectSequence(ManifestSections, a.manifestSections),
+          writeStr(PomPropertiesFile, a.pomPropertiesFile)
         ).flatten.toList)
     }
   ))
 }
 
-protected[unbound] case class Archiver(
+case class Archiver(
   addMavenDescriptor: Boolean = true,
   compress: Boolean = true,
   forced: Boolean = true,
@@ -71,19 +79,19 @@ protected[unbound] case class Archiver(
 ) {
 
   def this(elem: Elem) = this(
-    emptyToDefaultBool((elem \ "addMavenDescriptor").text, true),
-    emptyToDefaultBool((elem \ "compress").text, true),
-    emptyToDefaultBool((elem \ "forced").text, true),
-    emptyToDefaultBool((elem \ "index").text, false),
-    (elem \ "manifest").map { case e: Elem =>
+    emptyToDefaultBool((elem \ SL.AddMavenDescriptor).text, true),
+    emptyToDefaultBool((elem \ SL.Compress).text, true),
+    emptyToDefaultBool((elem \ SL.Forced).text, true),
+    emptyToDefaultBool((elem \ SL.Index).text, false),
+    (elem \ SL.ManifestStr).map { case e: Elem =>
       new ManifestObj(e) }.headOption.getOrElse(null),
-    (elem \ "manifestEntries").headOption.map(
+    (elem \ SL.ManifestEntries).headOption.map(
       _.child.filter(_.isInstanceOf[Elem]).map { e =>
         (e.label, e.text.trim) }.toMap).getOrElse(Map[String, String]()),
-    emptyToNull((elem \ "manifestFile").text.trim),
-    (elem \ "manifestSections" \ "manifestSection").map { case e: Elem =>
+    emptyToNull((elem \ SL.ManifestFile).text.trim),
+    (elem \ SL.ManifestSections \ SL.ManifestSectionStr).map { case e: Elem =>
       new ManifestSection(e) },
-    emptyToNull((elem \ "pomPropertiesFile").text)
+    emptyToNull((elem \ SL.PomPropertiesFile).text)
   )
 
   lazy val xml =
@@ -104,48 +112,54 @@ protected[unbound] case class Archiver(
     </archive>
 }
 
-case object ManifestObj extends CommonJsonReader {
+protected[unbound] object ManifestObj extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ManifestSerializer extends CustomSerializer[ManifestObj](format => (
     {
       case obj @ JObject(fields) =>
         new ManifestObj(
-          readBool(fields, "addClasspath").getOrElse(false),
-          readBool(fields, "addDefaultEntries").getOrElse(true),
-          readBool(fields, "addDefaultImplementationEntries").getOrElse(false),
-          readBool(fields, "addDefaultSpecificationEntries").getOrElse(false),
-          readBool(fields, "addBuildEnvironmentEntries").getOrElse(false),
-          readBool(fields, "addExtensions").getOrElse(false),
-          readStr(fields, "classpathLayoutType").getOrElse("simple"),
-          readStr(fields, "classpathPrefix").getOrElse(""),
-          readStr(fields, "customClasspathLayout").getOrElse(null),
-          readStr(fields, "mainClass").getOrElse(null),
-          readStr(fields, "packageName").getOrElse(null),
-          readBool(fields, "useUniqueVersions").getOrElse(true)
+          readBool(fields, AddClasspath).getOrElse(false),
+          readBool(fields, AddDefaultEntries).getOrElse(true),
+          readBool(fields, AddDefaultImplementationEntries).getOrElse(false),
+          readBool(fields, AddDefaultSpecificationEntries).getOrElse(false),
+          readBool(fields, AddBuildEnvironmentEntries).getOrElse(false),
+          readBool(fields, AddExtensions).getOrElse(false),
+          readStr(fields, ClasspathLayoutType).getOrElse(Simple),
+          readStr(fields, ClasspathPrefix).getOrElse(""),
+          readStr(fields, CustomClasspathLayout).getOrElse(null),
+          readStr(fields, MainClass).getOrElse(null),
+          readStr(fields, PackageName).getOrElse(null),
+          readBool(fields, UseUniqueVersions).getOrElse(true)
         )
     },
     {
       case m: ManifestObj =>
         JObject(Seq[Option[JField]](
-          writeBool("addClasspath", m.addClasspath, false),
-          writeBool("addDefaultEntries", m.addDefaultEntries, true),
+          writeBool(AddClasspath, m.addClasspath, false),
+          writeBool(AddDefaultEntries, m.addDefaultEntries, true),
           writeBool(
-            "addDefaultImplementationEntries",
+            AddDefaultImplementationEntries,
             m.addDefaultImplementationEntries, false),
           writeBool(
-            "addDefaultSpecificationEntries", m.addDefaultSpecificationEntries,
+            AddDefaultSpecificationEntries, m.addDefaultSpecificationEntries,
             false),
           writeBool(
-            "addBuildEnvironmentEntries", m.addBuildEnvironmentEntries, false),
-          writeBool("addExtensions", m.addExtensions, false),
-          writeStr("classpathLayoutType", m.classpathLayoutType, "simple"),
-          writeStr("classpathPrefix", m.classpathPrefix, ""),
-          writeStr("customClasspathLayout", m.customClasspathLayout),
-          writeStr("mainClass", m.mainClass),
-          writeStr("packageName", m.packageName),
-          writeBool("useUniqueVersions", m.useUniqueVersions, true)
+            AddBuildEnvironmentEntries, m.addBuildEnvironmentEntries, false),
+          writeBool(AddExtensions, m.addExtensions, false),
+          writeStr(ClasspathLayoutType, m.classpathLayoutType, Simple),
+          writeStr(ClasspathPrefix, m.classpathPrefix, ""),
+          writeStr(CustomClasspathLayout, m.customClasspathLayout),
+          writeStr(MainClass, m.mainClass),
+          writeStr(PackageName, m.packageName),
+          writeBool(UseUniqueVersions, m.useUniqueVersions, true)
         ).flatten.toList)
     }
   ))
@@ -158,7 +172,7 @@ case class ManifestObj(
   addDefaultSpecificationEntries: Boolean = false,
   addBuildEnvironmentEntries: Boolean = false,
   addExtensions: Boolean = false,
-  classpathLayoutType: String = "simple",
+  classpathLayoutType: String = SL.Simple,
   classpathPrefix: String = "",
   customClasspathLayout: String = null,
   mainClass: String = null,
@@ -166,18 +180,18 @@ case class ManifestObj(
   useUniqueVersions: Boolean = true) {
 
   def this(elem: Elem) = this(
-    emptyToDefaultBool((elem \ "addClasspath").text, false),
-    emptyToDefaultBool((elem \ "addDefaultEntries").text, true),
-    emptyToDefaultBool((elem \ "addDefaultImplementationEntries").text, false),
-    emptyToDefaultBool((elem \ "addDefaultSpecificationEntries").text, false),
-    emptyToDefaultBool((elem \ "addBuildEnvironmentEntries").text, false),
-    emptyToDefaultBool((elem \ "addExtensions").text, false),
-    emptyToDefault((elem \ "classpathLayoutType").text, "simple"),
-    emptyToDefault((elem \ "classpathPrefix").text, ""),
-    emptyToNull((elem \ "customClasspathLayout").text),
-    emptyToNull((elem \ "mainClass").text),
-    emptyToNull((elem \ "packageName").text),
-    emptyToDefaultBool((elem \ "useUniqueVersions").text, true)
+    emptyToDefaultBool((elem \ SL.AddClasspath).text, false),
+    emptyToDefaultBool((elem \ SL.AddDefaultEntries).text, true),
+    emptyToDefaultBool((elem \ SL.AddDefaultImplementationEntries).text, false),
+    emptyToDefaultBool((elem \ SL.AddDefaultSpecificationEntries).text, false),
+    emptyToDefaultBool((elem \ SL.AddBuildEnvironmentEntries).text, false),
+    emptyToDefaultBool((elem \ SL.AddExtensions).text, false),
+    emptyToDefault((elem \ SL.ClasspathLayoutType).text, SL.Simple),
+    emptyToDefault((elem \ SL.ClasspathPrefix).text, ""),
+    emptyToNull((elem \ SL.CustomClasspathLayout).text),
+    emptyToNull((elem \ SL.MainClass).text),
+    emptyToNull((elem \ SL.PackageName).text),
+    emptyToDefaultBool((elem \ SL.UseUniqueVersions).text, true)
   )
 
   lazy val xml =
@@ -191,7 +205,8 @@ case class ManifestObj(
       { if (addBuildEnvironmentEntries)
         <addBuildEnvironmentEntries>true</addBuildEnvironmentEntries> }
       { if (addExtensions) <addExtensions>true</addExtensions> }
-      { if (classpathLayoutType != null && classpathLayoutType != "simple")
+      { if (classpathLayoutType != null &&
+        classpathLayoutType != SL.Simple.toString)
         <classpathLayoutType>{classpathLayoutType}</classpathLayoutType> }
       { if (classpathPrefix != null && classpathPrefix != "")
         <classpathPrefix>{classpathPrefix}</classpathPrefix> }
@@ -203,9 +218,15 @@ case class ManifestObj(
     </manifest>
 }
 
-case object ManifestSection extends CommonJsonReader {
+protected[unbound] object ManifestSection extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
 
   class ManifestSectionSerializer
       extends CustomSerializer[ManifestSection](format => (
@@ -213,14 +234,14 @@ case object ManifestSection extends CommonJsonReader {
           case obj @ JObject(fields) =>
             new ManifestSection(
               readStr(fields, Name).getOrElse(null),
-              readProperties(obj, "manifestEntries")
+              readProperties(obj, ManifestEntries)
             )
         },
         {
           case s: ManifestSection =>
             JObject(Seq[Option[JField]](
               writeStr(Name, s.name),
-              writeProperties("manifestEntries", s.manifestEntries)
+              writeProperties(ManifestEntries, s.manifestEntries)
             ).flatten.toList)
         }
       ))
@@ -232,7 +253,7 @@ case class ManifestSection(
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.Name).text),
-    (elem \ "manifestEntries").headOption.map(
+    (elem \ SL.ManifestEntries).headOption.map(
       _.child.filter(_.isInstanceOf[Elem]).map { e =>
         (e.label, e.text.trim) }.toMap).getOrElse(Map[String, String]())
   )
