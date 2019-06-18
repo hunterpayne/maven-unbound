@@ -343,7 +343,7 @@ case object DistributionManagement extends CommonJsonReader {
 }
 
 case class DistributionManagement(
-  repository: DistributionRepository,
+  repository: DistributionRepository = null,
   snapshotRepository: DistributionRepository = null,
   site: Site = null, downloadUrl: String = null,
   relocation: Relocation = null, status: String = DistributionManagement.None) {
@@ -415,7 +415,8 @@ case object Site extends CommonJsonReader {
 }
 
 case class Site(
-  childInheritUrl: Boolean = true, id: String, name: String, url: String) {
+  childInheritUrl: Boolean = true, id: String = null,
+  name: String = null, url: String = null) {
 
   def this(elem: Elem) = this(
     emptyToDefaultBool((elem \ SL.ChildInheritSiteUrlFP).text.trim, true),

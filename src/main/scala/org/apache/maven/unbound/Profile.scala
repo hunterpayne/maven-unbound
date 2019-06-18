@@ -110,25 +110,32 @@ case class Profile(
                    { if (!modules.isEmpty) <modules>
                      { modules.map { Module(_).xml } }
                    </modules> }
-                   { if (distributionManagement != null) distributionManagement.xml }
-                   { if (!properties.isEmpty) <properties>
+                   { if (distributionManagement != null)
+                     distributionManagement.xml }
+                   { if (properties != null && !properties.isEmpty) <properties>
                      { properties.map { case(k, v) =>
                          PropertyValue(k, v).xml } }
                    </properties> }
-                   { if (!dependencyManagement.isEmpty) <dependencyManagement>
-                     <dependencies>
+                   { if (dependencyManagement != null &&
+                     !dependencyManagement.isEmpty)
+                     <dependencyManagement>
+                       <dependencies>
                        { dependencyManagement.map { _.xml } }
-                     </dependencies>
-                   </dependencyManagement> }
-                   { if (!dependencies.isEmpty) <dependencies>
+                       </dependencies>
+                     </dependencyManagement> }
+                   { if (dependencies != null && !dependencies.isEmpty)
+                     <dependencies>
                      { dependencies.map { _.xml } }
-                   </dependencies> }
-                   { if (!repositories.isEmpty) <repositories>
+                     </dependencies> }
+                   { if (repositories != null && !repositories.isEmpty)
+                     <repositories>
                      { repositories.map { _.xml } }
-                   </repositories> }
-                   { if (!pluginRepositories.isEmpty) <pluginRepositories>
+                     </repositories> }
+                   { if (pluginRepositories != null &&
+                     !pluginRepositories.isEmpty)
+                     <pluginRepositories>
                      { pluginRepositories.map { _.xml } }
-                   </pluginRepositories> }
+                     </pluginRepositories> }
                    { if (reporting != null) reporting.xml }
                  </profile>
 
@@ -141,15 +148,21 @@ case class Profile(
     if (distributionManagement != null)
       profile.setDistributionManagement(
         distributionManagement.makeModelObject())
-    properties.foreach { case(k, v) => profile.addProperty(k, v) }
-    val mgmt = new org.apache.maven.model.DependencyManagement()
-    dependencyManagement.foreach { d =>
-      mgmt.addDependency(d.makeModelObject()) }
-    profile.setDependencyManagement(mgmt)
-    dependencies.foreach { d => profile.addDependency(d.makeModelObject()) }
-    repositories.foreach { r => profile.addRepository(r.makeModelObject()) }
-    pluginRepositories.foreach { repo =>
-      profile.addPluginRepository(repo.makeModelObject()) }
+    if (properties != null)
+      properties.foreach { case(k, v) => profile.addProperty(k, v) }
+    if (dependencyManagement != null) {
+      val mgmt = new org.apache.maven.model.DependencyManagement()
+      dependencyManagement.foreach { d =>
+        mgmt.addDependency(d.makeModelObject()) }
+      profile.setDependencyManagement(mgmt)
+    }
+    if (dependencies != null)
+      dependencies.foreach { d => profile.addDependency(d.makeModelObject()) }
+    if (repositories != null)
+      repositories.foreach { r => profile.addRepository(r.makeModelObject()) }
+    if (pluginRepositories != null)
+      pluginRepositories.foreach { repo =>
+        profile.addPluginRepository(repo.makeModelObject()) }
     if (reporting != null) profile.setReporting(reporting.makeModelObject())
     profile
   }
@@ -208,7 +221,7 @@ case class Activation(
 
   lazy val xml =
     <activation>
-      <activeByDefault>{ if (activeByDefault) SL.TrueStr else SL.FalseStr }</activeByDefault>
+      { if (activeByDefault) <activeByDefault>true</activeByDefault> }
       { if (jdk != null) <jdk>{jdk}</jdk> }
       { if (os != null) os.xml }
       { if (property != null) property.xml }
@@ -276,7 +289,7 @@ case class ActivationOS(
 
   def makeModelObject(): org.apache.maven.model.ActivationOS = {
     val os = new org.apache.maven.model.ActivationOS()
-    os.setName(name)
+    if (name != null) os.setName(name)
     if (family != null) os.setFamily(family)
     if (arch != null) os.setArch(arch)
     if (version != null) os.setVersion(version)
@@ -284,20 +297,20 @@ case class ActivationOS(
   }
 }
 
-case class ActivationProperty(name: String, value: String) {
+case class ActivationProperty(name: String = null, value: String = null) {
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.Name).text), emptyToNull((elem \ SL.ValueStr).text))
 
   lazy val xml = <property>
-                   <name>{name}</name>
-                   <value>{value}</value>
+                   { if (name != null) <name>{name}</name> }
+                   { if (value != null) <value>{value}</value> }
                  </property>
 
   def makeModelObject(): org.apache.maven.model.ActivationProperty = {
     val prop = new org.apache.maven.model.ActivationProperty()
-    prop.setName(name)
-    prop.setValue(value)
+    if (name != null) prop.setName(name)
+    if (value != null) prop.setValue(value)
     prop
   }
 }
@@ -316,8 +329,8 @@ case class ActivationFile(missing: String, exists: String) {
 
   def makeModelObject(): org.apache.maven.model.ActivationFile = {
     val file = new org.apache.maven.model.ActivationFile()
-    file.setMissing(missing)
-    file.setExists(exists)
+    if (missing != null) file.setMissing(missing)
+    if (exists != null) file.setExists(exists)
     file
   }
 }
@@ -373,12 +386,12 @@ case object BuildBase extends CommonJsonReader {
 }
 
 case class BuildBase(
-  defaultGoal: String,
+  defaultGoal: String = null,
   resources: Seq[Resource] =
     Seq[Resource](new Resource(BuildBase.defResourcesDir)),
   testResources: Seq[Resource] =
     Seq[Resource](new Resource(BuildBase.defTestResourcesDir)),
-  directory: String = SL.Target, finalName: String,
+  directory: String = SL.Target, finalName: String = null,
   filters: Seq[String] = Seq[String](),
   pluginManagement: Seq[Plugin] = Seq[Plugin](),
   plugins: Seq[Plugin] = Seq[Plugin]()) {
@@ -409,6 +422,7 @@ case class BuildBase(
         <testResources> { testResources.map { _.testXml } } </testResources> }
       { if (directory != null && directory != SL.Target.toString)
         <directory>{directory}</directory> }
+      { if (finalName != null) <finalName>{finalName}</finalName> }
       { if (!filters.isEmpty)
         <filters> { filters.map { Filter(_).xml } } </filters> }
       { if (!pluginManagement.isEmpty) <pluginManagement>

@@ -60,7 +60,7 @@ case object MailingList extends CommonJsonReader {
 }
 
 case class MailingList(
-  name: String, subscribe: String, unsubscribe: String, post: String,
+  name: String, subscribe: String, unsubscribe: String, post: String = null,
   archive: String = null, otherArchives: Seq[String] = Seq[String]()) {
 
   def this(elem: Elem) = this(
@@ -89,8 +89,8 @@ case class MailingList(
     ml.setName(name)
     ml.setSubscribe(subscribe)
     ml.setUnsubscribe(unsubscribe)
-    ml.setPost(post)
-    ml.setArchive(archive)
+    if (post != null) ml.setPost(post)
+    if (archive != null) ml.setArchive(archive)
     otherArchives.foreach { oa => ml.addOtherArchive(oa) }
     ml
   }

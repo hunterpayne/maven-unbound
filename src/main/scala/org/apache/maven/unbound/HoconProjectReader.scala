@@ -31,28 +31,42 @@ trait HoconProjectReader {
   implicit val developerConfigReader: ValueReader[Developer] =
     ValueReader.relative { config =>
       Developer(
-        config.as[String](Id),
-        config.as[String](Name),
-        config.as[String](Email),
-        config.as[String](UrlStr),
-        config.as[String](OrganizationStr),
-        config.as[String](OrganizationUrl),
-        config.as[Seq[String]](Roles),
-        config.as[String](TimezoneStr),
-        config.as[Map[String, String]](PropertiesStr))
+        if (config.hasPath(Id)) config.as[String](Id) else null,
+        if (config.hasPath(Name)) config.as[String](Name) else null,
+        if (config.hasPath(Email)) config.as[String](Email) else null,
+        if (config.hasPath(UrlStr)) config.as[String](UrlStr) else null,
+        if (config.hasPath(OrganizationStr)) config.as[String](OrganizationStr)
+        else null,
+        if (config.hasPath(OrganizationUrl)) config.as[String](OrganizationUrl)
+        else null,
+        if (config.hasPath(Roles)) config.as[Seq[String]](Roles)
+        else Seq[String](),
+        if (config.hasPath(TimezoneStr)) config.as[String](TimezoneStr)
+        else null,
+        if (config.hasPath(PropertiesStr))
+          config.as[Map[String, String]](PropertiesStr)
+        else Map[String, String]()
+      )
     }
 
   implicit val contributorConfigReader: ValueReader[Contributor] =
     ValueReader.relative { config =>
       Contributor(
-        config.as[String](Name),
-        config.as[String](Email),
-        config.as[String](UrlStr),
-        config.as[String](OrganizationStr),
-        config.as[String](OrganizationUrl),
-        config.as[Seq[String]](Roles),
-        config.as[String](TimezoneStr),
-        config.as[Map[String, String]](SL.PropertiesStr))
+        if (config.hasPath(Name)) config.as[String](Name) else null,
+        if (config.hasPath(Email)) config.as[String](Email) else null,
+        if (config.hasPath(UrlStr)) config.as[String](UrlStr) else null,
+        if (config.hasPath(OrganizationStr)) config.as[String](OrganizationStr)
+        else null,
+        if (config.hasPath(OrganizationUrl)) config.as[String](OrganizationUrl)
+        else null,
+        if (config.hasPath(Roles)) config.as[Seq[String]](Roles)
+        else Seq[String](),
+        if (config.hasPath(TimezoneStr)) config.as[String](TimezoneStr)
+        else null,
+        if (config.hasPath(PropertiesStr))
+          config.as[Map[String, String]](PropertiesStr)
+        else Map[String, String]()
+      )
     }
 
   implicit val ciManagementConfigReader: ValueReader[CIManagement] =
@@ -61,30 +75,51 @@ trait HoconProjectReader {
         if (config.hasPath(SystemStr)) config.getString(SystemStr) else null,
         if (config.hasPath(UrlStr)) config.getString(UrlStr) else null,
         if (config.hasPath(Notifiers)) config.as[Seq[Notifier]](Notifiers)
-        else Seq[Notifier]())
+        else Seq[Notifier]()
+      )
     }
 
   implicit val profileConfigReader: ValueReader[Profile] =
     ValueReader.relative { config =>
       Profile(
-        config.as[String](Id),
-        config.as[Activation](ActivationStr),
-        config.as[BuildBase](BuildStr),
-        config.as[Seq[String]](Modules),
-        config.as[DistributionManagement](DistributionManagementStr),
-        config.as[Map[String, String]](PropertiesStr),
-        config.as[Seq[Dependency]](DependencyManagementStr),
-        config.as[Seq[Dependency]](Dependencies),
-        config.as[Seq[Repository]](Repositories),
-        config.as[Seq[Repository]](PluginRepositories),
-        config.as[Reporting](ReportingStr))
+        if (config.hasPath(Id)) config.as[String](Id) else null,
+        if (config.hasPath(ActivationStr))
+          config.as[Activation](ActivationStr)
+        else null,
+        if (config.hasPath(BuildStr)) config.as[BuildBase](BuildStr) else null,
+        if (config.hasPath(Modules)) config.as[Seq[String]](Modules)
+        else Seq[String](),
+        if (config.hasPath(DistributionManagementStr))
+          config.as[DistributionManagement](DistributionManagementStr)
+        else null,
+        if (config.hasPath(PropertiesStr))
+          config.as[Map[String, String]](PropertiesStr)
+        else null,
+        if (config.hasPath(DependencyManagementStr))
+          config.as[Seq[Dependency]](DependencyManagementStr)
+        else null,
+        if (config.hasPath(Dependencies))
+          config.as[Seq[Dependency]](Dependencies)
+        else null,
+        if (config.hasPath(Repositories))
+          config.as[Seq[Repository]](Repositories)
+        else null,
+        if (config.hasPath(PluginRepositories))
+          config.as[Seq[Repository]](PluginRepositories)
+        else null,
+        if (config.hasPath(ReportingStr)) config.as[Reporting](ReportingStr)
+        else null
+      )
     }
 
   implicit val manifestSectionConfigReader: ValueReader[ManifestSection] =
     ValueReader.relative { config =>
       ManifestSection(
-        config.as[String](Name),
-        config.as[Map[String, String]](ManifestEntries))
+        if (config.hasPath(Name)) config.as[String](Name) else null,
+        if (config.hasPath(ManifestEntries))
+          config.as[Map[String, String]](ManifestEntries)
+        else null
+      )
     }
 
   def readPOM(conf: Config): Project = conf.as[Project](ProjectStr)

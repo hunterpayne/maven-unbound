@@ -91,7 +91,7 @@ case class Contributor(
         <organizationUrl>{organizationUrl}</organizationUrl> }
       { if (!roles.isEmpty) <roles> { roles.map { Role(_).xml } } </roles> }
       { if (timezone != null) <timezone>{timezone}</timezone> }
-      { if (!properties.isEmpty) <properties>
+      { if (properties != null && !properties.isEmpty) <properties>
         { properties.map { case(k, v) => PropertyValue(k, v).xml } }
         </properties> }
     </contributor>
@@ -105,7 +105,8 @@ case class Contributor(
     if (organizationUrl != null) contributor.setOrganizationUrl(organizationUrl)
     roles.foreach { role => contributor.addRole(role) }
     if (timezone != null) contributor.setTimezone(timezone)
-    properties.foreach { case(k, v) => contributor.addProperty(k, v) }
+    if (properties != null)
+      properties.foreach { case(k, v) => contributor.addProperty(k, v) }
     contributor
   }
 }
@@ -170,24 +171,24 @@ case class Developer(
     emptyToNull((elem \ SL.TimezoneStr).text),
     (elem \ SL.PropertiesStr).flatMap(_.map { e => (e.label, e.text) }).toMap)
 
-  lazy val xml = <developer>
-                   <id>{id}</id>
-                   <name>{name}</name>
-                   <email>{email}</email>
-                   { if (url != null) <url>{url}</url> }
-                   { if (organization != null)
-                     <organization>{organization}</organization> }
-                   { if (organizationUrl != null)
-                     <organizationUrl>{organizationUrl}</organizationUrl> }
-                   <roles>
-                     { roles.map { Role(_).xml } }
-                   </roles>
-                   { if (timezone != null) <timezone>{timezone}</timezone> }
-                   <properties>
-                     { properties.map { case(k, v) =>
-                       PropertyValue(k, v).xml } }
-                   </properties>
-                 </developer>
+  lazy val xml =
+    <developer>
+      <id>{id}</id>
+      <name>{name}</name>
+      <email>{email}</email>
+      { if (url != null) <url>{url}</url> }
+      { if (organization != null)
+        <organization>{organization}</organization> }
+      { if (organizationUrl != null)
+        <organizationUrl>{organizationUrl}</organizationUrl> }
+      <roles>
+        { roles.map { Role(_).xml } }
+      </roles>
+      { if (timezone != null) <timezone>{timezone}</timezone> }
+      { if (properties != null && !properties.isEmpty) <properties>
+        { properties.map { case(k, v) => PropertyValue(k, v).xml } }
+        </properties> }
+    </developer>
 
   def makeModelObject(): org.apache.maven.model.Developer = {
     val developer = new org.apache.maven.model.Developer()
@@ -199,7 +200,8 @@ case class Developer(
     if (organizationUrl != null) developer.setOrganizationUrl(organizationUrl)
     roles.foreach { role => developer.addRole(role) }
     if (timezone != null) developer.setTimezone(timezone)
-    properties.foreach { case(k, v) => developer.addProperty(k, v) }
+    if (properties != null)
+      properties.foreach { case(k, v) => developer.addProperty(k, v) }
     developer
   }
 }

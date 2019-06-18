@@ -22,6 +22,17 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <id>My_Artifactory_Releases</id>
       <name>My_Artifactory-releases</name>
       <url>http://my.maven.repository.internal/artifactory/release</url>
+      <releases>
+        <enabled>false</enabled>
+        <updatePolicy>weekly</updatePolicy>
+        <checksumPolicy>strict</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>hourly</updatePolicy>
+        <checksumPolicy>loose</checksumPolicy>
+      </snapshots>
+      <layout>ivy</layout>
     </repository>
     <snapshotRepository>
       <id>My_Artifactory_Snapshots</id>
