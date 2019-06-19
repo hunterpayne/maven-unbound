@@ -1,6 +1,11 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-java -jar $DIR/target/unbound-1.0.0-exec.jar $@
+if test -f $DIR/unbound-1.0.0-exec.jar; then
+  java -jar $DIR/unbound-1.0.0-exec.jar $@
+else
+  # for testing in dev environments
+  java -jar $DIR/target/unbound-1.0.0-exec.jar $@
+fi
 
 if [[ "$*" == *--generate-hocon* ]] || [[ "$*" == *--generate-json* ]] 
 then
