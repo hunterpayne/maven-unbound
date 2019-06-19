@@ -187,6 +187,12 @@ package object unbound {
     def makeElem(key: String, value: ConfigValue): Elem =
       if (key == SL.Archive.toString) {
         HoconReader.readArchiver(value.atKey(SL.Archive)).xml
+      } else if (key.contains(".")) {
+        val tokens: Array[String] = key.split('.').reverse
+        val last = tokens.head
+        tokens.tail.foldLeft(makeElem(last, value)) { case(c, token) =>
+          new Elem(null, token, Null, TopScope, c)
+        }
       } else if (value != null) {
         value match {
           case l: ConfigList =>

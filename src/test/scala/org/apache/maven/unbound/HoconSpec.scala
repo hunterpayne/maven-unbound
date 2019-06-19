@@ -1134,16 +1134,14 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     val project1 = readPOM(ConfigFactory.load(
       "pom4-conf", ConfigParseOptions.defaults(), resolveOpts))
     project1.makeModelObject() // just to make sure it doesn't NPE
-    /*
     project1.toXmlString should be (correct)
 
-    val project2 = new Project(scala.xml.XML.loadString(project1.toXmlString))
+    //val project2 = new Project(scala.xml.XML.loadString(project1.toXmlString))
     // required because Ficus creates Vectors which aren't equal to the
     // Lists created by the XML DOM reading constructors
-    val removedVectors = 
-      project1.toString.replaceAllLiterally("Vector(", "List(")
-    project2.toString should be (removedVectors)
-     */
+    //val removedVectors = 
+    //project1.toString.replaceAllLiterally("Vector(", "List(")
+    //project2.toString should be (removedVectors)
   }
 }
 
