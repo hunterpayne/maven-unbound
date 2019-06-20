@@ -157,11 +157,15 @@ package object unbound {
         null
       }
 
-    val empty = ConfigFactory.empty()
-    val childConfs =
-      elem.child.map { ch => (ch.label, appendNode(ch.label, empty, ch)) }
-    childConfs.foldLeft(ConfigFactory.empty()) { case(c, (k, v)) =>
-      if (v != null) c.withValue(k, v) else c }
+    if (elem != null) {
+      val empty = ConfigFactory.empty()
+      val childConfs =
+        elem.child.map { ch => (ch.label, appendNode(ch.label, empty, ch)) }
+      childConfs.foldLeft(ConfigFactory.empty()) { case(c, (k, v)) =>
+        if (v != null) c.withValue(k, v) else c }
+    } else {
+      null
+    }
   }
 
   private def singular(s: String): String =

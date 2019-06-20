@@ -426,6 +426,18 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <timezone>America/Los_Angeles</timezone>
     </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Bar Foo</name>
+      <email>anyone@no-spam</email>
+      <organization>Apache Foundation</organization>
+      <organizationUrl>https://www.apache.org/</organizationUrl>
+      <roles>
+        <role>contributor</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </contributor>
+  </contributors>
   <build>
     <pluginManagement>
       <plugins>
