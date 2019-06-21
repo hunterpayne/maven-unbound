@@ -19,7 +19,7 @@ package org.apache.maven.unbound
 
 import java.io.{ File, FileReader }
 
-import scala.xml.XML
+import scala.xml.{ Elem, Node, XML }
 
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -46,6 +46,7 @@ class ConfigurationSpec extends FlatSpec with Matchers {
         <george>true</george>
         <float>-179.435</float>
       </configuration>""")
+
     val conf = elemToConfig(elem)
     conf.getString("name") should be("some-string")
     conf.getInt("num") should be(18)
@@ -65,6 +66,7 @@ class ConfigurationSpec extends FlatSpec with Matchers {
           <option>false</option>
         </options>
       </configuration>""")
+
     val conf = elemToConfig(elem)
     val list = conf.getStringList("options")
     list.size should be(4)
@@ -93,6 +95,7 @@ class ConfigurationSpec extends FlatSpec with Matchers {
           </foobar>
         </foobars>
       </configuration>""")
+
     val conf = elemToConfig(elem)
     val list: java.util.List[_ <: ConfigObject] = conf.getObjectList("foobars")
     list.size should be(3)
@@ -121,6 +124,7 @@ class ConfigurationSpec extends FlatSpec with Matchers {
           <name>Apache Foundation</name>
         </thing>
       </configuration>""")
+
     val conf = elemToConfig(elem)
     val person = conf.getObject("person")
     person.get("firstName").unwrapped should be("Jason")
@@ -146,6 +150,7 @@ class ConfigurationSpec extends FlatSpec with Matchers {
           <dead>true</dead>
         </person>
       </configuration>""")
+
     val conf = elemToConfig(elem)
     conf.getString("person.firstName") should be("Foo")
     conf.getString("person.lastName") should be("Bar")
@@ -173,6 +178,7 @@ class ConfigurationSpec extends FlatSpec with Matchers {
           </thing>
         </game>
       </configuration>""")
+
     val conf = elemToConfig(elem)
     val game = conf.getObject("game")
     val person = game.toConfig().getObject("person")
@@ -212,6 +218,7 @@ class ConfigurationSpec extends FlatSpec with Matchers {
           </property>
         </props>
       </configuration>""")
+
     val conf = elemToConfig(elem)
     val props = conf.getObject("props")
     props.size should be(3)
@@ -357,61 +364,351 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     bridge.getString("version") should be("${version.scala.zinc}")
   }
 
-  /*
   behavior of "Translating Typesafe Config(Hocon) to XML"
 
+  it should "translate empty Configurations" in {
+
+    configToElem(null) should be(null)
+    configToElem(ConfigFactory.empty()).toString should be("<configuration/>")
+  }
+
   it should "translate basic types" in {
+
+    val config = ConfigFactory.parseString("""{
+      name : "some-string",
+      num : 18,
+      george : true,
+      float : -179.435
+    }""")
+
+    val elem = configToElem(config)
+    (elem \ "name").text should be("some-string")
+    (elem \ "num").text should be("18")
+    (elem \ "george").text should be("true")
+    (elem \ "float").text should be("-179.435")
+    elem.child.size should be(4)
   }
 
   it should "translate lists of basic types of objects" in {
+
+    val config = ConfigFactory.parseString("""{
+      options : [ "some-string", 1800, true, false ]
+    }""")
+
+    val elem = configToElem(config)
+    val listElem = (elem \ "options").head
+    listElem.child.size should be(4)
+    listElem.child(0).label should be("option")
+    listElem.child(0).text should be("some-string")
+    listElem.child(1).label should be("option")
+    listElem.child(1).text should be("1800")
+    listElem.child(2).label should be("option")
+    listElem.child(2).text should be("true")
+    listElem.child(3).label should be("option")
+    listElem.child(3).text should be("false")
   }
 
+  /*
+   // TODO fix
   it should "translate lists of objects" in {
+    val config = ConfigFactory.parseString("""{
+      foobars : [
+        { name : "ring" }, 
+        { name : "around", url : "http://the.rosey" }, 
+        { name : "pocket full", url : "http://of.poseies" } 
+      ]
+    }""")
+    val elem = configToElem(config)
+    val list = (elem \ "foobars")
+    list.size should be(1)
+    val foobars = list.head
+    foobars.label should be("foobars")
+    val bars = (foobars \ "foobar").toArray
+    bars.size should be(3)
+    println("bars " + bars.mkString(","))
+    bars(0).child.size should be(1)
+    bars(0).label should be("foobar")
+    (bars(0) \ "name") should be("ring")
+    bars(1).child.size should be(2)
+    (bars(1) \ "name").text should be("around")
+    (bars(1) \ "url").text should be("http://the.rosey/")
+    bars(2).child.size should be(2)
+    (bars(2) \ "name").text should be("pocket full")
+    (bars(2) \ "url").text should be("http://of.poseies/")
   }
+   */
 
+  /*
+   // TODO fix
   it should "translate objects" in {
+
+    val config = ConfigFactory.parseString("""{
+      person : { 
+        firstName : "Jason",
+        lastName : "van Zyl"
+      },
+      place : { 
+        city : "Forest Hill",
+        state : "Maryland",
+        country : "U.S."
+      },
+      thing : { 
+        id : "Apache",
+        name : "Apache Foundation"
+      }
+    }""")
+
+    val elem = configToElem(config)
+    println("elem " + elem)
+    val pList = (elem \ "person").toArray
+    pList.size should be(1)
+    (pList(0) \ "firstName").text should be("Jason")
+    (pList(0) \ "lastName").text should be("van Zyl")
+
+    val plList = (elem \ "place").toArray
+    plList.size should be(1)
+    (plList(0) \ "city").text should be("Forest Hill")
+    (plList(0) \ "state").text should be("Maryland")
+    (plList(0) \ "country").text should be("U.S.")
+
+    val tList = (elem \ "thing").toArray
+    tList.size should be(1)
+    (tList(0) \ "id").text should be("Apache")
+    (tList(0) \ "name").text should be("Apache Foundation")
   }
+   */
 
   it should "translate maps of basic types" in {
+
+    val config = ConfigFactory.parseString("""{
+      person : { 
+        firstName : "Foo",
+        lastName : "Bar",
+        age : 174,
+        dead : true
+      }
+    }""")
+    val elem = configToElem(config)
+    val list = (elem \ "person").toArray
+    list.size should be(1)
+    (list(0) \ "firstName").text should be("Foo")
+    (list(0) \ "lastName").text should be("Bar")
+    (list(0) \ "age").text should be("174")
+    (list(0) \ "dead").text should be("true")
   }
 
+/*
+   // TODO fix
   it should "translate maps of objects" in {
+
+    val config = ConfigFactory.parseString("""{ game : {
+      person : { 
+        firstName : "Jason",
+        lastName : "van Zyl"
+      },
+      place : { 
+        city : "Forest Hill",
+        state : "Maryland",
+        country : "U.S."
+      },
+      thing : { 
+        id : "Apache",
+        name : "Apache Foundation"
+      }
+    }}""")
+
+    val elem = configToElem(config)
+    val pList = (elem \ "game" \ "person").toArray
+    pList.size should be(1)
+    println("p " + pList(0))
+    (pList(0) \ "firstName").text should be("Jason")
+    (pList(0) \ "lastName").text should be("van Zyl")
+
+    val plList = (elem \ "game" \ "place").toArray
+    plList.size should be(1)
+    (plList(0) \ "city").text should be("Forest Hill")
+    (plList(0) \ "state").text should be("Maryland")
+    (plList(0) \ "country").text should be("U.S.")
+
+    val tList = (elem \ "game" \ "thing").toArray
+    tList.size should be(1)
+    (tList(0) \ "id").text should be("Apache")
+    (tList(0) \ "name").text should be("Apache Foundation")
   }
+*/
 
   it should "translate properties" in {
+
+    val config = ConfigFactory.parseString("""{
+      props : {
+        name : "foo",
+        bar : "value2",
+        foobar : "value3"
+      }
+    }""")
+
+    val elem = configToElem(config)
+    val propsNodes = (elem \ "props").toArray
+    propsNodes.size should be(1)
+    val propertyNodes = (propsNodes(0) \ "property").toArray
+    propertyNodes.size should be(3)
+
+    def checkNode(n: Node): Unit = n match {
+      case e: Elem =>
+        e.label should be("property")
+        e.child.size should be(2)
+        (e \ "name").text match {
+          case "name" =>
+            (e \ "value").text should be("foo")
+          case "bar" =>
+            (e \ "value").text should be("value2")
+          case "foobar" =>
+            (e \ "value").text should be("value3")
+        }
+    }
+
+    propertyNodes.foreach { checkNode(_) }
   }
 
   it should "translate archivers" in {
+
+    val config = ConfigFactory.parseString("""{
+      archive : {
+        addMavenDescriptor : false,
+        compress : false,
+        forced : false,
+        index : true,
+        manifest : {
+          addClasspath : true,
+          addDefaultEntries : false,
+          addDefaultImplementationEntries : true,
+          addDefaultSpecificationEntries : true,
+          addBuildEnvironmentEntries : true,
+          addExtensions : true,
+          classpathLayoutType : "custom",
+          classpathPrefix : "some",
+          customClasspathLayout : "something",
+          mainClass : "com.someclass.Main",
+          packageName : "com.someclass",
+          useUniqueVersions : false
+        },
+        manifestEntries : {
+          some : "key",
+          another : "key2"
+        },
+        manifestFile : "some.MF",
+        manifestSections : [
+          { name : "Section1", manifestEntries : { 
+            "entry" : "value3", "another" : "value4" } 
+          },
+          { name : "Section2", manifestEntries : { 
+            "crypto" : "value5", "for" : "value6" } 
+          }
+        ],
+        pomPropertiesFile : "false"
+      }
+    }""")
+
+    val elem = configToElem(config)
+    val aList = (elem \ "archive").toArray
+    aList.size should be(1)
+    (aList(0) \ "addMavenDescriptor").text should be("false")
+    (aList(0) \ "compress").text should be("false")
+    (aList(0) \ "forced").text should be("false")
+    (aList(0) \ "index").text should be("true")
+    (aList(0) \ "manifest" \ "addClasspath").text should be("true")
+    (aList(0) \ "manifest" \ "addDefaultEntries").text should be("false")
+    (aList(0) \ "manifest" \ "addDefaultImplementationEntries").text should be(
+      "true")
+    (aList(0) \ "manifest" \ "addDefaultSpecificationEntries").text should be(
+      "true")
+    (aList(0) \ "manifest" \ "addBuildEnvironmentEntries").text should be(
+      "true")
+    (aList(0) \ "manifest" \ "addExtensions").text should be("true")
+    (aList(0) \ "manifest" \ "classpathLayoutType").text should be("custom")
+    (aList(0) \ "manifest" \ "classpathPrefix").text should be("some")
+    (aList(0) \ "manifest" \ "customClasspathLayout").text should be(
+      "something")
+    (aList(0) \ "manifest" \ "mainClass").text should be("com.someclass.Main")
+    (aList(0) \ "manifest" \ "packageName").text should be("com.someclass")
+    (aList(0) \ "manifest" \ "useUniqueVersions").text should be("false")
+    (aList(0) \ "manifestEntries" \ "some").text should be("key")
+    (aList(0) \ "manifestEntries" \ "another").text should be("key2")
+    (aList(0) \ "manifestFile").text should be("some.MF")
+
+    val sections = (aList(0) \ "manifestSections" \ "manifestSection").toArray
+    sections.size should be(2)
+    (sections(0) \ "name").text should be("Section1")
+    (sections(0) \ "manifestEntries" \ "entry").text should be("value3")
+    (sections(0) \ "manifestEntries" \ "another").text should be("value4")
+    (sections(1) \ "name").text should be("Section2")
+    (sections(1) \ "manifestEntries" \ "crypto").text should be("value5")
+    (sections(1) \ "manifestEntries" \ "for").text should be("value6")
+
+    (aList(0) \ "pomPropertiesFile").text should be("false")
   }
 
   it should "translate resource transformers" in {
+
+    val config = ConfigFactory.parseString("""{
+      transformers : [ { 
+        implementation : "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer", 
+        mainClass : "org.apache.maven.unbound.Cli" 
+      } ]
+    }""")
+
+    val elem = configToElem(config)
+    val tList = (elem \ "transformers").toArray
+    tList.size should be(1)
+    val list = (tList(0) \ "transformer").toArray
+    list.size should be(1)
+    (list(0) \ "@implementation").text should be(
+      "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer")
+    (list(0) \ "mainClass").text should be("org.apache.maven.unbound.Cli")
   }
 
   it should "translate dependencies" in {
+
+    val config = ConfigFactory.parseString("""{
+      defineBridge : [ { 
+        groupId : "org.scala-sbt",
+        artifactId : "compiler-bridge_${version.scala.epoch}",
+        version : "${version.scala.zinc}"
+      } ]
+    }""")
+
+    val elem = configToElem(config)
+    val dList = (elem \ "defineBridge").toArray
+    dList.size should be(1)
+    val list = (dList(0) \ "dependency").toArray
+    list.size should be(1)
+    (list(0) \ "groupId").text should be("org.scala-sbt")
+    (list(0) \ "artifactId").text should be(
+      "compiler-bridge_${version.scala.epoch}")
+    (list(0) \ "version").text should be("${version.scala.zinc}")
   }
 
-
+  /*
   behavior of "Translating Json to Typesafe Config(Hocon)"
 
+  it should "translate empty Configurations" in {
+  }
   it should "translate basic types" in {
   }
 
-  it should "translate lists of basic types of objects" in {
+  it should "translate lists of basic types" in {
   }
 
   it should "translate lists of objects" in {
   }
 
-  it should "translate objects" in {
+  it should "translate an object" in {
   }
 
   it should "translate maps of basic types" in {
   }
 
   it should "translate maps of objects" in {
-  }
-
-  it should "translate properties" in {
   }
 
   it should "translate archivers" in {
@@ -424,6 +721,9 @@ class ConfigurationSpec extends FlatSpec with Matchers {
   }
 
   behavior of "Translating Typesafe Config(Hocon) to Json"
+
+  it should "translate empty Configurations" in {
+  }
 
   it should "translate basic types" in {
   }

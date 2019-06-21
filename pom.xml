@@ -286,6 +286,7 @@
       <plugin>
 	<groupId>com.redhat.victims.maven</groupId>
 	<artifactId>security-versions</artifactId>
+        <version>1.0.6</version>
 	<executions>
 	  <execution>
 	    <goals>

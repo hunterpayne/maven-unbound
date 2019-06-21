@@ -41,6 +41,7 @@ class CliSpec extends FlatSpec with Matchers {
       val projectJson: Project = JsonReader.readPOM(new FileReader(jsonFile))
       val projectXml = new Project(XML.load(new FileReader(xmlFile)))
       projectJson.toString should be(projectXml.toString)
+      projectJson.makeModelObject() // just to make sure it doesn't NPE
     } finally {
       if (jsonFile.exists()) jsonFile.delete()
     }
@@ -58,6 +59,7 @@ class CliSpec extends FlatSpec with Matchers {
       val projectXml = new Project(XML.load(new FileReader(xmlFile)))
       projectHocon.toString.replaceAllLiterally("Vector(", "List(") should be(
         projectXml.toString)
+      projectHocon.makeModelObject() // just to make sure it doesn't NPE
     } finally {
       if (hoconFile.exists()) hoconFile.delete()
     }
@@ -73,6 +75,7 @@ class CliSpec extends FlatSpec with Matchers {
       val projectJson: Project = JsonReader.readPOM(new FileReader(jsonFile))
       val projectXml = new Project(XML.load(new FileReader(xmlFile)))
       projectJson.toString should be(projectXml.toString)
+      projectJson.makeModelObject() // just to make sure it doesn't NPE
     } finally {
       if (xmlFile.exists()) xmlFile.delete()
     }
@@ -89,6 +92,7 @@ class CliSpec extends FlatSpec with Matchers {
       val projectXml = new Project(XML.load(new FileReader(xmlFile)))
       projectHocon.toString.replaceAllLiterally("Vector(", "List(") should be(
         projectXml.toString)
+      projectHocon.makeModelObject() // just to make sure it doesn't NPE
     } finally {
       if (xmlFile.exists()) xmlFile.delete()
     }

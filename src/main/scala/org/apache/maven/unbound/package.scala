@@ -186,8 +186,6 @@ package object unbound {
   def configToElem(config: Config): Elem = {
     import scala.collection.JavaConverters._
 
-    val children: Seq[(String, ConfigValue)] = config.root().asScala.toSeq
-
     def makeElem(key: String, value: ConfigValue): Elem =
       if (key == SL.Archive.toString) {
         HoconReader.readArchiver(value.atKey(SL.Archive)).xml
@@ -234,7 +232,7 @@ package object unbound {
                   // a Maven archiver
                   val arch = HoconReader.readArchiver(m.toConfig())
                   Seq(arch.xml) ++
-                  mS.filter { _._1 == SL.Archive.toString }.map { case(k, v) =>
+                  mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
                     makeElem(k, v) }
                 } else {
                   // a Properties object
@@ -260,9 +258,14 @@ package object unbound {
         null
       }
 
-    val childElems: Seq[Elem] =
-      children.map { entry => makeElem(entry._1, entry._2) }
-    new Elem(null, SL.Configuration, Null, TopScope, childElems: _*)
+    if (config != null) {
+      val children: Seq[(String, ConfigValue)] = config.root().asScala.toSeq
+      val childElems: Seq[Elem] =
+        children.map { entry => makeElem(entry._1, entry._2) }
+      new Elem(null, SL.Configuration, Null, TopScope, childElems: _*)
+    } else {
+      null
+    }
   }
 
   def jsonToConfig(jobject: JObject): Config = {
