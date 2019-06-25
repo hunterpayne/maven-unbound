@@ -96,13 +96,13 @@ case object Build extends CommonJsonReader {
   ))
 
   protected[unbound] def isDefaultResources(res: Seq[Resource]): Boolean = {
-    res.size == 1 && res(0).targetPath == Build.defResourcesDir &&
+    res.size == 1 && null == res(0).targetPath &&
     res(0).directory == SL.Dot.toString && res(0).includes.size == 1 &&
     res(0).excludes.size == 0 && res(0).includes(0) == Build.defResourcesDir
   }
 
   protected[unbound] def isDefaultTestResources(res: Seq[Resource]): Boolean = {
-    res.size == 1 && res(0).targetPath == Build.defTestResourcesDir &&
+    res.size == 1 && null == res(0).targetPath &&
     res(0).directory == SL.Dot.toString && res(0).includes.size == 1 &&
     res(0).excludes.size == 0 && res(0).includes(0) == Build.defTestResourcesDir
   }
@@ -250,7 +250,7 @@ case object Resource extends CommonJsonReader {
     {
       case JObject(fields) =>
         new Resource(
-          readStr(fields, TargetPath).get,
+          readStr(fields, TargetPath).getOrElse(null),
           readBool(fields, Filtering).getOrElse(false),
           readStr(fields, DirectoryStr).getOrElse(SL.Dot),
           readStringSequence(fields, Includes),
@@ -271,10 +271,11 @@ case object Resource extends CommonJsonReader {
 }
 
 case class Resource(
-  targetPath: String, filtering: Boolean = false, directory: String = SL.Dot,
+  targetPath: String = null, filtering: Boolean = false,
+  directory: String = SL.Dot,
   includes: Seq[String], excludes: Seq[String] = Seq[String]()) {
 
-  def this(name: String) = this(name, false, SL.Dot, Seq[String](name))
+  def this(name: String) = this(null, false, SL.Dot, Seq[String](name))
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.TargetPath).text),
@@ -285,33 +286,35 @@ case class Resource(
     (elem \ SL.Includes \ SL.IncludeStr).map { _.text },
     (elem \ SL.Excludes \ SL.ExcludeStr).map { _.text })
 
-  lazy val xml = <resource>
-                   <targetPath>{targetPath}</targetPath>
-                   <filtering>{filtering}</filtering>
-                   <directory>{directory}</directory>
-                   { if (!includes.isEmpty) <includes>
-                     { includes.map { Include(_).xml } }
-                   </includes> }
-                   { if (!excludes.isEmpty) <excludes>
-                     { excludes.map { Exclude(_).xml } }
-                   </excludes> }
-                 </resource>
+  lazy val xml =
+    <resource>
+      { if (targetPath != null) <targetPath>{targetPath}</targetPath> }
+      <filtering>{filtering}</filtering>
+      <directory>{directory}</directory>
+      { if (!includes.isEmpty) <includes>
+        { includes.map { Include(_).xml } }
+        </includes> }
+      { if (!excludes.isEmpty) <excludes>
+        { excludes.map { Exclude(_).xml } }
+        </excludes> }
+    </resource>
 
-  lazy val testXml = <testResource>
-                   <targetPath>{targetPath}</targetPath>
-                   <filtering>{filtering}</filtering>
-                   <directory>{directory}</directory>
-                   { if (!includes.isEmpty) <includes>
-                     { includes.map { Include(_).xml } }
-                   </includes> }
-                   { if (!excludes.isEmpty) <excludes>
-                     { excludes.map { Exclude(_).xml } }
-                   </excludes> }
-                 </testResource>
+  lazy val testXml =
+    <testResource>
+      { if (targetPath != null) <targetPath>{targetPath}</targetPath> }
+      <filtering>{filtering}</filtering>
+      <directory>{directory}</directory>
+      { if (!includes.isEmpty) <includes>
+        { includes.map { Include(_).xml } }
+        </includes> }
+      { if (!excludes.isEmpty) <excludes>
+        { excludes.map { Exclude(_).xml } }
+        </excludes> }
+    </testResource>
 
   def makeModelObject(): org.apache.maven.model.Resource = {
     val resource = new org.apache.maven.model.Resource()
-    resource.setTargetPath(targetPath)
+    if (targetPath != null) resource.setTargetPath(targetPath)
     resource.setFiltering(filtering)
     resource.setDirectory(directory)
     includes.foreach { inc => resource.addInclude(inc) }

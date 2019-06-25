@@ -34,7 +34,7 @@ import org.xml.sax.SAXException
 package object unbound {
 
   def ensureDefault[T](seq: Seq[T], default: T): Seq[T] =
-    if (!seq.isEmpty) seq
+    if (!seq.isEmpty && (seq.size != 1 || seq(0) != default)) seq
     else Seq[T](default)
 
   def emptyToNull(s: String): String = if (s != "") s else null
@@ -299,7 +299,9 @@ package object unbound {
         }
       }.toMap.asJava
 
-    ConfigValueFactory.fromMap(fromJsonObject(jobject)).toConfig()
+    if (jobject != null)
+      ConfigValueFactory.fromMap(fromJsonObject(jobject)).toConfig()
+    else null
   }
 
   def configToJson(conf: Config): JObject = {
@@ -330,10 +332,10 @@ package object unbound {
     }
 
     if (conf != null) {
-      val children: Seq[java.util.Map.Entry[String, ConfigValue]] =
-        conf.entrySet().asScala.toSeq
+      val root = conf.root()
+      val childKeys: Seq[String] = root.keySet().asScala.toSeq
       val childElems: Seq[JField] =
-        children.map { entry => (entry.getKey(), makeJValue(entry.getValue())) }
+        childKeys.map { key => (key, makeJValue(root.get(key))) }
       new JObject(childElems.toList)
     } else {
       null

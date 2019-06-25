@@ -19,7 +19,7 @@ package org.apache.maven.unbound
 
 import java.io.{ ObjectInputStream, ObjectOutputStream }
 
-import scala.xml.{ Elem, Null, Text, TopScope, XML }
+import scala.xml.{ Elem, Null, Text, TopScope, UnprefixedAttribute, XML }
 
 import com.typesafe.config.ConfigFactory
 import org.json4s._
@@ -219,31 +219,42 @@ case class Scm(
   tag: String = Scm.Head, url: String = null) {
 
   def this(elem: Elem) = this(
-    emptyToDefaultBool((elem \ SL.ChildInheritConnectionFP).text.trim, true),
+    emptyToDefaultBool((elem \@ SL.ChildInheritConnectionFP).trim, true),
     emptyToDefaultBool(
-      (elem \ SL.ChildInheritDeveloperConnectionFP).text.trim, true),
-    emptyToDefaultBool((elem \ SL.ChildInheritScmUrlFP).text.trim, true),
+      (elem \@ SL.ChildInheritDeveloperConnectionFP).trim, true),
+    emptyToDefaultBool((elem \@ SL.ChildInheritScmUrlFP).trim, true),
     emptyToNull((elem \ SL.Connection).text.trim),
     emptyToNull((elem \ SL.DeveloperConnection).text.trim),
     emptyToDefault((elem \ SL.Tag).text.trim, Scm.Head),
     emptyToNull((elem \ SL.UrlStr).text.trim))
 
-  lazy val xml =
-    <scm>
-      { if (!childInheritConnection)
-        <child.scm.connection.inherit.append.path>false</child.scm.connection.inherit.append.path> }
-      { if (!childInheritDeveloperConnection)
-        new Elem(
-          null, SL.ChildInheritDeveloperConnectionFP, Null, TopScope,
-          new Text("false")) }
-      { if (!childInheritUrl)
-        <child.scm.url.inherit.append.path>false</child.scm.url.inherit.append.path> }
-      { if (connection != null) <connection>{connection}</connection> }
-      { if (developerConnection != null)
-        <developerConnection>{developerConnection}</developerConnection> }
-      { if (tag != null && tag != Scm.Head.toString) <tag>{tag}</tag> }
-      { if (url != null) <url>{url}</url> }
-    </scm>
+  lazy val xml = toXml
+  private def toXml = {
+    var elem =
+      <scm>
+        { if (connection != null) <connection>{connection}</connection> }
+        { if (developerConnection != null)
+          <developerConnection>{developerConnection}</developerConnection> }
+        { if (tag != null && tag != Scm.Head.toString) <tag>{tag}</tag> }
+        { if (url != null) <url>{url}</url> }
+      </scm>
+    elem = if (childInheritConnection) elem else new Elem(
+      elem.prefix, elem.label,
+      new UnprefixedAttribute(
+        SL.ChildInheritConnectionFP, "false", elem.attributes),
+      elem.scope, false, elem.child: _*)
+    elem = if (childInheritDeveloperConnection) elem else new Elem(
+      elem.prefix, elem.label,
+      new UnprefixedAttribute(
+        SL.ChildInheritDeveloperConnectionFP, "false", elem.attributes),
+      elem.scope, false, elem.child: _*)
+    if (childInheritUrl) elem
+    else new Elem(
+      elem.prefix, elem.label,
+      new UnprefixedAttribute(
+        SL.ChildInheritScmUrlFP, "false", elem.attributes),
+      elem.scope, false, elem.child: _*)
+  }
 
   def makeModelObject(): org.apache.maven.model.Scm = {
     val scm = new org.apache.maven.model.Scm()
@@ -419,19 +430,26 @@ case class Site(
   name: String = null, url: String = null) {
 
   def this(elem: Elem) = this(
-    emptyToDefaultBool((elem \ SL.ChildInheritSiteUrlFP).text.trim, true),
+    emptyToDefaultBool((elem \@ SL.ChildInheritSiteUrlFP).trim, true),
     emptyToNull((elem \ SL.Id).text.trim),
     emptyToNull((elem \ SL.Name).text.trim),
     emptyToNull((elem \ SL.UrlStr).text.trim))
 
-  lazy val xml =
-    <site>
-      { if (!childInheritUrl)
-        <child.site.url.inherit.append.path>false</child.site.url.inherit.append.path> }
-      { if (id != null) <id>{id}</id> }
-      { if (name != null) <name>{name}</name> }
-      { if (url != null) <url>{url}</url> }
-    </site>
+  lazy val xml = toXml
+  private def toXml = {
+    val elem =
+      <site>
+        { if (id != null) <id>{id}</id> }
+        { if (name != null) <name>{name}</name> }
+        { if (url != null) <url>{url}</url> }
+      </site>
+    if (childInheritUrl) elem
+    else new Elem(
+      elem.prefix, elem.label,
+      new UnprefixedAttribute(
+        SL.ChildInheritSiteUrlFP, "false", elem.attributes),
+      elem.scope, false, elem.child: _*)
+  }
 
   def makeModelObject(): org.apache.maven.model.Site = {
     val site = new org.apache.maven.model.Site()

@@ -21,10 +21,11 @@ import java.io.{ File, FileReader }
 
 import scala.xml.{ Elem, Node, XML }
 
-import org.scalatest.{ FlatSpec, Matchers }
-
 import com.typesafe.config.{ 
   Config, ConfigFactory, ConfigObject, ConfigResolveOptions, ConfigParseOptions }
+import org.json4s._
+import org.json4s.native.JsonMethods.parse
+import org.scalatest.{ FlatSpec, Matchers }
 
 class ConfigurationSpec extends FlatSpec with Matchers {
 
@@ -467,14 +468,14 @@ class ConfigurationSpec extends FlatSpec with Matchers {
 
     val plList = (elem \ "place").toArray
     plList.size should be(1)
-    (plList(0) \ "city").text should be("Forest Hill")
-    (plList(0) \ "state").text should be("Maryland")
-    (plList(0) \ "country").text should be("U.S.")
+    (plList(1) \ "city").text should be("Forest Hill")
+    (plList(1) \ "state").text should be("Maryland")
+    (plList(1) \ "country").text should be("U.S.")
 
     val tList = (elem \ "thing").toArray
     tList.size should be(1)
-    (tList(0) \ "id").text should be("Apache")
-    (tList(0) \ "name").text should be("Apache Foundation")
+    (tList(2) \ "id").text should be("Apache")
+    (tList(2) \ "name").text should be("Apache Foundation")
   }
    */
 
@@ -526,14 +527,14 @@ class ConfigurationSpec extends FlatSpec with Matchers {
 
     val plList = (elem \ "game" \ "place").toArray
     plList.size should be(1)
-    (plList(0) \ "city").text should be("Forest Hill")
-    (plList(0) \ "state").text should be("Maryland")
-    (plList(0) \ "country").text should be("U.S.")
+    (plList(1) \ "city").text should be("Forest Hill")
+    (plList(1) \ "state").text should be("Maryland")
+    (plList(1) \ "country").text should be("U.S.")
 
     val tList = (elem \ "game" \ "thing").toArray
     tList.size should be(1)
-    (tList(0) \ "id").text should be("Apache")
-    (tList(0) \ "name").text should be("Apache Foundation")
+    (tList(2) \ "id").text should be("Apache")
+    (tList(2) \ "name").text should be("Apache Foundation")
   }
 */
 
@@ -688,73 +689,550 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     (list(0) \ "version").text should be("${version.scala.zinc}")
   }
 
-  /*
   behavior of "Translating Json to Typesafe Config(Hocon)"
 
   it should "translate empty Configurations" in {
+
+    jsonToConfig(null) should be(null)
+    jsonToConfig(JObject(List())) should be(ConfigFactory.empty())
   }
+
   it should "translate basic types" in {
+
+    val json = parse("""{
+      "name" : "some-string",
+      "num" : 18,
+      "george" : true,
+      "float" : -179.435
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    conf.getString("name") should be("some-string")
+    conf.getInt("num") should be(18)
+    conf.getBoolean("george") should be(true)
+    conf.getDouble("float") should be(-179.435)
+    conf.entrySet().size() should be(4)
   }
 
   it should "translate lists of basic types" in {
+
+    val json = parse("""{
+      "options" : [ "some-string", 1800, true, false ]
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    val list = conf.getStringList("options")
+    list.size should be(4)
+    list.get(0) should be("some-string")
+    list.get(1) should be("1800")
+    list.get(2) should be("true")
+    list.get(3) should be("false")
+    conf.entrySet().size() should be(1)
   }
 
   it should "translate lists of objects" in {
+
+    val json = parse("""{
+      "foobars" : [ 
+        { "name" : "ring" }, 
+        { "name" : "around", "url" : "http://the.rosey/" }, 
+        { "name" : "pocket full", "url" : "http://of.poseies" } 
+      ]
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    val list: java.util.List[_ <: ConfigObject] = conf.getObjectList("foobars")
+    list.size should be(3)
+    list.get(0).get("name").unwrapped should be("ring")
+    list.get(1).get("name").unwrapped should be("around")
+    list.get(1).get("url").unwrapped should be("http://the.rosey/")
+    list.get(2).get("name").unwrapped should be("pocket full")
+    list.get(2).get("url").unwrapped should be("http://of.poseies")
+    conf.entrySet().size() should be(1)
   }
 
-  it should "translate an object" in {
+  it should "translate objects" in {
+
+    val json = parse("""{
+      "person" : { "firstName" : "Jason", "lastName" : "van Zyl" },
+      "place" : { "city" : "Forest Hill", "state" : "Maryland", "country" : "U.S." },
+      "thing" : { "id" : "Apache", "name" : "Apache Foundation" }
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    val person = conf.getObject("person")
+    person.get("firstName").unwrapped should be("Jason")
+    person.get("lastName").unwrapped should be("van Zyl")
+    val place = conf.getObject("place")
+    place.get("city").unwrapped should be("Forest Hill")
+    place.get("state").unwrapped should be("Maryland")
+    place.get("country").unwrapped should be("U.S.")
+    val thing = conf.getObject("thing")
+    thing.get("id").unwrapped should be("Apache")
+    thing.get("name").unwrapped should be("Apache Foundation")
+    conf.entrySet().size() should be(7)
   }
 
   it should "translate maps of basic types" in {
+
+    val json = parse("""{
+      "person" : 
+        { "firstName" : "Foo", "lastName" : "Bar", "age" : 174, "dead" : true }
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    conf.getString("person.firstName") should be("Foo")
+    conf.getString("person.lastName") should be("Bar")
+    conf.getInt("person.age") should be(174)
+    conf.getBoolean("person.dead") should be(true)
+    conf.entrySet().size() should be(4)
   }
 
   it should "translate maps of objects" in {
+
+    val json = parse("""{
+      "game" : {
+        "person" : { "firstName" : "Jason", "lastName" : "van Zyl" },
+        "place" : { "city" : "Forest Hill", "state" : "Maryland", "country" : "U.S." },
+        "thing" : { "id" : "Apache", "name" : "Apache Foundation" }
+      }
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    val game = conf.getObject("game")
+    val person = game.toConfig().getObject("person")
+    person.get("firstName").unwrapped should be("Jason")
+    person.get("lastName").unwrapped should be("van Zyl")
+    val place = game.toConfig().getObject("place")
+    place.get("city").unwrapped should be("Forest Hill")
+    place.get("state").unwrapped should be("Maryland")
+    place.get("country").unwrapped should be("U.S.")
+    val thing = game.toConfig().getObject("thing")
+    thing.get("id").unwrapped should be("Apache")
+    thing.get("name").unwrapped should be("Apache Foundation")
+    val person2 = conf.getObject("game.person")
+    person should be(person2)
+    val place2 = conf.getObject("game.place")
+    place should be(place2)
+    val thing2 = conf.getObject("game.thing")
+    thing should be(thing2)
+    conf.entrySet().size() should be(7)
   }
 
   it should "translate archivers" in {
+
+    val json = parse("""{
+      "archive" : {
+        "addMavenDescriptor" : false,
+        "compress" : false,
+        "forced" : false,
+        "index" : true,
+        "manifest" : {
+          "addClasspath" : true,
+          "addDefaultEntries" : false,
+          "addDefaultImplementationEntries" : true,
+          "addDefaultSpecificationEntries" : true,
+          "addBuildEnvironmentEntries" : true,
+          "addExtensions" : true,
+          "classpathLayoutType" : "custom",
+          "classpathPrefix" : "some",
+          "customClasspathLayout" : "something",
+          "mainClass" : "com.someclass.Main",
+          "packageName" : "com.someclass",
+          "useUniqueVersions" : false
+        },
+        "manifestEntries" : {
+          "some" : "key",
+          "another" : "key2"
+        },
+        "manifestFile" : "some.MF",
+        "manifestSections" : [
+          { "name" : "Section1", "manifestEntries" : { 
+            "entry" : "value3", "another" : "value4" } 
+          },
+          { "name" : "Section2", "manifestEntries" : { 
+            "crypto" : "value5", "for" : "value6" } 
+          }
+        ],
+        "pomPropertiesFile" : false
+      }
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    val archiver = conf.getObject("archive").toConfig
+    archiver.getBoolean("addMavenDescriptor") should be(false)
+    archiver.getBoolean("compress") should be(false)
+    archiver.getBoolean("forced") should be(false)
+    archiver.getBoolean("index") should be(true)
+
+    archiver.getBoolean("manifest.addClasspath") should be(true)
+    archiver.getBoolean("manifest.addDefaultEntries") should be(false)
+    archiver.getBoolean("manifest.addDefaultImplementationEntries") should be(true)
+    archiver.getBoolean("manifest.addDefaultSpecificationEntries") should be(true)
+    archiver.getBoolean("manifest.addBuildEnvironmentEntries") should be(true)
+    archiver.getBoolean("manifest.addExtensions") should be(true)
+    archiver.getString("manifest.classpathLayoutType") should be("custom")
+    archiver.getString("manifest.classpathPrefix") should be("some")
+    archiver.getString("manifest.customClasspathLayout") should be("something")
+    archiver.getString("manifest.mainClass") should be("com.someclass.Main")
+    archiver.getString("manifest.packageName") should be("com.someclass")
+    archiver.getBoolean("manifest.useUniqueVersions") should be(false)
+
+    val entries = archiver.getObject("manifestEntries")
+    entries.size should be(2)
+    entries.get("some").unwrapped should be("key")
+    entries.get("another").unwrapped should be("key2")
+
+    archiver.getString("manifestFile") should be("some.MF")
+    val sections = archiver.getObjectList("manifestSections")
+    sections.size should be(2)
+    val section1 = sections.get(0).toConfig
+    section1.getString("name") should be("Section1")
+    val manEntries1 = section1.getObject("manifestEntries")
+    manEntries1.size should be(2)
+    manEntries1.get("entry").unwrapped should be("value3")
+    manEntries1.get("another").unwrapped should be("value4")
+    val section2 = sections.get(1).toConfig
+    section2.getString("name") should be("Section2")
+    val manEntries2 = section2.getObject("manifestEntries")
+    manEntries2.size should be(2)
+    manEntries2.get("crypto").unwrapped should be("value5")
+    manEntries2.get("for").unwrapped should be("value6")
+
+    archiver.getString("pomPropertiesFile") should be("false")
+    conf.entrySet().size() should be(21) // 25???
   }
 
   it should "translate resource transformers" in {
+
+    val json = parse("""{
+      "transformers" : [ 
+        { "implementation" : "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer",
+          "mainClass" : "org.apache.maven.unbound.Cli"
+        }
+      ]
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    val transformers = conf.getObjectList("transformers")
+    transformers.size should be(1)
+    transformers.get(0).get("implementation").unwrapped should be(
+      "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer")
+    transformers.get(0).get("mainClass").unwrapped should be(
+      "org.apache.maven.unbound.Cli")
   }
 
   it should "translate dependencies" in {
+
+    val json = parse("""{
+      "defineBridge" : [{
+        "groupId" : "org.scala-sbt",
+        "artifactId" : "compiler-bridge_${version.scala.epoch}",
+        "version" : "${version.scala.zinc}"
+      }]
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    val bridges = conf.getObjectList("defineBridge")
+    bridges.size should be(1)
+    val bridge = bridges.get(0).toConfig
+    bridge.getString("groupId") should be("org.scala-sbt")
+    bridge.getString("artifactId") should be(
+      "compiler-bridge_${version.scala.epoch}")
+    bridge.getString("version") should be("${version.scala.zinc}")
   }
 
   behavior of "Translating Typesafe Config(Hocon) to Json"
 
+  protected implicit val jsonFormats: Formats = DefaultFormats
+  import DefaultReaders._
+
   it should "translate empty Configurations" in {
+
+    configToJson(null) should be(null)
+    configToJson(ConfigFactory.empty()).toString should be("JObject(List())")
   }
 
   it should "translate basic types" in {
+
+    val config = ConfigFactory.parseString("""{
+      name : "some-string",
+      num : 18,
+      george : true,
+      float : -179.435
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    (json \ "name").as[String] should be("some-string")
+    (json \ "num").as[Int] should be(18)
+    (json \ "george").as[Boolean] should be(true)
+    (json \ "float").as[Double] should be(-179.435)
+    json.obj.size should be(4)
   }
 
   it should "translate lists of basic types of objects" in {
+
+    val config = ConfigFactory.parseString("""{
+      options : [ "some-string", 1800, true, false ]
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val listElem = (json \ "options").as[JArray]
+    listElem.arr.size should be(4)
+    listElem.arr(0).as[String] should be("some-string")
+    listElem.arr(1).as[Int] should be(1800)
+    listElem.arr(2).as[Boolean] should be(true)
+    listElem.arr(3).as[Boolean] should be(false)
   }
 
   it should "translate lists of objects" in {
+
+    val config = ConfigFactory.parseString("""{
+      foobars : [
+        { name : "ring" }, 
+        { name : "around", url : "http://the.rosey" }, 
+        { name : "pocket full", url : "http://of.poseies" } 
+      ]
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val bars = (json \ "foobars").as[JArray].arr
+    bars.size should be(3)
+    bars(0).as[JObject].obj.size should be(1)
+    (bars(0) \ "name").as[String] should be("ring")
+    bars(1).as[JObject].obj.size should be(2)
+    (bars(1) \ "name").as[String] should be("around")
+    (bars(1) \ "url").as[String] should be("http://the.rosey")
+    bars(2).as[JObject].obj.size should be(2)
+    (bars(2) \ "name").as[String] should be("pocket full")
+    (bars(2) \ "url").as[String] should be("http://of.poseies")
   }
 
   it should "translate objects" in {
+
+    val config = ConfigFactory.parseString("""{
+      person : { 
+        firstName : "Jason",
+        lastName : "van Zyl"
+      },
+      place : { 
+        city : "Forest Hill",
+        state : "Maryland",
+        country : "U.S."
+      },
+      thing : { 
+        id : "Apache",
+        name : "Apache Foundation"
+      }
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val person = (json \ "person").as[JObject]
+    (person \ "firstName").as[String] should be("Jason")
+    (person \ "lastName").as[String] should be("van Zyl")
+
+    val place = (json \ "place").as[JObject]
+    (place \ "city").as[String] should be("Forest Hill")
+    (place \ "state").as[String] should be("Maryland")
+    (place \ "country").as[String] should be("U.S.")
+
+    val thing = (json \ "thing").as[JObject]
+    (thing \ "id").as[String] should be("Apache")
+    (thing \ "name").as[String] should be("Apache Foundation")
   }
 
   it should "translate maps of basic types" in {
+
+    val config = ConfigFactory.parseString("""{
+      person : { 
+        firstName : "Foo",
+        lastName : "Bar",
+        age : 174,
+        dead : true
+      }
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val list = (json \ "person").as[JObject]
+    (list \ "firstName").as[String] should be("Foo")
+    (list \ "lastName").as[String] should be("Bar")
+    (list \ "age").as[Int] should be(174)
+    (list \ "dead").as[Boolean] should be(true)
   }
 
   it should "translate maps of objects" in {
+
+    val config = ConfigFactory.parseString("""{ game : {
+      person : { 
+        firstName : "Jason",
+        lastName : "van Zyl"
+      },
+      place : { 
+        city : "Forest Hill",
+        state : "Maryland",
+        country : "U.S."
+      },
+      thing : { 
+        id : "Apache",
+        name : "Apache Foundation"
+      }
+    }}""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val pList = (json \ "game" \ "person").as[JObject]
+    (pList \ "firstName").as[String] should be("Jason")
+    (pList \ "lastName").as[String] should be("van Zyl")
+
+    val plList = (json \ "game" \ "place").as[JObject]
+    (plList \ "city").as[String] should be("Forest Hill")
+    (plList \ "state").as[String] should be("Maryland")
+    (plList \ "country").as[String] should be("U.S.")
+
+    val tList = (json \ "game" \ "thing").as[JObject]
+    (tList \ "id").as[String] should be("Apache")
+    (tList \ "name").as[String] should be("Apache Foundation")
   }
 
   it should "translate properties" in {
+
+    val config = ConfigFactory.parseString("""{
+      props : {
+        name : "foo",
+        bar : "value2",
+        foobar : "value3"
+      }
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val propsNode = (json \ "props").as[JObject]
+    propsNode.obj.size should be(3)
+
+    def checkNode(n: JField): Unit = n._2 match {
+      case s: JString => n._1 match {
+        case "name" =>
+          s.s should be("foo")
+        case "bar" =>
+          s.s should be("value2")
+        case "foobar" =>
+          s.s should be("value3")
+      }
+    }
+
+    propsNode.obj.foreach { checkNode(_) }
   }
 
   it should "translate archivers" in {
+
+    val config = ConfigFactory.parseString("""{
+      archive : {
+        addMavenDescriptor : false,
+        compress : false,
+        forced : false,
+        index : true,
+        manifest : {
+          addClasspath : true,
+          addDefaultEntries : false,
+          addDefaultImplementationEntries : true,
+          addDefaultSpecificationEntries : true,
+          addBuildEnvironmentEntries : true,
+          addExtensions : true,
+          classpathLayoutType : "custom",
+          classpathPrefix : "some",
+          customClasspathLayout : "something",
+          mainClass : "com.someclass.Main",
+          packageName : "com.someclass",
+          useUniqueVersions : false
+        },
+        manifestEntries : {
+          some : "key",
+          another : "key2"
+        },
+        manifestFile : "some.MF",
+        manifestSections : [
+          { name : "Section1", manifestEntries : { 
+            "entry" : "value3", "another" : "value4" } 
+          },
+          { name : "Section2", manifestEntries : { 
+            "crypto" : "value5", "for" : "value6" } 
+          }
+        ],
+        pomPropertiesFile : "false"
+      }
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val archive = (json \ "archive").as[JObject]
+    (archive \ "addMavenDescriptor").as[Boolean] should be(false)
+    (archive \ "compress").as[Boolean] should be(false)
+    (archive \ "forced").as[Boolean] should be(false)
+    (archive \ "index").as[Boolean] should be(true)
+    (archive \ "manifest" \ "addClasspath").as[Boolean] should be(true)
+    (archive \ "manifest" \ "addDefaultEntries").as[Boolean] should be(false)
+    (archive \ "manifest" \ "addDefaultImplementationEntries").as[Boolean] should be(true)
+    (archive \ "manifest" \ "addDefaultSpecificationEntries").as[Boolean] should be(true)
+    (archive \ "manifest" \ "addBuildEnvironmentEntries").as[Boolean] should be(
+      true)
+    (archive \ "manifest" \ "addExtensions").as[Boolean] should be(true)
+    (archive \ "manifest" \ "classpathLayoutType").as[String] should be(
+      "custom")
+    (archive \ "manifest" \ "classpathPrefix").as[String] should be("some")
+    (archive \ "manifest" \ "customClasspathLayout").as[String] should be(
+      "something")
+    (archive \ "manifest" \ "mainClass").as[String] should be(
+      "com.someclass.Main")
+    (archive \ "manifest" \ "packageName").as[String] should be("com.someclass")
+    (archive \ "manifest" \ "useUniqueVersions").as[String] should be("false")
+    (archive \ "manifestEntries" \ "some").as[String] should be("key")
+    (archive \ "manifestEntries" \ "another").as[String] should be("key2")
+    (archive \ "manifestFile").as[String] should be("some.MF")
+
+    val sections = (archive \ "manifestSections").as[JArray].arr
+    sections.size should be(2)
+    (sections(0) \ "name").as[String] should be("Section1")
+    (sections(0) \ "manifestEntries" \ "entry").as[String] should be("value3")
+    (sections(0) \ "manifestEntries" \ "another").as[String] should be("value4")
+    (sections(1) \ "name").as[String] should be("Section2")
+    (sections(1) \ "manifestEntries" \ "crypto").as[String] should be("value5")
+    (sections(1) \ "manifestEntries" \ "for").as[String] should be("value6")
+
+    (archive \ "pomPropertiesFile").as[String] should be("false")
   }
 
   it should "translate resource transformers" in {
+
+    val config = ConfigFactory.parseString("""{
+      transformers : [ { 
+        implementation : "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer", 
+        mainClass : "org.apache.maven.unbound.Cli" 
+      } ]
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val tList = (json \ "transformers").as[JArray].arr
+    tList.size should be(1)
+    (tList(0) \ "implementation").as[String] should be(
+      "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer")
+    (tList(0) \ "mainClass").as[String] should be(
+      "org.apache.maven.unbound.Cli")
   }
 
   it should "translate dependencies" in {
-  }
 
-   */
+    val config = ConfigFactory.parseString("""{
+      defineBridge : [ { 
+        groupId : "org.scala-sbt",
+        artifactId : "compiler-bridge_${version.scala.epoch}",
+        version : "${version.scala.zinc}"
+      } ]
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val dList = (json \ "defineBridge").as[JArray].arr
+    dList.size should be(1)
+    (dList(0) \ "groupId").as[String] should be("org.scala-sbt")
+    (dList(0) \ "artifactId").as[String] should be(
+      "compiler-bridge_${version.scala.epoch}")
+    (dList(0) \ "version").as[String] should be("${version.scala.zinc}")
+  }
 }
 

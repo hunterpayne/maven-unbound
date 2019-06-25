@@ -20,7 +20,7 @@ package org.apache.maven.unbound
 import java.io.{ ObjectInputStream, ObjectOutputStream }
 import java.util.Properties
 
-import scala.xml.Elem
+import scala.xml.{ Elem, UnprefixedAttribute }
 
 import com.typesafe.config.ConfigFactory
 import org.json4s._
@@ -140,8 +140,8 @@ case class Project(
     extends Writeable with HoconProjectReader {
 
   def this(elem: Elem) = this(
-    emptyToDefaultBool((elem \ SL.ChildInheritProjectFP).text.trim, true),
-    emptyToNull((elem \ SL.ModelVersion).text.trim),
+    emptyToDefaultBool((elem \@ SL.ChildInheritProjectFP).trim, true),
+    emptyToDefault((elem \ SL.ModelVersion).text.trim, SL.DefaultModelVersion),
     (elem \ SL.ParentStr).map { case e: Elem =>
       new Parent(e) }.headOption.getOrElse(null),
     emptyToNull((elem \ SL.GroupId).text.trim),
@@ -187,12 +187,12 @@ case class Project(
       new Reporting(e) }.headOption.getOrElse(null),
     (elem \ SL.Profiles \ SL.ProfileStr).map { case e: Elem => new Profile(e) })
 
-  lazy val xml =
-    <project xmlns="http://maven.apache.org/POM/4.0.0"
+  lazy val xml = toXml
+  private def toXml = {
+    val elem =
+      <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-      { if (!childInheritUrl)
-        <child.project.url.inherit.append.path>false</child.project.url.inherit.append.path> }
       <modelVersion>{modelVersion}</modelVersion>
       { if (parent != null) parent.xml }
       <groupId>{groupId}</groupId>
@@ -247,6 +247,13 @@ case class Project(
         { profiles.map { _.xml } }
         </profiles> }
     </project>
+    if (childInheritUrl) elem
+    else new Elem(
+      elem.prefix, elem.label,
+      new UnprefixedAttribute(
+        SL.ChildInheritProjectFP, "false", elem.attributes),
+      elem.scope, false, elem.child: _*)
+  }
 
   def makeModelObject(): org.apache.maven.model.Model = {
     val model = new org.apache.maven.model.Model()

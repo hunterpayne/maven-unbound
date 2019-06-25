@@ -84,4 +84,11 @@ into HOCON.  JSON has no support for comments.  If in the future we create
 a way to directly translate Project into Config, we will add support for
 translating XML comments.
 
+Things left to do before its ready:
+* test hocon importing
+* unit test defaults
+* fix or address 3 bugs in hocon to xml translation of certain kinds of
+config objects
+Nice to have: translating comments from XML to Hocon
+
 Watch this space for more news.

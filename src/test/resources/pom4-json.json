@@ -402,7 +402,6 @@
       "outputDirectory":"target/classes",
       "testResources":[
         {
-          "targetPath":"src/test/resources",
           "includes":[
             "src/test/resources"
           ]
@@ -492,7 +491,6 @@
         "build":{
           "testResources":[
             {
-              "targetPath":"src/test/resources",
               "includes":[
                 "src/test/resources"
               ]
@@ -526,7 +524,6 @@
         "build":{
           "testResources":[
             {
-              "targetPath":"src/test/resources",
               "includes":[
                 "src/test/resources"
               ]
@@ -562,7 +559,6 @@
         "build":{
           "testResources":[
             {
-              "targetPath":"src/test/resources",
               "includes":[
                 "src/test/resources"
               ]

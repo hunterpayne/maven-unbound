@@ -35,16 +35,13 @@ class CliSpec extends FlatSpec with Matchers {
     val xmlFile = new File("src/test/resources/pom.xml")
     val jsonFile = new File("src/test/resources/pom.json")
 
-    try {
-      Cli.recurseXml(
-        "src/test/resources", (s, p) => Cli.createPomJsonFiles(s, p))
-      val projectJson: Project = JsonReader.readPOM(new FileReader(jsonFile))
-      val projectXml = new Project(XML.load(new FileReader(xmlFile)))
-      projectJson.toString should be(projectXml.toString)
-      projectJson.makeModelObject() // just to make sure it doesn't NPE
-    } finally {
-      if (jsonFile.exists()) jsonFile.delete()
-    }
+    Cli.recurseXml(
+      "src/test/resources", (s, p) => Cli.createPomJsonFiles(s, p))
+    val projectJson: Project = JsonReader.readPOM(new FileReader(jsonFile))
+    val projectXml = new Project(XML.load(new FileReader(xmlFile)))
+    projectJson.toString should be(projectXml.toString)
+    projectJson.makeModelObject() // just to make sure it doesn't NPE
+    if (jsonFile.exists()) jsonFile.delete()
   }
 
   it should "transform XML pom files to Hocon" in {
@@ -52,17 +49,14 @@ class CliSpec extends FlatSpec with Matchers {
     val xmlFile = new File("src/test/resources/pom.xml")
     val hoconFile = new File("src/test/resources/pom.conf")
 
-    try {
-      Cli.recurseXml(
-        "src/test/resources", (s, p) => Cli.createPomHoconFiles(s, p))
-      val projectHocon: Project = HoconReader.readPOM(loadConfig(hoconFile))
-      val projectXml = new Project(XML.load(new FileReader(xmlFile)))
-      projectHocon.toString.replaceAllLiterally("Vector(", "List(") should be(
-        projectXml.toString)
-      projectHocon.makeModelObject() // just to make sure it doesn't NPE
-    } finally {
-      if (hoconFile.exists()) hoconFile.delete()
-    }
+    Cli.recurseXml(
+      "src/test/resources", (s, p) => Cli.createPomHoconFiles(s, p))
+    val projectHocon: Project = HoconReader.readPOM(loadConfig(hoconFile))
+    val projectXml = new Project(XML.load(new FileReader(xmlFile)))
+    projectHocon.toString.replaceAllLiterally("Vector(", "List(") should be(
+      projectXml.toString)
+    projectHocon.makeModelObject() // just to make sure it doesn't NPE
+    if (hoconFile.exists()) hoconFile.delete()
   }
 
   it should "transform Json pom files to XML" in {
@@ -70,15 +64,12 @@ class CliSpec extends FlatSpec with Matchers {
     val xmlFile = new File("src/test/resources/json/pom.xml")
     val jsonFile = new File("src/test/resources/json/pom.json")
 
-    try {
-      Cli.recurse("src/test/resources/json")
-      val projectJson: Project = JsonReader.readPOM(new FileReader(jsonFile))
-      val projectXml = new Project(XML.load(new FileReader(xmlFile)))
-      projectJson.toString should be(projectXml.toString)
-      projectJson.makeModelObject() // just to make sure it doesn't NPE
-    } finally {
-      if (xmlFile.exists()) xmlFile.delete()
-    }
+    Cli.recurse("src/test/resources/json")
+    val projectJson: Project = JsonReader.readPOM(new FileReader(jsonFile))
+    val projectXml = new Project(XML.load(new FileReader(xmlFile)))
+    projectJson.toString should be(projectXml.toString)
+    projectJson.makeModelObject() // just to make sure it doesn't NPE
+    if (xmlFile.exists()) xmlFile.delete()
   }
 
   it should "transform Hocon pom files to XML" in {
@@ -86,15 +77,12 @@ class CliSpec extends FlatSpec with Matchers {
     val xmlFile = new File("src/test/resources/hocon/pom.xml")
     val hoconFile = new File("src/test/resources/hocon/pom.conf")
 
-    try {
-      Cli.recurse("src/test/resources/hocon")
-      val projectHocon: Project = HoconReader.readPOM(loadConfig(hoconFile))
-      val projectXml = new Project(XML.load(new FileReader(xmlFile)))
-      projectHocon.toString.replaceAllLiterally("Vector(", "List(") should be(
-        projectXml.toString)
-      projectHocon.makeModelObject() // just to make sure it doesn't NPE
-    } finally {
-      if (xmlFile.exists()) xmlFile.delete()
-    }
+    Cli.recurse("src/test/resources/hocon")
+    val projectHocon: Project = HoconReader.readPOM(loadConfig(hoconFile))
+    val projectXml = new Project(XML.load(new FileReader(xmlFile)))
+    projectHocon.toString.replaceAllLiterally("Vector(", "List(") should be(
+      projectXml.toString)
+    projectHocon.makeModelObject() // just to make sure it doesn't NPE
+    if (xmlFile.exists()) xmlFile.delete()
   }
 }
