@@ -79,6 +79,28 @@ trait HoconProjectReader {
       )
     }
 
+  implicit val notifierConfigReader: ValueReader[Notifier] =
+    ValueReader.relative { config =>
+      Notifier(
+        if (config.hasPath(TypeStr)) config.getString(TypeStr) else Mail,
+        if (config.hasPath(SendOnError))
+          config.getBoolean(SendOnError)
+        else true,
+        if (config.hasPath(SendOnFailure))
+          config.getBoolean(SendOnFailure)
+        else true,
+        if (config.hasPath(SendOnSuccess))
+          config.getBoolean(SendOnSuccess)
+        else true,
+        if (config.hasPath(SendOnWarning))
+          config.getBoolean(SendOnWarning)
+        else true,
+        if (config.hasPath(Configuration))
+          config.as[Map[String, String]](Configuration)
+        else Map[String, String]()
+      )
+    }
+
   implicit val profileConfigReader: ValueReader[Profile] =
     ValueReader.relative { config =>
       Profile(

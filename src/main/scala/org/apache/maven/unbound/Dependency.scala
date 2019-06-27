@@ -39,8 +39,8 @@ case object Dependency extends CommonJsonReader {
     {
       case JObject(fields) =>
         new Dependency(
-          readStr(fields, GroupId).get,
-          readStr(fields, ArtifactId).get,
+          readStr(fields, GroupId).getOrElse(null),
+          readStr(fields, ArtifactId).getOrElse(null),
           readStr(fields, Version).getOrElse(null),
           readStr(fields, TypeStr).getOrElse(JarStr),
           readStr(fields, Classifier).getOrElse(null),
@@ -67,7 +67,7 @@ case object Dependency extends CommonJsonReader {
 }
 
 case class Dependency(
-  groupId: String, artifactId: String, version: String,
+  groupId: String = null, artifactId: String = null, version: String = null,
   `type`: String = SL.JarStr, classifier: String = null,
   scope: String = SL.Compile, systemPath: String = null,
   exclusions: Seq[Exclusion] = Seq[Exclusion](), optional: Boolean = false) {
@@ -88,9 +88,9 @@ case class Dependency(
 
   lazy val xml =
     <dependency>
-      <groupId>{groupId}</groupId>
-      <artifactId>{artifactId}</artifactId>
-      <version>{version}</version>
+      { if (groupId != null) <groupId>{groupId}</groupId> }
+      { if (artifactId != null) <artifactId>{artifactId}</artifactId> }
+      { if (version != null) <version>{version}</version> }
       { if (`type` != null && `type` != SL.JarStr.toString)
         <type>{`type`}</type> }
       { if (classifier != null) <classifier>{classifier}</classifier> }
@@ -105,9 +105,9 @@ case class Dependency(
 
   def makeModelObject(): org.apache.maven.model.Dependency = {
     val dependency = new org.apache.maven.model.Dependency()
-    dependency.setGroupId(groupId)
-    dependency.setArtifactId(artifactId)
-    dependency.setVersion(version)
+    if (groupId != null) dependency.setGroupId(groupId)
+    if (artifactId != null) dependency.setArtifactId(artifactId)
+    if (version != null) dependency.setVersion(version)
     dependency.setType(`type`)
     if (classifier != null) dependency.setClassifier(classifier)
     dependency.setScope(scope)

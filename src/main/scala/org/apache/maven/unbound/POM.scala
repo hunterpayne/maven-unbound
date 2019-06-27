@@ -124,8 +124,8 @@ case object License extends CommonJsonReader {
     {
       case obj @ JObject(fields) =>
         new License(
-          readStr(fields, Name).get,
-          readStr(fields, UrlStr).get,
+          readStr(fields, Name).getOrElse(null),
+          readStr(fields, UrlStr).getOrElse(null),
           readStr(fields, Distribution).getOrElse(Repo),
           readStr(fields, Comments).getOrElse("")
         )
@@ -143,7 +143,7 @@ case object License extends CommonJsonReader {
 }
 
 case class License(
-  name: String, url: String,
+  name: String = null, url: String = null,
   distribution: String = License.Repo, comments: String = "") {
 
   def this(elem: Elem) = this(
@@ -152,19 +152,22 @@ case class License(
     emptyToDefault((elem \ SL.Distribution).text.trim, License.Repo),
     (elem \ SL.Comments).text.trim)
 
-  lazy val xml = <license>
-                   <name>{name}</name>
-                   <url>{url}</url>
-                   <distribution>{distribution}</distribution>
-                   <comments>{comments}</comments>
-                 </license>
+  lazy val xml =
+    <license>
+      { if (name != null) <name>{name}</name> }
+      { if (url != null) <url>{url}</url> }
+      { if (distribution != null && distribution != License.Repo.toString)
+        <distribution>{distribution}</distribution> }
+      { if (comments != null && comments != "")
+        <comments>{comments}</comments> }
+    </license>
 
   def makeModelObject(): org.apache.maven.model.License = {
     val license = new org.apache.maven.model.License()
-    license.setName(name)
-    license.setUrl(url)
-    license.setDistribution(distribution)
-    license.setComments(comments)
+    if (name != null) license.setName(name)
+    if (url != null) license.setUrl(url)
+    if (distribution != null) license.setDistribution(distribution)
+    if (comments != null) license.setComments(comments)
     license
   }
 }
@@ -296,7 +299,7 @@ case object IssueManagement extends CommonJsonReader {
       ))
 }
 
-case class IssueManagement(system: String, url: String) {
+case class IssueManagement(system: String = null, url: String = null) {
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.SystemStr).text),
@@ -474,9 +477,9 @@ case object Relocation extends CommonJsonReader {
     {
       case JObject(fields) =>
         new Relocation(
-          readStr(fields, GroupId).get,
-          readStr(fields, ArtifactId).get,
-          readStr(fields, Version).get,
+          readStr(fields, GroupId).getOrElse(null),
+          readStr(fields, ArtifactId).getOrElse(null),
+          readStr(fields, Version).getOrElse(null),
           readStr(fields, Message).getOrElse(null))
     },
     {
@@ -492,7 +495,7 @@ case object Relocation extends CommonJsonReader {
 }
 
 case class Relocation(
-  groupId: String, artifactId: String, version: String,
+  groupId: String = null, artifactId: String = null, version: String = null,
   message: String = null) {
 
   def this(elem: Elem) = this(
@@ -501,18 +504,19 @@ case class Relocation(
     emptyToNull((elem \ SL.Version).text),
     emptyToNull((elem \ SL.Message).text))
 
-  lazy val xml = <relocation>
-                   <groupId>{groupId}</groupId>
-                   <artifactId>{artifactId}</artifactId>
-                   <version>{version}</version>
-                   { if (message != null) <message>{message}</message> }
-                 </relocation>
+  lazy val xml =
+    <relocation>
+      { if (groupId != null) <groupId>{groupId}</groupId> }
+      { if (artifactId != null) <artifactId>{artifactId}</artifactId> }
+      { if (version != null) <version>{version}</version> }
+      { if (message != null) <message>{message}</message> }
+    </relocation>
 
   def makeModelObject(): org.apache.maven.model.Relocation = {
     val relocation = new org.apache.maven.model.Relocation()
-    relocation.setGroupId(groupId)
-    relocation.setArtifactId(artifactId)
-    relocation.setVersion(version)
+    if (groupId != null) relocation.setGroupId(groupId)
+    if (artifactId != null) relocation.setArtifactId(artifactId)
+    if (version != null) relocation.setVersion(version)
     if (message != null) relocation.setMessage(message)
     relocation
   }

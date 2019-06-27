@@ -19,6 +19,8 @@ package org.apache.maven.unbound
 
 import java.io.{ File, InputStreamReader }
 
+import scala.xml.XML
+
 import org.scalatest.{ FlatSpec, Matchers }
 
 import com.typesafe.config.{ 
@@ -206,7 +208,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       "pom-conf", ConfigParseOptions.defaults(), resolveOpts))
     project1.toXmlString should be (correct)
 
-    val project2 = new Project(scala.xml.XML.loadString(project1.toXmlString))
+    val project2 = new Project(XML.loadString(project1.toXmlString))
     project2.makeModelObject() // just to make sure it doesn't NPE
     // required because Ficus creates Vectors which aren't equal to the
     // Lists created by the XML DOM reading constructors
@@ -385,7 +387,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       "pom2-conf", ConfigParseOptions.defaults(), resolveOpts))
     project1.toXmlString should be (correct)
 
-    val project2 = new Project(scala.xml.XML.loadString(project1.toXmlString))
+    val project2 = new Project(XML.loadString(project1.toXmlString))
     project2.makeModelObject() // just to make sure it doesn't NPE
     // required because Ficus creates Vectors which aren't equal to the
     // Lists created by the XML DOM reading constructors
@@ -395,7 +397,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
     val is = getClass().getClassLoader.getResourceAsStream("pom2-conf.xml")
     try {
-      val project3 = new Project(scala.xml.XML.load(is))
+      val project3 = new Project(XML.load(is))
       project3.toString should be (removedVectors)
 
     } finally {
@@ -502,7 +504,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       "pom3-conf", ConfigParseOptions.defaults(), resolveOpts))
     project1.toXmlString should be (correct)
 
-    val project2 = new Project(scala.xml.XML.loadString(project1.toXmlString))
+    val project2 = new Project(XML.loadString(project1.toXmlString))
     project2.makeModelObject() // just to make sure it doesn't NPE
     // required because Ficus creates Vectors which aren't equal to the
     // Lists created by the XML DOM reading constructors
@@ -1148,7 +1150,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     project1.makeModelObject() // just to make sure it doesn't NPE
     project1.toXmlString should be (correct)
 
-    //val project2 = new Project(scala.xml.XML.loadString(project1.toXmlString))
+    //val project2 = new Project(XML.loadString(project1.toXmlString))
     // required because Ficus creates Vectors which aren't equal to the
     // Lists created by the XML DOM reading constructors
     //val removedVectors = 

@@ -45,8 +45,8 @@ trait CommonJsonReader extends Labels {
         v.as[String].replaceAllLiterally("\n", scala.compat.Platform.EOL)
     }}
 
-  protected def readObject[T](obj: JObject, key: String, defVa: T = null)(
-    implicit m: Manifest[T]): T =
+  protected[unbound] def readObject[T](
+    obj: JObject, key: String, defVa: T = null)(implicit m: Manifest[T]): T =
     (obj \ key) match {
       case obj2: JObject => Extraction.extract[T](obj2)
       case _ => defVa
@@ -138,6 +138,8 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     new BuildBase.BuildBaseSerializer +
     new Activation.ActivationSerializer +
     new ActivationOS.ActivationOSSerializer +
+    new ActivationProperty.ActivationPropertySerializer +
+    new ActivationFile.ActivationFileSerializer +
     new Profile.ProfileSerializer +
     new Archiver.ArchiverSerializer +
     new ManifestObj.ManifestSerializer +

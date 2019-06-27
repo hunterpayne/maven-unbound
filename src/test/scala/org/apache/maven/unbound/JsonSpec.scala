@@ -20,6 +20,7 @@ package org.apache.maven.unbound
 import java.io.File
 
 import scala.io.Source
+import scala.xml.XML
 
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -211,7 +212,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
       xmlStr should be (correct)
 
-      val project2 = new Project(scala.xml.XML.loadString(xmlStr))
+      val project2 = new Project(XML.loadString(xmlStr))
       project2.toString should be (project1.toString)
       project2.makeModelObject() // just to make sure it doesn't NPE
 
@@ -380,13 +381,13 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       val xmlStr = project1.toXmlString
       xmlStr should be (correct)
 
-      val project2 = new Project(scala.xml.XML.loadString(xmlStr))
+      val project2 = new Project(XML.loadString(xmlStr))
       project2.toString should be (project1.toString)
       project2.makeModelObject() // just to make sure it doesn't NPE
 
       val is2 = getClass().getClassLoader.getResourceAsStream("pom2-json.xml")
       try {
-        val project3 = new Project(scala.xml.XML.load(is2))
+        val project3 = new Project(XML.load(is2))
         project3.toString should be (project1.toString)
 
       } finally {
@@ -472,13 +473,13 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       val xmlStr = project1.toXmlString
       xmlStr should be (correct)
 
-      val project2 = new Project(scala.xml.XML.loadString(xmlStr))
+      val project2 = new Project(XML.loadString(xmlStr))
       project2.toString should be (project1.toString)
       project2.makeModelObject() // just to make sure it doesn't NPE
 
       val is2 = getClass().getClassLoader.getResourceAsStream("pom3-json.xml")
       try {
-        val project3 = new Project(scala.xml.XML.load(is2))
+        val project3 = new Project(XML.load(is2))
         project3.toString should be (project1.toString)
 
       } finally {
@@ -1098,13 +1099,13 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       val xmlStr = project1.toXmlString
       xmlStr should be (correct)
 
-      val project2 = new Project(scala.xml.XML.loadString(xmlStr))
+      val project2 = new Project(XML.loadString(xmlStr))
       project2.toString should be (project1.toString)
       project2.makeModelObject() // just to make sure it doesn't NPE
 
       val is2 = getClass().getClassLoader.getResourceAsStream("pom4-json.xml")
       try {
-        val project3 = new Project(scala.xml.XML.load(is2))
+        val project3 = new Project(XML.load(is2))
         project3.toString should be (project1.toString)
 
       } finally {

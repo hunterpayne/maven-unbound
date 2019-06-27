@@ -72,7 +72,8 @@ case object Profile extends CommonJsonReader {
 }
 
 case class Profile(
-  id: String = SL.DefaultStr, activation: Activation, build: BuildBase = null,
+  id: String = SL.DefaultStr, activation: Activation = null,
+  build: BuildBase = null,
   modules: Seq[String] = Seq[String](),
   distributionManagement: DistributionManagement = null,
   properties: Map[String, String] = Map[String, String](),
@@ -273,7 +274,7 @@ case object ActivationOS extends CommonJsonReader {
 }
 
 case class ActivationOS(
-  name: String,
+  name: String = null,
   family: String = null, arch: String = null, version: String = null) {
 
   def this(elem: Elem) = this(
@@ -281,7 +282,7 @@ case class ActivationOS(
     emptyToNull((elem \ SL.Arch).text), emptyToNull((elem \ SL.Version).text))
 
   lazy val xml = <os>
-                   <name>{name}</name>
+                   { if (name != null) <name>{name}</name> }
                    { if (family != null) <family>{family}</family> }
                    { if (arch != null) <arch>{arch}</arch> }
                    { if (version != null) <version>{version}</version> }
@@ -295,6 +296,35 @@ case class ActivationOS(
     if (version != null) os.setVersion(version)
     os
   }
+}
+
+case object ActivationProperty extends CommonJsonReader {
+
+  implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
+
+  class ActivationPropertySerializer
+      extends CustomSerializer[ActivationProperty](format => (
+    {
+      case obj @ JObject(fields) =>
+        new ActivationProperty(
+          readStr(fields, Name).getOrElse(null),
+          readStr(fields, ValueStr).getOrElse(null)
+        )
+    },
+    {
+      case p: ActivationProperty =>
+        JObject(Seq[Option[JField]](
+          writeStr(Name, p.name),
+          writeStr(ValueStr, p.value)
+        ).flatten.toList)
+    }
+  ))
 }
 
 case class ActivationProperty(name: String = null, value: String = null) {
@@ -315,7 +345,36 @@ case class ActivationProperty(name: String = null, value: String = null) {
   }
 }
 
-case class ActivationFile(missing: String, exists: String) {
+case object ActivationFile extends CommonJsonReader {
+
+  implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
+
+  class ActivationFileSerializer
+      extends CustomSerializer[ActivationFile](format => (
+    {
+      case obj @ JObject(fields) =>
+        new ActivationFile(
+          readStr(fields, Missing).getOrElse(null),
+          readStr(fields, Exists).getOrElse(null)
+        )
+    },
+    {
+      case f: ActivationFile =>
+        JObject(Seq[Option[JField]](
+          writeStr(Missing, f.missing),
+          writeStr(Exists, f.exists)
+        ).flatten.toList)
+    }
+  ))
+}
+
+case class ActivationFile(missing: String = null, exists: String = null) {
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.Missing).text),

@@ -42,7 +42,7 @@ case object Plugin extends CommonJsonReader {
       case obj @ JObject(fields) =>
         new Plugin(
           readStr(fields, GroupId).getOrElse(DefaultPluginGroup),
-          readStr(fields, ArtifactId).get,
+          readStr(fields, ArtifactId).getOrElse(null),
           readStr(fields, Version).getOrElse(null),
           readBool(fields, Extensions).getOrElse(false),
           readObjectSequence[Execution](fields, Executions),
@@ -72,7 +72,7 @@ case object Plugin extends CommonJsonReader {
 
 case class Plugin(
   groupId: String = SL.DefaultPluginGroup,
-  artifactId: String, version: String = null,
+  artifactId: String = null, version: String = null,
   extensions: Boolean = false,
   executions: Seq[Execution] = Seq[Execution](),
   dependencies: Seq[Dependency] = Seq[Dependency](),

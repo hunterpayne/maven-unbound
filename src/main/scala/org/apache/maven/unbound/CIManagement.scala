@@ -58,7 +58,8 @@ case object CIManagement extends CommonJsonReader {
 }
 
 case class CIManagement(
-  system: String, url: String, notifiers: Seq[Notifier] = Seq[Notifier]()) {
+  system: String = null, url: String = null,
+  notifiers: Seq[Notifier] = Seq[Notifier]()) {
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.SystemStr).text),
@@ -101,8 +102,8 @@ case object Notifier extends CommonJsonReader {
           readStr(fields, TypeStr).getOrElse(Mail),
           readBool(fields, SendOnError).getOrElse(true),
           readBool(fields, SendOnFailure).getOrElse(true),
-          readBool(fields, SendOnSuccess).getOrElse(false),
-          readBool(fields, SendOnWarning).getOrElse(false),
+          readBool(fields, SendOnSuccess).getOrElse(true),
+          readBool(fields, SendOnWarning).getOrElse(true),
           readProperties(obj, Configuration)
         )
     },
@@ -112,8 +113,8 @@ case object Notifier extends CommonJsonReader {
           writeStr(TypeStr, n.`type`, Mail),
           writeBool(SendOnError, n.sendOnError, true),
           writeBool(SendOnFailure, n.sendOnFailure, true),
-          writeBool(SendOnSuccess, n.sendOnSuccess, false),
-          writeBool(SendOnWarning, n.sendOnWarning, false),
+          writeBool(SendOnSuccess, n.sendOnSuccess, true),
+          writeBool(SendOnWarning, n.sendOnWarning, true),
           writeProperties(Configuration, n.configuration)
         ).flatten.toList)
     }
@@ -123,7 +124,7 @@ case object Notifier extends CommonJsonReader {
 case class Notifier(
   `type`: String = SL.Mail,
   sendOnError: Boolean = true, sendOnFailure: Boolean = true,
-  sendOnSuccess: Boolean = false, sendOnWarning: Boolean = false,
+  sendOnSuccess: Boolean = true, sendOnWarning: Boolean = true,
   configuration: Map[String, String] = Map[String, String]()) {
 
   def this(elem: Elem) = this(
@@ -135,10 +136,10 @@ case class Notifier(
       (elem \ SL.SendOnFailure).text.toLowerCase(Locale.ROOT), SL.TrueStr) ==
       SL.TrueStr.toString,
     emptyToDefault(
-      (elem \ SL.SendOnSuccess).text.toLowerCase(Locale.ROOT), SL.FalseStr) ==
+      (elem \ SL.SendOnSuccess).text.toLowerCase(Locale.ROOT), SL.TrueStr) ==
       SL.TrueStr.toString,
     emptyToDefault(
-      (elem \ SL.SendOnWarning).text.toLowerCase(Locale.ROOT), SL.FalseStr) ==
+      (elem \ SL.SendOnWarning).text.toLowerCase(Locale.ROOT), SL.TrueStr) ==
       SL.TrueStr.toString,
     (elem \ SL.Configuration).flatMap(_.map { e => (e.label, e.text) }).toMap)
 

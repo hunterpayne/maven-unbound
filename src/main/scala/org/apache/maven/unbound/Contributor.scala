@@ -39,7 +39,7 @@ case object Contributor extends CommonJsonReader {
     {
       case obj @ JObject(fields) =>
         new Contributor(
-          readStr(fields, Name).get,
+          readStr(fields, Name).getOrElse(null),
           readStr(fields, Email).getOrElse(null),
           readStr(fields, UrlStr).getOrElse(null),
           readStr(fields, OrganizationStr).getOrElse(null),
@@ -66,7 +66,7 @@ case object Contributor extends CommonJsonReader {
 }
 
 case class Contributor(
-  name: String, email: String = null, url: String = null,
+  name: String = null, email: String = null, url: String = null,
   organization: String = null, organizationUrl: String = null,
   roles: Seq[String] = Seq[String](), timezone: String = null,
   properties: Map[String, String] = Map[String, String]()) {
@@ -83,8 +83,8 @@ case class Contributor(
 
   lazy val xml =
     <contributor>
-      <name>{name}</name>
-      <email>{email}</email>
+      { if (name != null) <name>{name}</name> }
+      { if (email != null) <email>{email}</email> }
       { if (url != null) <url>{url}</url> }
       { if (organization != null) <organization>{organization}</organization> }
       { if (organizationUrl != null)
@@ -98,8 +98,8 @@ case class Contributor(
 
   def makeModelObject(): org.apache.maven.model.Contributor = {
     val contributor = new org.apache.maven.model.Contributor()
-    contributor.setName(name)
-    contributor.setEmail(email)
+    if (name != null) contributor.setName(name)
+    if (email != null) contributor.setEmail(email)
     if (url != null) contributor.setUrl(url)
     if (organization != null) contributor.setOrganization(organization)
     if (organizationUrl != null) contributor.setOrganizationUrl(organizationUrl)
@@ -126,7 +126,7 @@ case object Developer extends CommonJsonReader {
     {
       case obj @ JObject(fields) =>
         new Developer(
-          readStr(fields, Id).get,
+          readStr(fields, Id).getOrElse(null),
           readStr(fields, Name).getOrElse(null),
           readStr(fields, Email).getOrElse(null),
           readStr(fields, UrlStr).getOrElse(null),
@@ -155,7 +155,8 @@ case object Developer extends CommonJsonReader {
 }
 
 case class Developer(
-  id: String, name: String = null, email: String = null, url: String = null,
+  id: String = null, name: String = null, email: String = null,
+  url: String = null,
   organization: String = null, organizationUrl: String = null,
   roles: Seq[String] = Seq[String](), timezone: String = null,
   properties: Map[String, String] = Map[String, String]()) {
@@ -173,9 +174,9 @@ case class Developer(
 
   lazy val xml =
     <developer>
-      <id>{id}</id>
-      <name>{name}</name>
-      <email>{email}</email>
+      { if (id != null) <id>{id}</id> }
+      { if (name != null) <name>{name}</name> }
+      { if (email != null) <email>{email}</email> }
       { if (url != null) <url>{url}</url> }
       { if (organization != null)
         <organization>{organization}</organization> }
@@ -192,9 +193,9 @@ case class Developer(
 
   def makeModelObject(): org.apache.maven.model.Developer = {
     val developer = new org.apache.maven.model.Developer()
-    developer.setId(id)
-    developer.setName(name)
-    developer.setEmail(email)
+    if (id != null) developer.setId(id)
+    if (name != null) developer.setName(name)
+    if (email != null) developer.setEmail(email)
     if (url != null) developer.setUrl(url)
     if (organization != null) developer.setOrganization(organization)
     if (organizationUrl != null) developer.setOrganizationUrl(organizationUrl)
