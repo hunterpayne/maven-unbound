@@ -89,6 +89,7 @@ Things left to do before its ready:
 * unit test defaults
 * fix or address 3 bugs in hocon to xml translation of certain kinds of
 config objects
+
 Nice to have: translating comments from XML to Hocon
 
 Watch this space for more news.
