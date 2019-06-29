@@ -13,7 +13,7 @@ target/unbound-1.0.0-exec.jar into a directory that is in your path (like
 The CLI is just a quick script called mvnu which takes all the same
 arguments as mvn does with two additions.
 
-If instead of the normal maven arguments you provid either of:
+If instead of the normal maven arguments you provide either of:
 * --generate-json then pom.json files will be generated for all the found 
 pom.xml files.
 * --generate-hocon then pom.conf files will be generated in the Hocon format 
