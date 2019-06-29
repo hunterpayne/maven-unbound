@@ -42,7 +42,7 @@ case object Reporting extends CommonJsonReader {
       case obj @ JObject(fields) =>
         Reporting(
           readBool(fields, ExcludeDefaults).getOrElse(false),
-          readStr(fields, OutputDirectory).getOrElse(SiteStr),
+          readStr(fields, OutputDirectory).getOrElse(Target + "/" + SiteStr),
           readObjectSequence[ReportPlugin](fields, Plugins)
         )
     },
@@ -50,7 +50,7 @@ case object Reporting extends CommonJsonReader {
       case r: Reporting =>
         JObject(Seq[Option[JField]](
           writeBool(ExcludeDefaults, r.excludeDefaults, false),
-          writeStr(OutputDirectory, r.outputDirectory, SiteStr),
+          writeStr(OutputDirectory, r.outputDirectory, Target + "/" + SiteStr),
           writeObjectSequence(Plugins, r.plugins)
         ).flatten.toList)
     }
@@ -58,21 +58,24 @@ case object Reporting extends CommonJsonReader {
 }
 
 case class Reporting(
-  excludeDefaults: Boolean = false, outputDirectory: String = SL.SiteStr,
+  excludeDefaults: Boolean = false,
+  outputDirectory: String = SL.Target + "/" + SL.SiteStr,
   plugins: Seq[ReportPlugin] = Seq[ReportPlugin]()) {
 
   def this(elem: Elem) = this(
     emptyToDefault(
       (elem \ SL.ExcludeDefaults).text.toLowerCase(Locale.ROOT), SL.FalseStr) ==
       SL.TrueStr.toString,
-    emptyToDefault((elem \ SL.OutputDirectory).text, SL.SiteStr),
+    emptyToDefault(
+      (elem \ SL.OutputDirectory).text, SL.Target + "/" + SL.SiteStr),
     (elem \ SL.Plugins \ SL.PluginStr).map { case e: Elem =>
       new ReportPlugin(e) })
 
   lazy val xml =
     <reporting>
       { if (excludeDefaults) <excludeDefaults>true</excludeDefaults> }
-      { if (outputDirectory != null && outputDirectory != SL.SiteStr.toString)
+      { if (outputDirectory != null &&
+        outputDirectory != (SL.Target + "/" + SL.SiteStr).toString)
         <outputDirectory>{outputDirectory}</outputDirectory> }
       { if (!plugins.isEmpty) <plugins>
         { plugins.map { _.xml } }
@@ -105,8 +108,8 @@ case object ReportPlugin extends CommonJsonReader {
       case obj @ JObject(fields) =>
         ReportPlugin(
           readStr(fields, GroupId).getOrElse(DefaultPluginGroup),
-          readStr(fields, ArtifactId).get,
-          readStr(fields, Version).get,
+          readStr(fields, ArtifactId).getOrElse(null),
+          readStr(fields, Version).getOrElse(null),
           readObjectSequence[ReportSet](fields, ReportSets),
           readBool(fields, Inherited).getOrElse(true),
           (obj \ Configuration) match {
@@ -131,7 +134,7 @@ case object ReportPlugin extends CommonJsonReader {
 
 case class ReportPlugin(
   groupId: String = SL.DefaultPluginGroup,
-  artifactId: String, version: String,
+  artifactId: String = null, version: String = null,
   reportSets: Seq[ReportSet] = Seq[ReportSet](),
   inherited: Boolean = true,
   configuration: Config = null) {
@@ -148,16 +151,18 @@ case class ReportPlugin(
     (elem \ SL.Configuration).headOption.map { case e: Elem =>
       elemToConfig(e) }.getOrElse(null))
 
-  lazy val xml = <plugin>
-                   <groupId>{groupId}</groupId>
-                   <artifactId>{artifactId}</artifactId>
-                   { if (version != null) <version>{version}</version> }
-                   { if (!reportSets.isEmpty) <reportSets>
-                     { reportSets.map { _.xml } }
-                   </reportSets> }
-                   { if (!inherited) <inherited>false</inherited> }
-                   { if (configuration != null) configToElem(configuration) }
-                 </plugin>
+  lazy val xml =
+    <plugin>
+      { if (groupId != null && groupId != SL.DefaultPluginGroup.toString)
+        <groupId>{groupId}</groupId> }
+      { if (artifactId != null) <artifactId>{artifactId}</artifactId> }
+      { if (version != null) <version>{version}</version> }
+      { if (!reportSets.isEmpty) <reportSets>
+        { reportSets.map { _.xml } }
+        </reportSets> }
+      { if (!inherited) <inherited>false</inherited> }
+      { if (configuration != null) configToElem(configuration) }
+    </plugin>
 
   def makeModelObject(): org.apache.maven.model.ReportPlugin = {
     val plugin = new org.apache.maven.model.ReportPlugin()

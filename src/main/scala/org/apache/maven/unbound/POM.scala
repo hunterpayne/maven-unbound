@@ -43,8 +43,8 @@ case object Parent extends CommonJsonReader {
     {
       case obj @ JObject(fields) =>
         new Parent(
-          readStr(fields, GroupId).get,
-          readStr(fields, ArtifactId).get,
+          readStr(fields, GroupId).getOrElse(null),
+          readStr(fields, ArtifactId).getOrElse(null),
           readStr(fields, Version).getOrElse(null),
           readStr(fields, RelativePath).getOrElse(DefRelativePath)
         )
@@ -62,7 +62,7 @@ case object Parent extends CommonJsonReader {
 }
 
 case class Parent(
-  groupId: String, artifactId: String, version: String = null,
+  groupId: String = null, artifactId: String = null, version: String = null,
   relativePath: String = Parent.DefRelativePath) {
 
   def this(elem: Elem) = this(
@@ -71,40 +71,69 @@ case class Parent(
     emptyToNull((elem \ SL.Version).text),
     emptyToDefault((elem \ SL.RelativePath).text, Parent.DefRelativePath))
 
-  lazy val xml = <parent>
-                   <groupId>{groupId}</groupId>
-                   <artifactId>{artifactId}</artifactId>
-                   { if (version != null) <version>{version}</version> }
-                   { if (relativePath != null &&
-                         !Parent.DefRelativePath.toString.equals(relativePath))
-                     <relativePath>{relativePath}</relativePath>
-                   }
-                 </parent>
+  lazy val xml =
+    <parent>
+      { if (groupId != null) <groupId>{groupId}</groupId> }
+      { if (artifactId != null) <artifactId>{artifactId}</artifactId> }
+      { if (version != null) <version>{version}</version> }
+      { if (relativePath != null &&
+        !Parent.DefRelativePath.toString.equals(relativePath))
+        <relativePath>{relativePath}</relativePath>
+      }
+    </parent>
 
   def makeModelObject(): org.apache.maven.model.Parent = {
     val parent = new org.apache.maven.model.Parent()
-    parent.setGroupId(groupId)
-    parent.setArtifactId(artifactId)
+    if (groupId != null) parent.setGroupId(groupId)
+    if (artifactId != null) parent.setArtifactId(artifactId)
     if (version != null) parent.setVersion(version)
     parent.setRelativePath(relativePath)
     parent
   }
 }
 
-case class Organization(name: String, url: String) {
+case object Organization extends CommonJsonReader {
+
+  implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
+
+  class OrganizationSerializer extends CustomSerializer[Organization](format => (
+    {
+      case JObject(fields) =>
+        new Organization(
+          readStr(fields, Name).getOrElse(null),
+          readStr(fields, UrlStr).getOrElse(null)
+        )
+    },
+    {
+      case o: Organization =>
+        JObject(Seq[Option[JField]](
+          writeStr(Name, o.name),
+          writeStr(UrlStr, o.url)
+        ).flatten.toList)
+    }
+  ))
+}
+
+case class Organization(name: String = null, url: String = null) {
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.Name).text), emptyToNull((elem \ SL.UrlStr).text))
 
   lazy val xml = <organization>
-                   <name>{name}</name>
-                   <url>{url}</url>
+                   { if (name != null) <name>{name}</name> }
+                   { if (url != null) <url>{url}</url> }
                  </organization>
 
   def makeModelObject(): org.apache.maven.model.Organization = {
     val organization = new org.apache.maven.model.Organization()
-    organization.setName(name)
-    organization.setUrl(url)
+    if (name != null) organization.setName(name)
+    if (url != null) organization.setUrl(url)
     organization
   }
 }
@@ -321,7 +350,7 @@ case class IssueManagement(system: String = null, url: String = null) {
 case object DistributionManagement extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
-  protected def None = "none"
+  protected[unbound] def None = "none"
 
   private def writeObject(stream: ObjectOutputStream): Unit =
     stream.defaultWriteObject()
@@ -334,8 +363,8 @@ case object DistributionManagement extends CommonJsonReader {
     {
       case obj @ JObject(fields) =>
         new DistributionManagement(
-          readObject[DistributionRepository](obj, RepositoryStr),
-          readObject[DistributionRepository](obj, SnapshotRepository),
+          readObject[DeploymentRepository](obj, RepositoryStr),
+          readObject[DeploymentRepository](obj, SnapshotRepository),
           readObject[Site](obj, SiteStr),
           readStr(fields, DownloadUrl).getOrElse(null),
           readObject[Relocation](obj, RelocationStr),
@@ -357,16 +386,16 @@ case object DistributionManagement extends CommonJsonReader {
 }
 
 case class DistributionManagement(
-  repository: DistributionRepository = null,
-  snapshotRepository: DistributionRepository = null,
+  repository: DeploymentRepository = null,
+  snapshotRepository: DeploymentRepository = null,
   site: Site = null, downloadUrl: String = null,
   relocation: Relocation = null, status: String = DistributionManagement.None) {
 
   def this(elem: Elem) = this(
     (elem \ SL.RepositoryStr).map { case e: Elem =>
-      new DistributionRepository(e) }.headOption.getOrElse(null),
+      new DeploymentRepository(e) }.headOption.getOrElse(null),
     (elem \ SL.SnapshotRepository.toString).map { case e: Elem =>
-      new DistributionRepository(e) }.headOption.getOrElse(null),
+      new DeploymentRepository(e) }.headOption.getOrElse(null),
     (elem \ SL.SiteStr.toString).map { case e: Elem =>
       new Site(e) }.headOption.getOrElse(null),
     emptyToNull((elem \ SL.DownloadUrl).text),

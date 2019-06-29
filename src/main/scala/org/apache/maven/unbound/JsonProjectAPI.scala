@@ -113,6 +113,9 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     Serialization.formats(NoTypeHints) +
     new Project.ProjectSerializer +
     new Build.BuildSerializer +
+    new Parent.ParentSerializer +
+    new Organization.OrganizationSerializer +
+    new Extension.ExtensionSerializer +
     new Plugin.PluginSerializer +
     new Dependency.DependencySerializer +
     new Execution.ExecutionSerializer +
@@ -131,7 +134,7 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     new Site.SiteSerializer +
     new DistributionManagement.DistributionManagementSerializer +
     new Relocation.RelocationSerializer +
-    new DistributionRepository.DistributionRepositorySerializer +
+    new DeploymentRepository.DeploymentRepositorySerializer +
     new Repository.RepositorySerializer +
     new RepositoryPolicy.RepositoryPolicySerializer +
     new ReportSet.ReportSetSerializer +

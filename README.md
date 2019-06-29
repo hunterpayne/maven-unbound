@@ -69,9 +69,8 @@ on the fly and calling normal Maven.
 ## Is it ready to use
 
 More unit tests are necessary but the basic functionality is finished and 
-works.  Perhaps there are a few places where defaults are not handled 
-correctly but mostly the code is working now.  Exotic configuration elements
-could also have issues.  This is beta code for the next week at least.
+works.  Exotic configuration elements could also have issues.  This is beta 
+code for the next week at least.
 
 We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
 to Security CVE reports.  A basic maven site now can be generated via
@@ -86,7 +85,6 @@ translating XML comments.
 
 Things left to do before its ready:
 * test hocon importing
-* unit test defaults
 * fix or address 3 bugs in hocon to xml translation of certain kinds of
 config objects
 

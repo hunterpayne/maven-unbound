@@ -25,7 +25,7 @@ import scala.xml.Elem
 import com.typesafe.config.ConfigFactory
 import org.json4s._
 
-case object DistributionRepository extends CommonJsonReader {
+case object DeploymentRepository extends CommonJsonReader {
 
   implicit val formats = JsonReader.formats
 
@@ -35,22 +35,22 @@ case object DistributionRepository extends CommonJsonReader {
   private def readObject(stream: ObjectInputStream): Unit =
     stream.defaultReadObject()
 
-  class DistributionRepositorySerializer
-      extends CustomSerializer[DistributionRepository](format => (
+  class DeploymentRepositorySerializer
+      extends CustomSerializer[DeploymentRepository](format => (
     {
       case obj @ JObject(fields) =>
-        new DistributionRepository(
+        new DeploymentRepository(
           readBool(fields, UniqueVersion).getOrElse(true),
           readObject[RepositoryPolicy](obj, Releases),
           readObject[RepositoryPolicy](obj, Snapshots),
-          readStr(fields, Id).get,
-          readStr(fields, Name).get,
+          readStr(fields, Id).getOrElse(null),
+          readStr(fields, Name).getOrElse(null),
           readStr(fields, UrlStr).getOrElse(null),
           readStr(fields, Layout).getOrElse(DefaultStr)
         )
     },
     {
-      case d: DistributionRepository =>
+      case d: DeploymentRepository =>
         JObject(Seq[Option[JField]](
           writeBool(UniqueVersion, d.uniqueVersion, true),
           writeObject(Releases, d.releases),
@@ -64,10 +64,11 @@ case object DistributionRepository extends CommonJsonReader {
   ))
 }
 
-case class DistributionRepository(
+case class DeploymentRepository(
   uniqueVersion: Boolean = true,
   releases: RepositoryPolicy = null, snapshots: RepositoryPolicy = null,
-  id: String, name: String, url: String, layout: String = SL.DefaultStr) {
+  id: String = null, name: String = null, url: String = null,
+  layout: String = SL.DefaultStr) {
 
   def this(elem: Elem) = this(
     emptyToDefault(
@@ -223,7 +224,8 @@ case object Repository extends CommonJsonReader {
 
 case class Repository(
   releases: RepositoryPolicy = null, snapshots: RepositoryPolicy = null,
-  id: String, name: String, url: String, layout: String = SL.DefaultStr) {
+  id: String = null, name: String = null, url: String = null,
+  layout: String = SL.DefaultStr) {
 
   def this(elem: Elem) = this(
     (elem \ SL.Releases).map { case e: Elem =>
@@ -250,10 +252,10 @@ case class Repository(
     val repo = new org.apache.maven.model.Repository()
     if (releases != null) repo.setReleases(releases.makeModelObject())
     if (snapshots != null) repo.setSnapshots(snapshots.makeModelObject())
-    repo.setId(id)
-    repo.setName(name)
-    repo.setUrl(url)
-    repo.setLayout(layout)
+    if (id != null) repo.setId(id)
+    if (name != null) repo.setName(name)
+    if (url != null)  repo.setUrl(url)
+    if (layout != null) repo.setLayout(layout)
     repo
   }
 }

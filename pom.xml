@@ -320,14 +320,13 @@
           <reportSet>
             <reports>
 	      <!-- select reports -->
-	      <report>index</report>
 	      <report>summary</report>
               <report>dependencies</report>
               <report>dependency-info</report>
               <report>dependency-convergence</report>
               <report>team</report>
               <report>licenses</report>
-              <report>plugins</report>
+              <report>plugin-management</report>
               <report>scm</report>
               <report>issue-management</report>
             </reports>

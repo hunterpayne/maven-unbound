@@ -214,18 +214,50 @@ case class Filter(filter: String) {
   lazy val xml = <filter>{filter}</filter>
 }
 
-case class Extension(groupId: String, artifactId: String, version: String) {
+case object Extension extends CommonJsonReader {
+
+  implicit val formats = JsonReader.formats
+
+  private def writeObject(stream: ObjectOutputStream): Unit =
+    stream.defaultWriteObject()
+
+  private def readObject(stream: ObjectInputStream): Unit =
+    stream.defaultReadObject()
+
+  class ExtensionSerializer extends CustomSerializer[Extension](format => (
+    {
+      case JObject(fields) =>
+        new Extension(
+          readStr(fields, GroupId).getOrElse(null),
+          readStr(fields, ArtifactId).getOrElse(null),
+          readStr(fields, Version).getOrElse(null)
+        )
+    },
+    {
+      case e: Extension =>
+        JObject(Seq[Option[JField]](
+          writeStr(GroupId, e.groupId),
+          writeStr(ArtifactId, e.artifactId),
+          writeStr(Version, e.version)
+        ).flatten.toList)
+    }
+  ))
+}
+
+case class Extension(
+  groupId: String = null, artifactId: String = null, version: String = null) {
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.GroupId).text),
     emptyToNull((elem \ SL.ArtifactId).text),
     emptyToNull((elem \ SL.Version).text))
 
-  lazy val xml = <extension>
-                   <groupId>{groupId}</groupId>
-                   <artifactId>{artifactId}</artifactId>
-                   { if (version != null) <version>{version}</version> }
-                 </extension>
+  lazy val xml =
+    <extension>
+      { if (groupId != null) <groupId>{groupId}</groupId> }
+      { if (artifactId != null) <artifactId>{artifactId}</artifactId> }
+      { if (version != null) <version>{version}</version> }
+    </extension>
 
   def makeModelObject(): org.apache.maven.model.Extension = {
     val extension = new org.apache.maven.model.Extension()

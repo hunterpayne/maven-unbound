@@ -144,6 +144,26 @@ trait HoconProjectReader {
       )
     }
 
+  implicit val distributionManagementConfigReader:
+      ValueReader[DistributionManagement] =
+    ValueReader.relative { config =>
+      DistributionManagement(
+        if (config.hasPath(RepositoryStr))
+          config.as[DeploymentRepository](RepositoryStr)
+        else null,
+        if (config.hasPath(SnapshotRepository))
+          config.as[DeploymentRepository](SnapshotRepository)
+        else null,
+        if (config.hasPath(SiteStr)) config.as[Site](SiteStr) else null,
+        if (config.hasPath(DownloadUrl)) config.getString(DownloadUrl)
+        else null,
+        if (config.hasPath(RelocationStr)) config.as[Relocation](RelocationStr)
+        else null,
+        if (config.hasPath(Status)) config.getString(Status)
+        else DistributionManagement.None
+      )
+    }
+
   def readPOM(conf: Config): Project = conf.as[Project](ProjectStr)
 
   def readArchiver(conf: Config): Archiver = conf.as[Archiver](Archive)
