@@ -103,8 +103,11 @@ package object unbound {
               case t: Text => t.text.trim == ""
               case _ => false
             }) {
-              val mapInJava = (e \ SL.PropertyStr).map { el =>
-                ((el \ SL.Name).text, (el \ SL.ValueStr).text) }.toMap.asJava
+              val pairSeqInScala = (e \ SL.PropertyStr).map { el =>
+                ((el \ SL.Name).text, (el \ SL.ValueStr).text) }
+              val mapInJava = (pairSeqInScala :+ (
+                (SL.PropertiesStr.toString, SL.TrueStr.toString))).
+                toMap.asJava
               ConfigValueFactory.fromMap(mapInJava)
 
               // a list
@@ -205,7 +208,19 @@ package object unbound {
             var elemKey = key
             var attrs: MetaData = Null
             val childElems =
-              if (mS.values.forall { v =>
+              if (mS.keySet.find {
+                _ == SL.PropertiesStr.toString }.isDefined) {
+                // a Properties object
+                mS.filter{
+                  _._1 != SL.PropertiesStr.toString }.map { case(k, v) =>
+                    new Elem(
+                      null, SL.PropertyStr, Null, TopScope,
+                      new Elem(null, SL.Name, Null, TopScope, new Text(k)),
+                      new Elem(
+                        null, SL.ValueStr, Null, TopScope,
+                        new Text(removeQuotes(v.render()))))
+                }.toSeq
+              } else if (mS.values.forall { v =>
                 v.valueType() == ConfigValueType.STRING }) {
                 if (mS.keySet.forall { isDependencyProperty(_) }) {
                   // a Dependency object (for configurations)
@@ -235,15 +250,8 @@ package object unbound {
                   mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
                     makeElem(k, v) }
                 } else {
-                  // a Properties object
-                  mS.map { case(k, v) =>
-                    new Elem(
-                      null, SL.PropertyStr, Null, TopScope,
-                      new Elem(null, SL.Name, Null, TopScope, new Text(k)),
-                      new Elem(
-                        null, SL.ValueStr, Null, TopScope,
-                        new Text(removeQuotes(v.render()))))
-                  }.toSeq
+                  // a normal Map (ie non-string value type)
+                  mS.map { case(k, v) => makeElem(k, v) }.toSeq
                 }
               } else {
                 // a normal Map (ie non-string value type)

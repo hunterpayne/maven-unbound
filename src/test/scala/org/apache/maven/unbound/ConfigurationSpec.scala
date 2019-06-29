@@ -222,11 +222,11 @@ class ConfigurationSpec extends FlatSpec with Matchers {
 
     val conf = elemToConfig(elem)
     val props = conf.getObject("props")
-    props.size should be(3)
+    props.size should be(4)
     props.get("foo").unwrapped should be("value1")
     props.get("bar").unwrapped should be("value2")
     props.get("foobar").unwrapped should be("value3")
-    conf.entrySet().size() should be(3)
+    conf.entrySet().size() should be(4)
   }
 
   it should "translate archivers" in {
@@ -409,14 +409,12 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     listElem.child(3).text should be("false")
   }
 
-  /*
-   // TODO fix
   it should "translate lists of objects" in {
     val config = ConfigFactory.parseString("""{
       foobars : [
-        { name : "ring" }, 
-        { name : "around", url : "http://the.rosey" }, 
-        { name : "pocket full", url : "http://of.poseies" } 
+        { name : "ring" },
+        { name : "around", url : "http://the.rosey" },
+        { name : "pocket full", url : "http://of.poseies" }
       ]
     }""")
     val elem = configToElem(config)
@@ -426,21 +424,17 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     foobars.label should be("foobars")
     val bars = (foobars \ "foobar").toArray
     bars.size should be(3)
-    println("bars " + bars.mkString(","))
     bars(0).child.size should be(1)
     bars(0).label should be("foobar")
-    (bars(0) \ "name") should be("ring")
+    (bars(0) \ "name").text should be("ring")
     bars(1).child.size should be(2)
     (bars(1) \ "name").text should be("around")
-    (bars(1) \ "url").text should be("http://the.rosey/")
+    (bars(1) \ "url").text should be("http://the.rosey")
     bars(2).child.size should be(2)
     (bars(2) \ "name").text should be("pocket full")
-    (bars(2) \ "url").text should be("http://of.poseies/")
+    (bars(2) \ "url").text should be("http://of.poseies")
   }
-   */
 
-  /*
-   // TODO fix
   it should "translate objects" in {
 
     val config = ConfigFactory.parseString("""{
@@ -460,7 +454,6 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     }""")
 
     val elem = configToElem(config)
-    println("elem " + elem)
     val pList = (elem \ "person").toArray
     pList.size should be(1)
     (pList(0) \ "firstName").text should be("Jason")
@@ -468,16 +461,15 @@ class ConfigurationSpec extends FlatSpec with Matchers {
 
     val plList = (elem \ "place").toArray
     plList.size should be(1)
-    (plList(1) \ "city").text should be("Forest Hill")
-    (plList(1) \ "state").text should be("Maryland")
-    (plList(1) \ "country").text should be("U.S.")
+    (plList(0) \ "city").text should be("Forest Hill")
+    (plList(0) \ "state").text should be("Maryland")
+    (plList(0) \ "country").text should be("U.S.")
 
     val tList = (elem \ "thing").toArray
     tList.size should be(1)
-    (tList(2) \ "id").text should be("Apache")
-    (tList(2) \ "name").text should be("Apache Foundation")
+    (tList(0) \ "id").text should be("Apache")
+    (tList(0) \ "name").text should be("Apache Foundation")
   }
-   */
 
   it should "translate maps of basic types" in {
 
@@ -498,8 +490,6 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     (list(0) \ "dead").text should be("true")
   }
 
-/*
-   // TODO fix
   it should "translate maps of objects" in {
 
     val config = ConfigFactory.parseString("""{ game : {
@@ -521,27 +511,26 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     val elem = configToElem(config)
     val pList = (elem \ "game" \ "person").toArray
     pList.size should be(1)
-    println("p " + pList(0))
     (pList(0) \ "firstName").text should be("Jason")
     (pList(0) \ "lastName").text should be("van Zyl")
 
     val plList = (elem \ "game" \ "place").toArray
     plList.size should be(1)
-    (plList(1) \ "city").text should be("Forest Hill")
-    (plList(1) \ "state").text should be("Maryland")
-    (plList(1) \ "country").text should be("U.S.")
+    (plList(0) \ "city").text should be("Forest Hill")
+    (plList(0) \ "state").text should be("Maryland")
+    (plList(0) \ "country").text should be("U.S.")
 
     val tList = (elem \ "game" \ "thing").toArray
     tList.size should be(1)
-    (tList(2) \ "id").text should be("Apache")
-    (tList(2) \ "name").text should be("Apache Foundation")
+    (tList(0) \ "id").text should be("Apache")
+    (tList(0) \ "name").text should be("Apache Foundation")
   }
-*/
 
   it should "translate properties" in {
 
     val config = ConfigFactory.parseString("""{
       props : {
+        properties : true,
         name : "foo",
         bar : "value2",
         foobar : "value3"

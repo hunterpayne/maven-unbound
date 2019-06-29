@@ -1,6 +1,32 @@
 # Maven Unbound
 Hocon and Json to Apache Maven pom.xml conversions
 
+## How to "install" the CLI
+
+To use it, pull this repo and build it with ```mvn clean install``` then copy
+either put this root of this repo in your path or copy both mvnu and 
+target/unbound-1.0.0-exec.jar into a directory that is in your path (like 
+/usr/local/bin)
+
+## To use the Unbound command line interface
+
+The CLI is just a quick script called mvnu which takes all the same
+arguments as mvn does with two additions.
+
+If instead of the normal maven arguments you provided either of:
+* --generate-json then pom.json files will be generated for all the found 
+pom.xml files.
+* --generate-hocon then pom.conf files will be generated in the Hocon format 
+for all the found pom.xml files.
+
+Otherwise, the CLI will look for pom.json or pom.conf files and generate
+pom.xml files in the current directory and in any sub-modules of the 
+current Maven Project.  Then it will call mvn with the same arguments as Unbound
+was given.  This has the effect of making it seem like you are using
+Json or Hocon style Maven when you are really just generating the pom.xml files
+on the fly and calling normal Maven.
+
+
 ## To use Unbound as a library
 
 Unbound provides a set of Scala case classes mirroring the Maven POM bean 
@@ -47,30 +73,12 @@ to and from Xml and Json and read from Hocon.
   val project: Project = readPOM(conf)
 ```
 
-## To use the Unbound command line interface
 
-The CLI is just a quick script called mvnu which takes all the same
-arguments as mvn does with two additions.
+## Is it ready to use?
 
-If instead of the normal maven arguments you provided either of:
-* --generate-json then pom.json files will be generated for all the found 
-pom.xml files.
-* --generate-hocon then pom.conf files will be generated in the Hocon format 
-for all the found pom.xml files.
-
-Otherwise, the CLI will look for pom.json or pom.conf files and generate
-pom.xml files in the current directory and in any sub-modules of the 
-current Maven Project.  Then it will call mvn with the same arguments as Unbound
-was given.  This has the effect of making it seem like you are using
-Json or Hocon style Maven when you are really just generating the pom.xml files
-on the fly and calling normal Maven.
-
-
-## Is it ready to use
-
-More unit tests are necessary but the basic functionality is finished and 
-works.  Exotic configuration elements could also have issues.  This is beta 
-code for the next week at least.
+The basic functionality is finished and works.  Exotic configuration elements 
+could have issues but this is unlikely.  This is beta code but ready for to
+try.
 
 We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
 to Security CVE reports.  A basic maven site now can be generated via
@@ -83,9 +91,11 @@ into HOCON.  JSON has no support for comments.  If in the future we create
 a way to directly translate Project into Config, we will add support for
 translating XML comments.
 
-Things left to do before its ready:
-* fix or address 3 bugs in hocon to xml translation of certain kinds of
-config objects
+Things left to do before its 1.0 ready:
+* more comments
+* improve site
+* improve documentation
+* RPM/deb/installer build scripts
 
 Nice to have: translating comments from XML to Hocon
 
