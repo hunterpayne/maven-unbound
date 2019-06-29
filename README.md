@@ -84,7 +84,6 @@ a way to directly translate Project into Config, we will add support for
 translating XML comments.
 
 Things left to do before its ready:
-* test hocon importing
 * fix or address 3 bugs in hocon to xml translation of certain kinds of
 config objects
 

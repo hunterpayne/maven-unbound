@@ -89,6 +89,23 @@ class ProjectSpec extends FlatSpec with Matchers {
     conf.as[Build]("build").toString should be(correct.toString)
   }
 
+  it should "be correct for Extension" in {
+
+    val correct = Extension(null, null, null)
+    Extension().toString should be(correct.toString)
+
+    val xml = new Extension(XML.loadString("""<extension></extension>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[Extension](
+      JsonMethods.parse("""{ "extension" : {} }""").asInstanceOf[JObject], 
+      "extension")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ extension : {} }""")
+    conf.as[Extension]("extension").toString should be(correct.toString)
+  }
+
   it should "be correct for CIManagement" in {
 
     val correct = CIManagement(null, null, Seq[Notifier]())
@@ -180,6 +197,41 @@ class ProjectSpec extends FlatSpec with Matchers {
 
     val conf = ConfigFactory.parseString("""{ dependency : {} }""")
     conf.as[Dependency]("dependency").toString should be(correct.toString)
+  }
+
+  it should "be correct for Parent" in {
+
+    val correct = Parent(null, null, null, "../pom.xml")
+    Parent().toString should be(correct.toString)
+
+    val xml = new Parent(XML.loadString("""<parent></parent>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[Parent](
+      JsonMethods.parse("""{ "parent" : {} }""").asInstanceOf[JObject], 
+      "parent")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ parent : {} }""")
+    conf.as[Parent]("parent").toString should be(correct.toString)
+  }
+
+  it should "be correct for Organization" in {
+
+    val correct = Organization(null, null)
+    Organization().toString should be(correct.toString)
+
+    val xml = 
+      new Organization(XML.loadString("""<organization></organization>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[Organization](
+      JsonMethods.parse("""{ "organization" : {} }""").asInstanceOf[JObject], 
+      "organization")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ organization : {} }""")
+    conf.as[Organization]("organization").toString should be(correct.toString)
   }
 
   it should "be correct for License" in {
@@ -434,5 +486,114 @@ class ProjectSpec extends FlatSpec with Matchers {
 
     val conf = ConfigFactory.parseString("""{ buildBase : {} }""")
     conf.as[BuildBase]("buildBase").toString should be(correct.toString)
+  }
+
+  it should "be correct for Reporting" in {
+
+    val correct = Reporting(false, "target/site", Seq[ReportPlugin]())
+    Reporting().toString should be(correct.toString)
+
+    val xml = new Reporting(XML.loadString("""<reporting></reporting>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[Reporting](
+      JsonMethods.parse("""{ "reporting" : {} }""").asInstanceOf[JObject], 
+      "reporting")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ reporting : {} }""")
+    conf.as[Reporting]("reporting").toString should be(correct.toString)
+  }
+
+  it should "be correct for ReportPlugin" in {
+
+    val correct = ReportPlugin(
+      "org.apache.maven.plugins", null, null, Seq[ReportSet](), true, null)
+    ReportPlugin().toString should be(correct.toString)
+
+    val xml = new ReportPlugin(
+      XML.loadString("""<reportPlugin></reportPlugin>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[ReportPlugin](
+      JsonMethods.parse("""{ "reportPlugin" : {} }""").asInstanceOf[JObject], 
+      "reportPlugin")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ reportPlugin : {} }""")
+    conf.as[ReportPlugin]("reportPlugin").toString should be(correct.toString)
+  }
+
+  it should "be correct for ReportSet" in {
+
+    val correct = ReportSet("default", Seq[String](), true, null)
+    ReportSet().toString should be(correct.toString)
+
+    val xml = new ReportSet(XML.loadString("""<reportSet></reportSet>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[ReportSet](
+      JsonMethods.parse("""{ "reportSet" : {} }""").asInstanceOf[JObject], 
+      "reportSet")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ reportSet : {} }""")
+    conf.as[ReportSet]("reportSet").toString should be(correct.toString)
+  }
+
+  it should "be correct for DeploymentRepository" in {
+
+    val correct = 
+      DeploymentRepository(true, null, null, null, null, null, "default")
+    DeploymentRepository().toString should be(correct.toString)
+
+    val xml = new DeploymentRepository(
+      XML.loadString("""<deploymentRepository></deploymentRepository>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[DeploymentRepository](JsonMethods.parse(
+      """{ "deploymentRepository" : {} }""").asInstanceOf[JObject],
+      "deploymentRepository")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ deploymentRepository : {} }""")
+    conf.as[DeploymentRepository](
+      "deploymentRepository").toString should be(correct.toString)
+  }
+
+  it should "be correct for RepositoryPolicy" in {
+
+    val correct = RepositoryPolicy(true, "daily", "warn")
+    RepositoryPolicy().toString should be(correct.toString)
+
+    val xml = new RepositoryPolicy(
+      XML.loadString("""<repositoryPolicy></repositoryPolicy>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[RepositoryPolicy](JsonMethods.parse(
+      """{ "repositoryPolicy" : {} }""").asInstanceOf[JObject],
+      "repositoryPolicy")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ repositoryPolicy : {} }""")
+    conf.as[RepositoryPolicy]("repositoryPolicy").toString should be(
+      correct.toString)
+  }
+
+  it should "be correct for Repository" in {
+
+    val correct = Repository(null, null, null, null, null, "default")
+    Repository().toString should be(correct.toString)
+
+    val xml = new Repository(XML.loadString("""<repository></repository>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[Repository](
+      JsonMethods.parse("""{ "repository" : {} }""").asInstanceOf[JObject], 
+      "repository")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ repository : {} }""")
+    conf.as[Repository]("repository").toString should be(correct.toString)
   }
 }
