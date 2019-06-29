@@ -4,7 +4,7 @@ Hocon and Json to Apache Maven pom.xml conversions
 ## How to "install" the CLI
 
 To use it, pull this repo and build it with ```mvn clean install``` then copy
-either put this root of this repo in your path or copy both mvnu and 
+either put the root of this repo in your path or copy both mvnu and 
 target/unbound-1.0.0-exec.jar into a directory that is in your path (like 
 /usr/local/bin)
 
