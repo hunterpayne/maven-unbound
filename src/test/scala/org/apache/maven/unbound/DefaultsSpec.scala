@@ -30,7 +30,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods
 import org.scalatest.{ FlatSpec, Matchers }
 
-class ProjectSpec extends FlatSpec with Matchers {
+class DefaultsSpec extends FlatSpec with Matchers {
 
   behavior of "case class defaults"
 
