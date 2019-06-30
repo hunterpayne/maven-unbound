@@ -296,6 +296,155 @@
 	  </execution>
 	</executions>
       </plugin>
+      <!-- build installers -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rpm-maven-plugin</artifactId>
+        <version>2.2.0</version>
+        <executions>
+          <execution>
+            <id>generate-rpm</id>
+            <goals>
+              <goal>rpm</goal>
+            </goals>
+	    <phase>package</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <license>Apache 2.0 (c) 2019</license>
+          <distribution>Maven Unbound</distribution>
+          <group>Development/Tools</group>
+          <!-- <icon></icon> -->
+          <packager>SWWDC</packager>
+          <prefix>/usr/local</prefix>
+          <!-- <changelogFile>src/changelog</changelogFile> -->
+          <defineStatements>
+            <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+          </defineStatements>
+          <mappings>
+            <mapping>
+              <directory>/usr/local/bin</directory>
+              <filemode>555</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
+              <sources>
+                <source>
+                  <location>mvnu</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>/usr/local/lib/java</directory>
+              <filemode>444</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
+              <sources>
+                <source>
+                  <location>target/unbound-1.0.0-exec.jar</location>
+                </source>
+              </sources>
+            </mapping>
+          </mappings>
+	  <preinstallScriptlet>
+            <script>echo "installing ${project.name} now"</script>
+          </preinstallScriptlet>
+        </configuration>
+      </plugin>
+
+      <plugin>
+	<!--
+            This plugin's configuration must come *before* the Debian Maven
+            Plugin.
+	-->
+	<artifactId>maven-resources-plugin</artifactId>
+	<version>2.3</version>
+	<executions>
+          <execution>
+            <id>copy-deb-resources</id>
+            <phase>process-resources</phase>
+            <goals><goal>copy-resources</goal></goals>
+            <configuration>
+              <overwrite>true</overwrite>
+              <outputDirectory>${basedir}/target/deb</outputDirectory>
+              <resources>
+		<resource>
+		  <targetPath>bin/</targetPath>
+		  <directory>.</directory>
+		  <includes>
+		    <include>mvnu</include>
+		  </includes>
+		</resource>
+              </resources>
+            </configuration>
+          </execution>
+	</executions>
+      </plugin>
+      <plugin>
+	<!--
+            This plugin's configuration must come *after* the Maven Resources
+            Plugin, and *before* the Debian Maven Plugin.
+	-->
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-antrun-plugin</artifactId>
+	<version>1.6</version>
+	<executions>
+          <execution>
+            <id>fix-mvnu-permissions</id>
+            <phase>package</phase>
+            <configuration>
+              <target>
+		<chmod perm="ugo+x-w">
+                  <fileset dir="${basedir}/target/deb">
+                    <include name="bin/mvnu"/>
+                  </fileset>
+		</chmod>
+              </target>
+            </configuration>
+            <goals><goal>run</goal></goals>
+          </execution>
+          <execution>
+            <id>fix-jar-permissions</id>
+            <phase>package</phase>
+            <configuration>
+              <target>
+		<chmod perm="ugo-w-x">
+                  <fileset dir="${basedir}/target/deb">
+                    <include name="lib/*.jar"/>
+                  </fileset>
+		</chmod>
+              </target>
+            </configuration>
+            <goals><goal>run</goal></goals>
+          </execution>
+	</executions>
+      </plugin>
+      <plugin>
+        <groupId>net.sf.debian-maven</groupId>
+        <artifactId>debian-maven-plugin</artifactId>
+        <version>1.0.6</version>
+        <executions>
+          <execution>
+            <id>generate-deb</id>
+            <goals>
+              <goal>package</goal>
+            </goals>
+	    <phase>package</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <packageName>unbound</packageName>
+          <packageSection>Maven Unbound</packageSection>
+          <packageTitle>Maven Unbound</packageTitle>
+	  <projectUrl>${project.url}</projectUrl>
+	  <!-- <projectOrganization>Apache Foundation</projectOrganization> -->
+	  <!-- <maintainerEmail></maintainerEmail> -->
+	  <excludeAllDependencies>true</excludeAllDependencies>
+	  <excludeAllArtifacts>true</excludeAllArtifacts>
+	  <includeArtifacts>
+	    <includeArtifact>unbound-1.0.0-exec.jar</includeArtifact>
+	  </includeArtifacts>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
