@@ -14,6 +14,14 @@ For OSX use the RPM installer.  You might have to install rpm via brew.
 
 ## To use the Unbound command line interface
 
+To convert a project from XML pom files to Hocon:
+```mvnu --generate-hocon```
+
+To convert a project from XML pom files to Json:
+```mvnu --generate-json```
+
+Then use mvnu just like you would use mvn.
+
 The CLI is just a short script called mvnu which takes all the same
 arguments as mvn does with two additions.
 
@@ -81,8 +89,7 @@ to and from Xml and Json and read from Hocon.
 ## Is it ready to use?
 
 The basic functionality is finished and works.  Exotic configuration elements 
-could have issues but this is unlikely.  This is beta code but ready for to
-try.
+could have issues but this is unlikely.  This is beta code but ready to try.
 
 We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
 to Security CVE reports.  A basic maven site now can be generated via
