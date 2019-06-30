@@ -30,6 +30,12 @@ under the License.
   <edit>${project.scm.url}</edit>
 
   <body>
+    <menu name="Overview">
+      <item name="Home" href="index.html" />
+      <item name="Install CLI" href="install.html" />
+      <item name="Use as a Library" href="library.html" />
+      <!-- <item name="FAQ" href="faq.html" /> -->
+    </menu>
     <menu ref="reports" />
   </body>
   <skin>

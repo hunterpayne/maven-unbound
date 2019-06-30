@@ -271,19 +271,6 @@
 	</executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>index</goal>
-            </goals>
-            <phase>site</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
 	<groupId>com.redhat.victims.maven</groupId>
 	<artifactId>security-versions</artifactId>
         <version>1.0.6</version>
@@ -352,10 +339,6 @@
       </plugin>
 
       <plugin>
-	<!--
-            This plugin's configuration must come *before* the Debian Maven
-            Plugin.
-	-->
 	<artifactId>maven-resources-plugin</artifactId>
 	<version>2.3</version>
 	<executions>
@@ -364,7 +347,7 @@
             <phase>process-resources</phase>
             <goals><goal>copy-resources</goal></goals>
             <configuration>
-              <overwrite>true</overwrite>
+              <overwrite>false</overwrite>
               <outputDirectory>${basedir}/target/deb</outputDirectory>
               <resources>
 		<resource>
@@ -380,11 +363,6 @@
 	</executions>
       </plugin>
       <plugin>
-	<!--
-            This plugin's configuration must come *after* the Maven Resources
-            Plugin, and *before* the Debian Maven Plugin.
-	-->
-	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-antrun-plugin</artifactId>
 	<version>1.6</version>
 	<executions>
@@ -393,7 +371,7 @@
             <phase>package</phase>
             <configuration>
               <target>
-		<chmod perm="ugo+x-w">
+		<chmod perm="755">
                   <fileset dir="${basedir}/target/deb">
                     <include name="bin/mvnu"/>
                   </fileset>
@@ -407,7 +385,7 @@
             <phase>package</phase>
             <configuration>
               <target>
-		<chmod perm="ugo-w-x">
+		<chmod perm="444">
                   <fileset dir="${basedir}/target/deb">
                     <include name="lib/*.jar"/>
                   </fileset>
@@ -506,7 +484,6 @@
               <report>dependency-convergence</report>
               <report>team</report>
               <report>licenses</report>
-              <report>plugin-management</report>
               <report>scm</report>
               <report>issue-management</report>
             </reports>
@@ -542,6 +519,11 @@
             </reports>
           </reportSet>
         </reportSets>
+      </plugin>
+      <plugin>
+	<groupId>com.redhat.victims.maven</groupId>
+	<artifactId>security-versions</artifactId>
+        <version>1.0.6</version>
       </plugin>
     </plugins>
   </reporting>
