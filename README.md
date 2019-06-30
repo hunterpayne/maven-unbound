@@ -92,7 +92,6 @@ a way to directly translate Project into Config, we will add support for
 translating XML comments.
 
 Things left to do before its 1.0 ready:
-* more comments
 * improve site
 * improve documentation
 * RPM/deb/installer build scripts

@@ -22,12 +22,18 @@ import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import net.ceedubs.ficus.readers.ValueReader
 
-  /**
-    */
+/**
+  * This trait provides the ability to read Maven POM projects from Typesafe
+  * Config objects.  Since the Typesafe ConfigFactory provides so many ways
+  * to read Typesafe Config objects, only the Config -> Maven POM case class
+  * is provided here.  Ficus is used to automate much of the conversion.
+  */
 trait HoconProjectReader {
 
   import SL._
 
+  // code to convert some of the more complex POM case classes from Config
+  // objects
   implicit val developerConfigReader: ValueReader[Developer] =
     ValueReader.relative { config =>
       Developer(
@@ -164,9 +170,16 @@ trait HoconProjectReader {
       )
     }
 
+  /**
+    * Converts a Typesafe Config object to a Project case class which can
+    * produce Json or XML.
+    */
   def readPOM(conf: Config): Project = conf.as[Project](ProjectStr)
 
-  def readArchiver(conf: Config): Archiver = conf.as[Archiver](Archive)
+  // allows reading of the Archive object from a Typesafe Config via Ficus
+  protected[unbound] def readArchiver(conf: Config): Archiver =
+    conf.as[Archiver](Archive)
 }
 
+/** Static accessor to the Config -> Project case class conversion code */
 object HoconReader extends HoconProjectReader

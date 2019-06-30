@@ -19,6 +19,10 @@ package org.apache.maven.unbound
 
 import java.io.{ ObjectInputStream, ObjectOutputStream }
 
+/**
+  * A set of all the static strings used by Unbound.  Done as a set of typesafe
+  * objects that can be converted to Strings when in scope.
+  */
 trait Labels {
 
   sealed trait Str

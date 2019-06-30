@@ -31,19 +31,50 @@ import org.w3c.dom.{
   ProcessingInstruction, Text => DomText }
 import org.xml.sax.SAXException
 
+/**
+  * This is the Maven Unbound package.  It contains a scala implementation
+  * of the Maven POM object and serialization/deserialization functionality
+  * for translating POM files as XML to and from Json and Hocon formats.
+  *
+  * @author Hunter Payne
+  */
 package object unbound {
 
+  /**
+    * Take a list of something and if its empty returns a list containing only
+    * default instead, otherwise it returns the original list
+    * @param seq -- the list of T
+    * @param default -- the default value wrapped in a list to return if the
+    * list is empty
+    */
   def ensureDefault[T](seq: Seq[T], default: T): Seq[T] =
-    if (!seq.isEmpty && (seq.size != 1 || seq(0) != default)) seq
-    else Seq[T](default)
+    if (!seq.isEmpty) seq else Seq[T](default)
 
+  /**
+    * translates empty string to null, otherwise returns the original string
+    */
   def emptyToNull(s: String): String = if (s != "") s else null
 
+  /**
+    * translates the empty string to a default, otherwise returns the original
+    * string
+    * @param s -- string to test and return if not empty
+    * @param d -- string to return if s is the empty string
+    */
   def emptyToDefault(s: String, d: String): String = if (s != "") s else d
 
+  /**
+    * if s is the string &quot;true&quot; returns true, if s is not the empty
+    * string return false, otherwise return d
+    * @param s -- string to test for &quot;true&quot;
+    * @param d -- value to return if s is the empty string
+    */
   def emptyToDefaultBool(s: String, d: Boolean): Boolean =
     if (s != "") (s == "true") else d
 
+  /**
+    * Utility method to load Config objects from a list of Hocon files
+    */
   def loadConfig(files: File*): Config = {
     require(!files.isEmpty)
 
@@ -52,16 +83,36 @@ package object unbound {
       conf.withFallback(ConfigFactory.parseFile(file)) }.resolve()
   }
 
-  // supported type conversions:
-  // - Boolean
-  // - Number
-  // - String
-  // - Seq[Any]
-  // - Properties
-  // - Map[String, Any]
-  // - Seq[Dependency]
+  /**
+    * Converts an XML Element into a Typesafe Config object.  Generally it
+    * converts Elements into Maps keyed by the names of the child tags.  It
+    * also looks for special patterns of XML to do more specific type
+    * conversions. Supported type conversions: <ul>
+    * <li>Boolean -- the strings true or false</li>
+    * <li>Number -- both Integers and Doubles</li>
+    * <li>String -- Text nodes of the XML document</li>
+    * <li>Seq[Any] -- Elements whose child labels are the singlar form of elem's
+    * label
+    * <li>Properties -- Elements whose grand child labels are all name or value
+    * <li>Seq[Dependency] -- Special case where child elements all have the
+    * label &quot;dependency&quot;
+    * <li>Archiver -- Special case where elem's label is &quot;archive&quot;
+    * <li>Resource Transformer -- Special case where the elem's label is
+    * transformers, the child's label is transformer and there is an attribute
+    * named implementation defined
+    * <li>Map[String, Any] -- general/default case
+    * <ul>
+    * @see Configuring Plugins
+    * [[https://maven.apache.org/guides/mini/guide-configuring-plugins.html]]
+    * @see Archiver [[http://maven.apache.org/shared/maven-archiver/index.html]]
+    * @see Resource Transformers
+    * [[https://maven.apache.org/plugins-archives/maven-shade-plugin-2.0/
+    *examples/resource-transformers.html]]
+    */
   def elemToConfig(elem: Elem): Config = {
     import scala.collection.JavaConverters._
+
+    // handles Booleans and Numbers
     def toAnyRef(s: String): Any = s match {
       case "true" => true
       case "false" => false
@@ -74,11 +125,12 @@ package object unbound {
         }
     }
 
+    // converts a node el at path path to a ConfigValue inside of parent
     def appendNode(path: String, parent: Config, el: Node): ConfigValue =
       if (el != null) {
         el match {
           case e: Elem =>
-            // a simple value
+            // a simple string value
             if (e.child.forall { _.isInstanceOf[Text] }) {
               ConfigValueFactory.fromAnyRef(toAnyRef(e.text.trim))
 
@@ -121,6 +173,7 @@ package object unbound {
               ConfigValueFactory.fromIterable(listInJava)
 
             } else {
+              // check if this is a resource transformer
               val implAttr = (e \ ("@" + SL.Implementation))
               val mapInScala: Map[String, ConfigValue] =
                 e.child.map {
@@ -151,6 +204,7 @@ package object unbound {
             val list = new java.util.ArrayList[java.lang.String]()
             list.add(c.text)
             epty.root().withOrigin(epty.origin().withComments(list))
+            // unhandled
           case n: Node =>
             println("n " + n)
             assert(false)
@@ -160,10 +214,13 @@ package object unbound {
         null
       }
 
+    // check if null and start recursing down the heirarchy of children
     if (elem != null) {
       val empty = ConfigFactory.empty()
+      // build each child's ConfigObject
       val childConfs =
         elem.child.map { ch => (ch.label, appendNode(ch.label, empty, ch)) }
+      // fold them together into 1 big Config at the paths
       childConfs.foldLeft(ConfigFactory.empty()) { case(c, (k, v)) =>
         if (v != null) c.withValue(k, v) else c }
     } else {
@@ -171,27 +228,62 @@ package object unbound {
     }
   }
 
+  // check return the plural form of s, currently only handles y to ies
+  // special case
   private def singular(s: String): String =
     if (s.endsWith("ies")) s.substring(0, s.length - 3) + "y"
     else s.substring(0, s.length - 1)
 
+  // strip the quotes from a string and translates \n to EOL
   private def removeQuotes(s: String): String =
     if (!s.startsWith("\"") || !s.endsWith("\""))
       s.replaceAllLiterally("\\n", scala.compat.Platform.EOL)
     else s.substring(1, s.length - 1).replaceAllLiterally(
       "\\n", scala.compat.Platform.EOL)
 
+  // check if a key is one that's special to dependencies
   private def isDependencyProperty(key: String): Boolean = key match {
     case "groupId" | "artifactId" | "version" | "scope" | "optional" => true
     case _ => false
   }
 
+  /**
+    * Translates a Typesafe Config object to a XML Element.  Handles all the
+    * same special cases as elemToConfig.
+    * Supported type conversions: <ul>
+    * <li>Boolean -- &lt;key&gt;true/false&lt;/key&gt;</li>
+    * <li>Number -- &lt;key&gt;number&lt;/key&gt;</li>
+    * <li>String -- &lt;key&gt;value&lt;/key&gt;</li>
+    * <li>Seq[Any] -- &lt;key(plural)&gt;&lt;key(singular)&gt;value(0)
+    * &lt;/key(singular)&gt;&lt;key(singular)&gt;value(1)&lt;/key(singular)&gt;
+    * ...&lt;/key(plural)&gt;
+    * <li>Properties -- Identified by the presence of a child at path
+    * &quot;properties&quot; with the value true, otherwise represented as a
+    * Map[String, String] in the Scala code.  It returns the Maven property
+    * XML format which is: &lt;key&gt;&lt;property&gt;&lt;name&gt;property
+    * key1&lt;/name&gt;&lt;value&gt;property
+    * value1&lt;/value&gt;&lt;/property&gt;
+    * &lt;property&gt;&lt;name&gt;property key2&lt;/name&gt;
+    * &lt;value&gt;property value2&lt;/value&gt;&lt;/property&gt;...&lt;/key&gt;
+    * <li>Seq[Dependency] -- Special case where child elements all have the
+    * keys of a valid &quot;dependency&quot; object in the POM
+    * <li>Archiver -- Special case where a child key is &quot;archive&quot;
+    * <li>Resource Transformer -- Special case where a child key is
+    * implementation
+    * <li>Map[String, Any] -- general/default case, returns whatever
+    * the value translates to inside a XML element labeled by the key
+    * <ul>
+    */
   def configToElem(config: Config): Elem = {
     import scala.collection.JavaConverters._
 
+    // convert the Config value at key into a XML Element
     def makeElem(key: String, value: ConfigValue): Elem =
+      // check for a child key called archive
       if (key == SL.Archive.toString) {
         HoconReader.readArchiver(value.atKey(SL.Archive)).xml
+        // check for child keys with . so they can be split and encoded into
+        // XML correctly
       } else if (key.contains(".")) {
         val tokens: Array[String] = key.split('.').reverse
         val last = tokens.head
@@ -200,9 +292,13 @@ package object unbound {
         }
       } else if (value != null) {
         value match {
+          // a list so create a parent element called key with children labeled
+          // key in singular form
           case l: ConfigList =>
             val childElems = l.asScala.map { it => makeElem(singular(key), it) }
             new Elem(null, key, Null, TopScope, childElems: _*)
+            // a map so look for special cases and if they don't match convert
+            // as a generic map built using recursion
           case m: ConfigObject =>
             val mS = m.asScala
             var elemKey = key
@@ -258,6 +354,8 @@ package object unbound {
                 mS.map { case(k, v) => makeElem(k, v) }.toSeq
               }
             new Elem(null, elemKey, attrs, TopScope, childElems: _*)
+            // a simple value so convert to a string and wrap into a Element
+            // labeled key
           case v: ConfigValue =>
             val value = removeQuotes(v.render())
             new Elem(null, key, Null, TopScope, new Text(value))
@@ -266,6 +364,7 @@ package object unbound {
         null
       }
 
+    // start the recurse by visiting the top level children of the config
     if (config != null) {
       val children: Seq[(String, ConfigValue)] = config.root().asScala.toSeq
       val childElems: Seq[Elem] =
@@ -276,6 +375,11 @@ package object unbound {
     }
   }
 
+  /**
+    * Converts a Json4s object into a Typesafe config in a very direct way
+    * Handles no special cases as there is an isomorphism between Json and
+    * Hocon.  Hocon is really just a special case of Json afterall.
+    */
   def jsonToConfig(jobject: JObject): Config = {
     import scala.collection.JavaConverters._
 
@@ -312,6 +416,10 @@ package object unbound {
     else null
   }
 
+  /**
+    * Converts a Typesafe Config object to a Json4s Json object usually for
+    * serialization.  Does a direct translation.
+    */
   def configToJson(conf: Config): JObject = {
     import scala.collection.JavaConverters._
 
@@ -350,5 +458,6 @@ package object unbound {
     }
   }
 
+  /** a static set of internalized strings used by Unbound */
   object SL extends Labels
 }

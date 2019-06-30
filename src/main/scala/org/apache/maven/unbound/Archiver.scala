@@ -66,6 +66,14 @@ protected[unbound] object Archiver extends CommonJsonReader {
   ))
 }
 
+/**
+  * This class handles the special case of the Maven Archiver
+  * which is a piece of shared infrastructure provided by Maven to Plugins
+  * to allow compressing of build products into a single file.
+  * @see See [[http://maven.apache.org/shared/maven-archiver/index.html]] for
+  * more details
+  * @author Hunter Payne
+  */
 case class Archiver(
   addMavenDescriptor: Boolean = true,
   compress: Boolean = true,

@@ -22,12 +22,20 @@ import java.io.{ File, FileOutputStream, OutputStreamWriter, Writer }
 import scala.util.Try
 import scala.xml.{ Elem, PrettyPrinter, XML }
 
+/**
+  * A trait case classes can extend to get the ability to write themselves
+  * as XML provided they have a field named xml of type Elem
+  */
 trait Writeable {
 
   val xml: Elem
 
   // max width: 80 chars
   // indent:     2 spaces
+  /**
+    * returns a string containing a pretty printed XML document represented
+    * by the field xml
+    */
   def toXmlString: String = {
     val printer = new PrettyPrinter(80, 2)
     val sb = new StringBuilder()
@@ -35,8 +43,10 @@ trait Writeable {
     sb.toString()
   }
 
+  /** writes this object into the provided Writer */
   def writePOM(writer: Writer): Unit = writer.write(toXmlString)
 
+  /** writes this object to the specified file using UTF-8 character encoding */
   def writePOM(filename: String): Unit = {
     val writer =
       new OutputStreamWriter(new FileOutputStream(new File(filename)), "UTF-8")
