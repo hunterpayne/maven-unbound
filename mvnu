@@ -12,7 +12,7 @@ fi
 
 if [[ "$*" == *--generate-hocon* ]] || [[ "$*" == *--generate-json* ]] 
 then
-  echo "done"
+  echo "Done"
 else
   mvn $@
 fi

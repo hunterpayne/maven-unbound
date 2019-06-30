@@ -4,13 +4,13 @@ Hocon and Json to Apache Maven pom.xml conversions
 ## How to "install" the CLI
 
 To use it, pull this repo and build it with ```mvn clean install```.  This
-will build a Deb installed called target/unbound_1.0.0-1_all.deb and a RPM
-installer called target/rpm/unbound/RPMS/noarch/unbound-1.0.0-1.noarch.rpm
+will build a Deb installed at target/unbound_1.0.0-1_all.deb and a RPM
+installer at target/rpm/unbound/RPMS/noarch/unbound-1.0.0-1.noarch.rpm
 Install the appropiate one for your distribution of Linux.
 
-For windows either put the root of this repo in your path or copy both mvnu and 
-target/unbound-1.0.0-exec.jar into a directory that is in your path (like 
-/usr/local/bin)
+For Windows the installer is generated at target/unbound-1.0.0.exe
+
+For OSX use the RPM installer.  You might have to install rpm via brew.
 
 ## To use the Unbound command line interface
 
@@ -98,7 +98,7 @@ translating XML comments.
 Things left to do before its 1.0 ready:
 * improve site
 * improve documentation
-* RPM/deb/installer build scripts
+* test RPM/deb/installer build scripts
 
 Nice to have: translating comments from XML to Hocon
 
