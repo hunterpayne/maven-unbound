@@ -1,7 +1,7 @@
 # Maven Unbound
 Hocon and Json to Apache Maven pom.xml conversions
 
-## How to "install" the CLI
+## How to install the CLI
 
 To use it, pull this repo and build it with ```mvn clean install```.  This
 will build a Deb installed at target/unbound_1.0.0-1_all.deb and a RPM
