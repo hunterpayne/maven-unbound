@@ -3,9 +3,9 @@
 To use it, pull this repo and build it with _mvn clean install_
 
 This will build:
-   * A Debian installer at <a href="Download/unbound_1.0.0-1_all.deb">target/unbound_1.0.0-1_all.deb</a>
-   * A RPM installer at <a href="Download/unbound-1.0.0-1.noarch.rpm">target/rpm/unbound/RPMS/noarch/unbound-1.0.0-1.noarch.rpm</a>
-   * A Windows installer at <a href="Download/unbound-1.0.0.exe">target/unbound-1.0.0.exe</a>
+   * A Debian installer at <a href="https://github.com/hunterpayne/maven-unbound-site/releases/download/v1.0.0-alpha/unbound-1.0.0-1.noarch.rpm">target/unbound_1.0.0-1_all.deb</a>
+   * A RPM installer at <a href="https://github.com/hunterpayne/maven-unbound-site/releases/download/v1.0.0-alpha/unbound-1.0.0-1.noarch.rpm">target/rpm/unbound/RPMS/noarch/unbound-1.0.0-1.noarch.rpm</a>
+   * A Windows installer at <a href="https://github.com/hunterpayne/maven-unbound-site/releases/download/v1.0.0-alpha/unbound-1.0.0.exe">target/unbound-1.0.0.exe</a>
 
 Install the appropiate one for your OS and/or distribution of Linux
 
