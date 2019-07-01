@@ -330,7 +330,7 @@
             </mapping>
             <mapping>
               <directory>/usr/local/share/lib/unbound</directory>
-              <filemode>444</filemode>
+              <filemode>555</filemode>
               <username>root</username>
               <groupname>root</groupname>
               <sources>
