@@ -329,7 +329,7 @@
               </sources>
             </mapping>
             <mapping>
-              <directory>/usr/local/lib/java</directory>
+              <directory>/usr/local/share/lib/unbound</directory>
               <filemode>444</filemode>
               <username>root</username>
               <groupname>root</groupname>
@@ -359,7 +359,7 @@
               <outputDirectory>${basedir}/target/deb</outputDirectory>
               <resources>
 		<resource>
-		  <targetPath>bin/</targetPath>
+		  <targetPath>usr/bin/</targetPath>
 		  <directory>.</directory>
 		  <includes>
 		    <include>mvnu</include>
@@ -381,7 +381,7 @@
               <target>
 		<chmod perm="755">
                   <fileset dir="${basedir}/target/deb">
-                    <include name="bin/mvnu"/>
+                    <include name="usr/bin/mvnu"/>
                   </fileset>
 		</chmod>
               </target>
@@ -431,7 +431,7 @@
 	    <includeArtifact>unbound-1.0.0-exec.jar</includeArtifact>
 	  </includeArtifacts>
 	  <packageDependencies>
-	    <packageDependency>apache-maven</packageDependency>
+	    <packageDependency>maven</packageDependency>
 	  </packageDependencies>
         </configuration>
       </plugin>

@@ -37,6 +37,7 @@ under the License.
       <item name="Install CLI" href="install.html" />
       <item name="Usage" href="usage.html" />
       <item name="Use as a Library" href="library.html" />
+      <item name="CVE Report" href="dependencies/index.html" />
       <!-- <item name="FAQ" href="faq.html" /> -->
     </menu>
     <menu ref="reports" />

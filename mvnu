@@ -1,12 +1,13 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-if test -f $DIR/../share/lib/unbound-1.0.0-exec.jar; then
-  java -jar $DIR/../share/lib/unbound-1.0.0-exec.jar $@
-else if test -f $DIR/target/unbound-1.0.0-exec.jar; then
+PDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. >/dev/null 2>&1 && pwd )"
+if [ -r $PDIR/share/lib/unbound/unbound-1.0.0-exec.jar ]; then
+  java -jar $PDIR/share/lib/unbound/unbound-1.0.0-exec.jar $@
+elif [ -r $DIR/target/unbound-1.0.0-exec.jar ]; then
   # for testing in dev environments
   java -jar $DIR/target/unbound-1.0.0-exec.jar $@
 else
-  # for Windows or Macintosh environments
+  # for other environments
   java -jar $DIR/unbound-1.0.0-exec.jar $@
 fi
 
