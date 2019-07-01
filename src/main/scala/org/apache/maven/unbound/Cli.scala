@@ -41,8 +41,8 @@ object Cli {
   /**
     * Converts a project at path at from Hocon to XML by writing a new pom.xml
     * in at
-    * @param at -- the path where we are writing the new pom.xml file
-    * @param project -- the parsed form of the Project to write to disk
+    * @param at the path where we are writing the new pom.xml file
+    * @param project the parsed form of the Project to write to disk
     */
   def createPomHoconFiles(at: String, project: Project): Unit = {
 
@@ -65,8 +65,8 @@ object Cli {
   /**
     * Converts a project at path at from Json to XML by writing a new pom.xml
     * in at
-    * @param at -- the path where we are writing the new pom.xml file
-    * @param project -- the parsed form of the Project to write to disk
+    * @param at the path where we are writing the new pom.xml file
+    * @param project the parsed form of the Project to write to disk
     */
   def createPomJsonFiles(at: String, project: Project): Unit = {
 
@@ -89,8 +89,8 @@ object Cli {
   /**
     * Recurses down a multi-module Maven project converting XML
     * POM files into Hocon or Json
-    * @param s -- the path where to look for POM files
-    * @param createFile -- a function to converts XML POM files into something
+    * @param s the path where to look for POM files
+    * @param createFile a function to converts XML POM files into something
     * else and writing those new files to disk in the directory specified by s
     */
   def recurseXml(s: String, createFile: (String, Project) => Unit): Unit = {
@@ -117,9 +117,9 @@ object Cli {
   /**
     * Converts a project at path at from XML to something else by writing a
     * new POM file in some other format
-    * @param at -- the path where we are writing the new POM file
-    * @param project -- the parsed form of the Project to write to disk
-    * @param form -- the type of file to write
+    * @param at the path where we are writing the new POM file
+    * @param project the parsed form of the Project to write to disk
+    * @param form the type of file to write
     */
   def createPomXmlFiles(at: String, project: Project, from: String): Unit = {
 
@@ -141,7 +141,7 @@ object Cli {
   /**
     * Recurses down a multi-module Maven project converting Hocon or Json
     * POM files into XML.
-    * @param s -- the path where to look for POM files
+    * @param s the path where to look for POM files
     */
   def recurse(s: String): Unit = {
 

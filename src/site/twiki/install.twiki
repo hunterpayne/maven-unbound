@@ -1,0 +1,17 @@
+---++ Installing the CLI
+
+To use it, pull this repo and build it with _mvn clean install_
+
+This will build:
+   * A Debian installer at <a href="Download/unbound_1.0.0-1_all.deb">target/unbound_1.0.0-1_all.deb</a>
+   * A RPM installer at <a href="Download/unbound-1.0.0-1.noarch.rpm">target/rpm/unbound/RPMS/noarch/unbound-1.0.0-1.noarch.rpm</a>
+   * A Windows installer at <a href="Download/unbound-1.0.0.exe">target/unbound-1.0.0.exe</a>
+
+Install the appropiate one for your OS and/or distribution of Linux
+
+For OSX use the RPM installer; you might have to install rpm via brew
+
+---+++ What the installer does
+
+It installs two files, unbound-1.0.0-exec.jar and either mvnu or mvnu.bat
+A copy of the Apache 2.0 License might also be included

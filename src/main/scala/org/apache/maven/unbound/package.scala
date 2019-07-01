@@ -43,8 +43,8 @@ package object unbound {
   /**
     * Take a list of something and if its empty returns a list containing only
     * default instead, otherwise it returns the original list
-    * @param seq -- the list of T
-    * @param default -- the default value wrapped in a list to return if the
+    * @param seq the list of T
+    * @param default the default value wrapped in a list to return if the
     * list is empty
     */
   def ensureDefault[T](seq: Seq[T], default: T): Seq[T] =
@@ -58,16 +58,16 @@ package object unbound {
   /**
     * translates the empty string to a default, otherwise returns the original
     * string
-    * @param s -- string to test and return if not empty
-    * @param d -- string to return if s is the empty string
+    * @param s string to test and return if not empty
+    * @param d string to return if s is the empty string
     */
   def emptyToDefault(s: String, d: String): String = if (s != "") s else d
 
   /**
     * if s is the string &quot;true&quot; returns true, if s is not the empty
     * string return false, otherwise return d
-    * @param s -- string to test for &quot;true&quot;
-    * @param d -- value to return if s is the empty string
+    * @param s string to test for &quot;true&quot;
+    * @param d value to return if s is the empty string
     */
   def emptyToDefaultBool(s: String, d: Boolean): Boolean =
     if (s != "") (s == "true") else d
@@ -88,26 +88,25 @@ package object unbound {
     * converts Elements into Maps keyed by the names of the child tags.  It
     * also looks for special patterns of XML to do more specific type
     * conversions. Supported type conversions: <ul>
-    * <li>Boolean -- the strings true or false</li>
-    * <li>Number -- both Integers and Doubles</li>
-    * <li>String -- Text nodes of the XML document</li>
-    * <li>Seq[Any] -- Elements whose child labels are the singlar form of elem's
+    * <li>Boolean the strings true or false</li>
+    * <li>Number both Integers and Doubles</li>
+    * <li>String Text nodes of the XML document</li>
+    * <li>Seq[Any] Elements whose child labels are the singlar form of elem's
     * label
-    * <li>Properties -- Elements whose grand child labels are all name or value
-    * <li>Seq[Dependency] -- Special case where child elements all have the
+    * <li>Properties Elements whose grand child labels are all name or value
+    * <li>Seq[Dependency] Special case where child elements all have the
     * label &quot;dependency&quot;
-    * <li>Archiver -- Special case where elem's label is &quot;archive&quot;
-    * <li>Resource Transformer -- Special case where the elem's label is
+    * <li>Archiver Special case where elem's label is &quot;archive&quot;
+    * <li>Resource Transformer Special case where the elem's label is
     * transformers, the child's label is transformer and there is an attribute
     * named implementation defined
-    * <li>Map[String, Any] -- general/default case
+    * <li>Map[String, Any] general/default case
     * <ul>
     * @see Configuring Plugins
     * [[https://maven.apache.org/guides/mini/guide-configuring-plugins.html]]
     * @see Archiver [[http://maven.apache.org/shared/maven-archiver/index.html]]
     * @see Resource Transformers
-    * [[https://maven.apache.org/plugins-archives/maven-shade-plugin-2.0/
-    *examples/resource-transformers.html]]
+    * [[https://maven.apache.org/plugins-archives/maven-shade-plugin-2.0/examples/resource-transformers.html]]
     */
   def elemToConfig(elem: Elem): Config = {
     import scala.collection.JavaConverters._
@@ -251,13 +250,13 @@ package object unbound {
     * Translates a Typesafe Config object to a XML Element.  Handles all the
     * same special cases as elemToConfig.
     * Supported type conversions: <ul>
-    * <li>Boolean -- &lt;key&gt;true/false&lt;/key&gt;</li>
-    * <li>Number -- &lt;key&gt;number&lt;/key&gt;</li>
-    * <li>String -- &lt;key&gt;value&lt;/key&gt;</li>
-    * <li>Seq[Any] -- &lt;key(plural)&gt;&lt;key(singular)&gt;value(0)
+    * <li>Boolean &lt;key&gt;true/false&lt;/key&gt;</li>
+    * <li>Number &lt;key&gt;number&lt;/key&gt;</li>
+    * <li>String &lt;key&gt;value&lt;/key&gt;</li>
+    * <li>Seq[Any] &lt;key(plural)&gt;&lt;key(singular)&gt;value(0)
     * &lt;/key(singular)&gt;&lt;key(singular)&gt;value(1)&lt;/key(singular)&gt;
     * ...&lt;/key(plural)&gt;
-    * <li>Properties -- Identified by the presence of a child at path
+    * <li>Properties Identified by the presence of a child at path
     * &quot;properties&quot; with the value true, otherwise represented as a
     * Map[String, String] in the Scala code.  It returns the Maven property
     * XML format which is: &lt;key&gt;&lt;property&gt;&lt;name&gt;property
@@ -265,12 +264,12 @@ package object unbound {
     * value1&lt;/value&gt;&lt;/property&gt;
     * &lt;property&gt;&lt;name&gt;property key2&lt;/name&gt;
     * &lt;value&gt;property value2&lt;/value&gt;&lt;/property&gt;...&lt;/key&gt;
-    * <li>Seq[Dependency] -- Special case where child elements all have the
+    * <li>Seq[Dependency] Special case where child elements all have the
     * keys of a valid &quot;dependency&quot; object in the POM
-    * <li>Archiver -- Special case where a child key is &quot;archive&quot;
-    * <li>Resource Transformer -- Special case where a child key is
+    * <li>Archiver Special case where a child key is &quot;archive&quot;
+    * <li>Resource Transformer Special case where a child key is
     * implementation
-    * <li>Map[String, Any] -- general/default case, returns whatever
+    * <li>Map[String, Any] general/default case, returns whatever
     * the value translates to inside a XML element labeled by the key
     * <ul>
     */

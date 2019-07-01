@@ -21,11 +21,13 @@ under the License.
   xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0 http://maven.apache.org/xsd/decoration-1.8.0.xsd"
   name="Apache Maven">
 
+  <!--
   <bannerLeft>
     <name>${project.name}</name>
     <src>https://maven.apache.org/images/apache-maven-project.png</src>
     <href>https://maven.apache.org/</href>
   </bannerLeft>
+  -->
 
   <edit>${project.scm.url}</edit>
 
@@ -33,6 +35,7 @@ under the License.
     <menu name="Overview">
       <item name="Home" href="index.html" />
       <item name="Install CLI" href="install.html" />
+      <item name="Usage" href="usage.html" />
       <item name="Use as a Library" href="library.html" />
       <!-- <item name="FAQ" href="faq.html" /> -->
     </menu>
