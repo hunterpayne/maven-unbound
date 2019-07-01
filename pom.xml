@@ -430,6 +430,9 @@
 	  <includeArtifacts>
 	    <includeArtifact>unbound-1.0.0-exec.jar</includeArtifact>
 	  </includeArtifacts>
+	  <packageDependencies>
+	    <packageDependency>apache-maven</packageDependency>
+	  </packageDependencies>
         </configuration>
       </plugin>
       <plugin>
