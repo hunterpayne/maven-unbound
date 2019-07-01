@@ -104,7 +104,7 @@ translating XML comments.
 
 Things left to do before its 1.0 ready:
 * improve documentation
-* test RPM/installer build scripts
+* test Windows installer
 * make sure examples in the docs are in the unit tests too
 
 Nice to have: translating comments from XML to Hocon
