@@ -171,7 +171,8 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     new Profile.ProfileSerializer +
     new Archiver.ArchiverSerializer +
     new ManifestObj.ManifestSerializer +
-    new ManifestSection.ManifestSectionSerializer
+    new ManifestSection.ManifestSectionSerializer +
+    new Fileset.FilesetSerializer
 }
 
 /**

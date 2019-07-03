@@ -116,11 +116,15 @@ package object unbound {
       case "true" => true
       case "false" => false
       case s =>
-        try { s.toInt } catch {
-          case nfe: NumberFormatException =>
-            try { s.toDouble } catch {
-              case nfe2: NumberFormatException => s
-            }
+        if (s.startsWith("0")) {
+          unencodeXml(s)
+        } else {
+          try { s.toInt } catch {
+            case nfe: NumberFormatException =>
+              try { s.toDouble } catch {
+                case nfe2: NumberFormatException => unencodeXml(s)
+              }
+          }
         }
     }
 
@@ -130,7 +134,8 @@ package object unbound {
         el match {
           case e: Elem =>
             // a simple string value
-            if (e.child.forall { _.isInstanceOf[Text] }) {
+            val attrs = e.attributes.asAttrMap
+            if (e.child.forall { _.isInstanceOf[Text] } && attrs.isEmpty) {
               ConfigValueFactory.fromAnyRef(toAnyRef(e.text.trim))
 
               // an Archiver
@@ -139,7 +144,7 @@ package object unbound {
               ConfigFactory.parseString(JsonWriter.writeArchiver(a)).root()
 
               // a Dependency object
-            } else if (e.child.forall {
+            } else if (attrs.isEmpty && e.child.forall {
               case ele: Elem => ele.label == SL.DependencyStr.toString
               case t: Text => t.text.trim == ""
               case _ => false
@@ -149,7 +154,7 @@ package object unbound {
               ConfigValueFactory.fromIterable(listInJava)
 
               // a property map (ie Map[String, String])
-            } else if (e.child.forall {
+            } else if (attrs.isEmpty && e.child.forall {
               case el: Elem => el.label == SL.PropertyStr.toString
               case t: Text => t.text.trim == ""
               case _ => false
@@ -162,7 +167,7 @@ package object unbound {
               ConfigValueFactory.fromMap(mapInJava)
 
               // a list
-            } else if (e.child.forall {
+            } else if (attrs.isEmpty && e.child.forall {
               case el: Elem => e.label.startsWith(el.label)
               case t: Text => t.text.trim == ""
               case _ => false
@@ -190,6 +195,14 @@ package object unbound {
                 map.withValue(
                   SL.Implementation,
                   ConfigValueFactory.fromAnyRef(implAttr.text.trim))
+                // handle attributes here
+              } else if (!attrs.isEmpty) {
+                val keys = attrs.keySet.toSeq
+                attrs.foldLeft(map) { case(c, (n, v)) =>
+                  c.withValue(n, ConfigValueFactory.fromAnyRef(v))
+                }.withValue(
+                  "attributeKeys",
+                  ConfigValueFactory.fromIterable(keys.asJava))
               } else {
                 map
               }
@@ -233,12 +246,45 @@ package object unbound {
     if (s.endsWith("ies")) s.substring(0, s.length - 3) + "y"
     else s.substring(0, s.length - 1)
 
-  // strip the quotes from a string and translates \n to EOL
-  private def removeQuotes(s: String): String =
-    if (!s.startsWith("\"") || !s.endsWith("\""))
-      s.replaceAllLiterally("\\n", scala.compat.Platform.EOL)
-    else s.substring(1, s.length - 1).replaceAllLiterally(
-      "\\n", scala.compat.Platform.EOL)
+  // translate from json string to a jvm string
+  def unencodeJson(s: String): String = {
+    val sb = new StringBuilder()
+    var i = 0
+    // the scala compiler didn't want to do this with a flatMap and a flag so
+    // I had to do it with a while loop, the compiler kept moving the flag
+    // before the flatMap when it was being used in an if condition after the
+    // flatMap even though it was a var
+    while (i < s.length - 1) {
+      s.substring(i, i + 2) match {
+        case "\\b" => sb.append('\b'); i = i + 2
+        case "\\f" => sb.append('\f'); i = i + 2
+        case "\\n" => sb.append('\n'); i = i + 2
+        case "\\r" => sb.append('\r'); i = i + 2
+        case "\\t" => sb.append('\t'); i = i + 2
+        case "\\\"" => sb.append('"'); i = i + 2
+        case "\\\\" => sb.append('\\'); i = i + 2
+        case ch => sb.append(ch(0)); i = i + 1
+      }
+    }
+    if (i == s.length - 1) sb.append(s.last)
+    sb.toString
+  }
+
+  // translate from hocon string to a jvm string
+  private def removeQuotes(s: String): String = {
+    val stripped =
+      if (!s.startsWith("\"") || !s.endsWith("\"")) s
+      else s.substring(1, s.length - 1)
+    unencodeJson(stripped)
+  }
+
+  // translate from a xml string to a jvm string
+  private def unencodeXml(s: String): String =
+    s.replaceAllLiterally("&lt;", "<").
+      replaceAllLiterally("&gt;", ">").
+      replaceAllLiterally("&amp;", "&").
+      replaceAllLiterally("&quot;", "\"").
+      replaceAllLiterally("&apos;", "'")
 
   // check if a key is one that's special to dependencies
   private def isDependencyProperty(key: String): Boolean = key match {
@@ -349,9 +395,36 @@ package object unbound {
                   mS.map { case(k, v) => makeElem(k, v) }.toSeq
                 }
               } else {
-                // a normal Map (ie non-string value type)
-                mS.map { case(k, v) => makeElem(k, v) }.toSeq
+                // look for attributeKeys and if its present make those
+                // children into attributes instead of elements
+                val c = m.toConfig
+                if (c.hasPath("attributeKeys")) {
+                  val attrKeys = c.getStringList("attributeKeys")
+
+                  if (attrKeys != null && !attrKeys.isEmpty) {
+                    val attrValues: Seq[(String, String)] =
+                      attrKeys.asScala.filter(
+                        _ != SL.Implementation.toString).map { attr =>
+                        (attr, removeQuotes(mS(attr).render())) }
+                    val md: MetaData = Null
+                    attrs =
+                      attrValues.foldLeft(md) { case(n, (k, v)) =>
+                        new UnprefixedAttribute(k, v, n) }
+                    mS.filter { case(k, _) =>
+                      k != "attributeKeys" && !attrKeys.contains(k)
+                    }.map { case(k, v) => makeElem(k, v) }.toSeq
+
+                  } else {
+                    // a normal Map (ie non-string value type)
+                    mS.map { case(k, v) => makeElem(k, v) }.toSeq
+                  }
+                } else {
+
+                  // a normal Map (ie non-string value type)
+                  mS.map { case(k, v) => makeElem(k, v) }.toSeq
+                }
               }
+
             new Elem(null, elemKey, attrs, TopScope, childElems: _*)
             // a simple value so convert to a string and wrap into a Element
             // labeled key

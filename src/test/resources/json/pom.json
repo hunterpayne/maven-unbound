@@ -236,7 +236,7 @@
           ],
           "configuration":{
             "scalaVersion":"${version.scala.release}",
-            "minimumCoverage":0,
+            "minimumCoverage":"0",
             "highlighting":true,
             "failOnMinimumCoverage":true,
             "excludedPackages":"java..*;scala..*"

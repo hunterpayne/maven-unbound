@@ -88,8 +88,7 @@ to and from Xml and Json and read from Hocon.
 
 ## Is it ready to use?
 
-The basic functionality is finished and works.  Exotic configuration elements 
-could have issues but this is unlikely.  This is beta code but ready to try.
+The main functionality is finished and works.  This is beta code and ready to try.
 
 We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
 to Security CVE reports.  A basic maven site now can be generated via
@@ -103,7 +102,7 @@ a way to directly translate Project into Config, we will add support for
 translating XML comments.
 
 Things left to do before its 1.0 ready:
-* improve documentation
+* update docs with attributeKeys changes
 * test Windows installer
 * make sure examples in the docs are in the unit tests too
 
