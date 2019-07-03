@@ -14,8 +14,10 @@ To convert a project from XML pom files to
    * Json use
       * mvnu --generate-json
 
-Then call mvnu just like you would use mvn.  When you change your POM file, just
-edit your pom.conf or pom.json file just as you normally would edit your pom.xml
+Then call mvnu just like you would use mvn.  
+
+When you change your POM file, just edit your pom.conf or pom.json file just as
+you normally would edit your pom.xml
 
 Unbound will:
    1. Look for pom.json or pom.conf files in the current directory and if one is found generate a pom.xml file

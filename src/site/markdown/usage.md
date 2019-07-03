@@ -188,6 +188,39 @@ Map of String to Any.  See
 for more information.
 
 
+### XML Attributes
+
+Even though most Maven POM XML files don't have configuration elements with 
+attributes it does happen.  To handle this case, you must add a special key 
+called ```attributeKeys``` to your Hocon or Json object to tell Unbound which 
+children to create XML elements for and which ones to create XML attributes
+for.  So this Hocon
+```
+"target" {
+  "chmod" { "attributeKeys" = [ "perm" ]
+    "perm" = "755"
+    "fileset" { "attributeKeys" = [ "dir" ]
+      "dir" = "${basedir}/target/deb"
+      "include" = { "attributeKeys" = [ "name" ]
+        "name" = "usr/bin/mvnu"
+      }
+    }
+  }
+}
+```
+becomes this XML
+```
+<target>
+  <chmod perm="755">
+    <fileset dir="${basedir}/target/deb">
+      <include name="usr/bin/mvnu"/>
+    </fileset>
+  </chmod>
+</target>
+```
+which is messy but its such a rare case that it hardly matters.
+
+
 ### Shared Plugin Configuration
 
 There are three other special cases that appear because of shared infrastructure
