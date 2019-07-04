@@ -179,7 +179,12 @@ trait HoconProjectReader {
   // allows reading of the Archive object from a Typesafe Config via Ficus
   protected[unbound] def readArchiver(conf: Config): Archiver =
     conf.as[Archiver](Archive)
+
+  // allows reading of the Fileset object from a Typesafe Config via Ficus
+  protected[unbound] def readFileset(conf: Config): Fileset =
+    conf.as[Fileset]("fileset")
 }
 
 /** Static accessor to the Config -> Project case class conversion code */
 object HoconReader extends HoconProjectReader
+

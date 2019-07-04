@@ -32,7 +32,7 @@ import org.w3c.dom.{
 import org.xml.sax.SAXException
 
 /**
-  * This is the Maven Unbound package.  It contains a scala implementation
+  * This is the Maven Unbound package.  It contains a Scala implementation
   * of the Maven POM object and serialization/deserialization functionality
   * for translating POM files as XML to and from Json and Hocon formats.
   *
@@ -97,6 +97,7 @@ package object unbound {
     * <li>Seq[Dependency] Special case where child elements all have the
     * label &quot;dependency&quot;
     * <li>Archiver Special case where elem's label is &quot;archive&quot;
+    * <li>Fileset Special case where elem's label is &quot;fileset&quot;
     * <li>Resource Transformer Special case where the elem's label is
     * transformers, the child's label is transformer and there is an attribute
     * named implementation defined
@@ -139,9 +140,14 @@ package object unbound {
               ConfigValueFactory.fromAnyRef(toAnyRef(e.text.trim))
 
               // an Archiver
-            } else if (e.label == SL.Archive.toString) {
+            } else if (e.label == SL.Archive.toString && attrs.isEmpty) {
               val a = new Archiver(e)
               ConfigFactory.parseString(JsonWriter.writeArchiver(a)).root()
+
+              // a fileset
+            } else if (e.label == "fileset" && attrs.isEmpty) {
+              val f = new Fileset(e)
+              ConfigFactory.parseString(JsonWriter.writeFileset(f)).root()
 
               // a Dependency object
             } else if (attrs.isEmpty && e.child.forall {
@@ -313,6 +319,7 @@ package object unbound {
     * <li>Seq[Dependency] Special case where child elements all have the
     * keys of a valid &quot;dependency&quot; object in the POM
     * <li>Archiver Special case where a child key is &quot;archive&quot;
+    * <li>Fileset Special case where a child key is &quot;fileset&quot;
     * <li>Resource Transformer Special case where a child key is
     * implementation
     * <li>Map[String, Any] general/default case, returns whatever
@@ -390,10 +397,29 @@ package object unbound {
                   Seq(arch.xml) ++
                   mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
                     makeElem(k, v) }
+                } else if (mS.keySet.find { _ == "fileset" }.isDefined) {
+                  // a Maven fileset
+                  val fs = HoconReader.readFileset(m.toConfig())
+                  Seq(fs.xml) ++
+                  mS.filter { _._1 != "fileset" }.map { case(k, v) =>
+                    makeElem(k, v) }
                 } else {
                   // a normal Map (ie non-string value type)
                   mS.map { case(k, v) => makeElem(k, v) }.toSeq
                 }
+              } else if (mS.keySet.find {
+                _ == SL.Archive.toString }.isDefined) {
+                // a Maven archiver
+                val arch = HoconReader.readArchiver(m.toConfig())
+                Seq(arch.xml) ++
+                mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
+                  makeElem(k, v) }
+              } else if (mS.keySet.find { _ == "fileset" }.isDefined) {
+                // a Maven fileset
+                val fs = HoconReader.readFileset(m.toConfig())
+                Seq(fs.xml) ++
+                mS.filter { _._1 != "fileset" }.map { case(k, v) =>
+                  makeElem(k, v) }
               } else {
                 // look for attributeKeys and if its present make those
                 // children into attributes instead of elements

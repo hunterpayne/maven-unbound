@@ -229,4 +229,8 @@ object JsonWriter extends JsonProjectAPI {
   // used to write an Archiver as Json
   protected[unbound] def writeArchiver(archiver: Archiver): String =
     writePretty(archiver)
+
+  // used to write an Fileset as Json
+  protected[unbound] def writeFileset(fileset: Fileset): String =
+    writePretty(fileset)
 }

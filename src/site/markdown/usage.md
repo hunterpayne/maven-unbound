@@ -253,7 +253,8 @@ transformers = [
 ]
 ```
 Note the only change in usual behavior is that the implementation entry 
-becomes a XML attribute.
+becomes a XML attribute.  Since this is a special case, you don't have to add
+the attributeKeys list to this Hocon.
 
 
 #### Archivers
@@ -283,6 +284,30 @@ archive {
     addClasspath = true
     mainClass = "com.footballradar.jpademo.App"
   }
+}
+```
+
+
+#### Filesets
+
+A [Fileset](https://maven.apache.org/shared/file-management/fileset.html)
+is a piece of shared code that selects a group of files to be mapped to another
+location.  Its common for plugins to have such functionality so it can
+be configured in a generic way in a plugin's configuration using a fileset.
+Here is the XML:
+```
+<fileset>
+  <directory>src/main/java</directory>
+  <outputDirectory>target/classes</outputDirectory>
+  <includes><include>*.java</include><includes>
+</fileset>
+```
+becomes in Hocon:
+```
+fileset {
+  directory = "src/main/java"
+  outputDirectory = "target/classes"
+  includes = [ "*.java" ]
 }
 ```
 
@@ -347,29 +372,31 @@ Here is an example of a simple Hocon POM file that builds a libarary jar.
     }
     # from example in the beginning of this page
     include "scalaCompile.conf"
-    dependencies = [
+    dependencies +=
       {
         artifactId = "scala-xml_${version.scala.epoch}"
         groupId = "org.scala-lang.modules"
         version = "1.2.0"
       }
+    dependencies +=
       {
         artifactId = "ficus_${version.scala.epoch}"
         groupId = "com.iheart"
         version = "1.4.6"
       }
+    dependencies +=
       {
         artifactId = "json4s-native_${version.scala.epoch}"
         groupId = "org.json4s"
         version = "3.6.6"
       }
+    dependencies +=
       {
         artifactId = "scalatest_${version.scala.epoch}"
         groupId = "org.scalatest"
         scope = "test"
         version = "${version.scalatest}"
       }
-    ]
   }
 }
 ```
@@ -386,41 +413,45 @@ uses shade to create an executable jar.
     }
     # from example in the beginning of this page
     include "scalaCompile.conf"
-    dependencies = [
+    dependencies +=
       {
         artifactId = "scala-xml_${version.scala.epoch}"
         groupId = "org.scala-lang.modules"
         version = "1.2.0"
       }
+    dependencies +=
       {
         artifactId = "ficus_${version.scala.epoch}"
         groupId = "com.iheart"
         version = "1.4.6"
       }
+    dependencies +=
       {
         artifactId = "json4s-native_${version.scala.epoch}"
         groupId = "org.json4s"
         version = "3.6.6"
       }
+    dependencies +=
       {
         artifactId = "maven-model"
         groupId = "org.apache.maven"
         version = "3.6.1"
       }
+    dependencies +=
       {
         artifactId = "maven-shared-utils"
         groupId = "org.apache.maven.shared"
         version = "3.2.1"
       }
+    dependencies +=
       {
         artifactId = "scalatest_${version.scala.epoch}"
         groupId = "org.scalatest"
         scope = "test"
         version = "${version.scalatest}"
       }
-    ]
     build {
-      plugins [
+      plugins +=
         {
           groupId = "org.apache.maven.plugins"
           artifactId = "maven-shade-plugin"

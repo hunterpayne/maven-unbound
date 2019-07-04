@@ -322,6 +322,52 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     conf.entrySet().size() should be(21) // 25???
   }
 
+  it should "translate filesets" in {
+   
+    val elem = XML.loadString("""
+      <configuration>
+        <fileset>
+          <directory>dir</directory>
+          <lineEnding>keep</lineEnding>
+          <followSymlinks>true</followSymlinks>
+          <outputDirectory>outdir</outputDirectory>
+          <useDefaultExcludes>false</useDefaultExcludes>
+          <includes><include>inc</include></includes>
+          <excludes><exclude>exc</exclude></excludes>
+          <fileMode>0555</fileMode>
+          <directoryMode>0777</directoryMode>
+          <mapper>
+            <type>ty</type>
+            <from>fr</from>
+            <to>too</to>
+           <classname>clazz</classname>
+          </mapper>
+        </fileset>
+      </configuration>""")
+
+    val conf = elemToConfig(elem)
+    val fileset = conf.getObject("fileset").toConfig
+    fileset.getString("directory") should be("dir")
+    fileset.getString("lineEnding") should be("keep")
+    fileset.getBoolean("followSymlinks") should be(true)
+    fileset.getString("outputDirectory") should be("outdir")
+    fileset.getBoolean("useDefaultExcludes") should be(false)
+
+    val incs = fileset.getStringList("includes") 
+    incs.size should be(1)
+    incs.get(0) should be("inc")
+    val excs = fileset.getStringList("excludes") 
+    excs.size should be(1)
+    excs.get(0) should be("exc")
+
+    fileset.getString("fileMode") should be("0555")
+    fileset.getString("directoryMode") should be("0777")
+    fileset.getString("mapper.type") should be("ty")
+    fileset.getString("mapper.from") should be("fr")
+    fileset.getString("mapper.to") should be("too")
+    fileset.getString("mapper.classname") should be("clazz")
+  }
+
   it should "translate resource transformers" in {
 
     val elem = XML.loadString("""
@@ -638,6 +684,53 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     (aList(0) \ "pomPropertiesFile").text should be("false")
   }
 
+  it should "translate filesets" in {
+
+    val config = ConfigFactory.parseString("""{
+      fileset {
+        directory = "dir"
+        lineEnding = "keep"
+        followSymlinks = true
+        outputDirectory = "outdir"
+        useDefaultExcludes = false
+        includes = [ "inc" ]
+        excludes = [ "exc" ]
+        fileMode = "0555"
+        directoryMode = "0777"
+        mapper {
+          type = "ty"
+          from = "fr"
+          to = "too"
+          classname = "clazz"
+        }
+      }
+    }""")
+
+    val elem = configToElem(config)
+    val aList = (elem \ "fileset").toArray
+    aList.size should be(1)
+    (aList(0) \ "directory").text should be("dir")
+    (aList(0) \ "lineEnding").text should be("keep")
+    (aList(0) \ "followSymlinks").text should be("true")
+    (aList(0) \ "outputDirectory").text should be("outdir")
+    (aList(0) \ "useDefaultExcludes").text should be("false")
+
+    val iList = (aList(0) \ "includes" \ "include").toArray
+    iList.size should be(1)
+    iList(0).text should be("inc")
+
+    val eList = (aList(0) \ "excludes" \ "exclude").toArray
+    eList.size should be(1)
+    eList(0).text should be("exc")
+
+    (aList(0) \ "fileMode").text should be("0555")
+    (aList(0) \ "directoryMode").text should be("0777")
+    (aList(0) \ "mapper" \ "type").text should be("ty")
+    (aList(0) \ "mapper" \ "from").text should be("fr")
+    (aList(0) \ "mapper" \ "to").text should be("too")
+    (aList(0) \ "mapper" \ "classname").text should be("clazz")
+  }
+
   it should "translate resource transformers" in {
 
     val config = ConfigFactory.parseString("""{
@@ -890,6 +983,51 @@ class ConfigurationSpec extends FlatSpec with Matchers {
 
     archiver.getString("pomPropertiesFile") should be("false")
     conf.entrySet().size() should be(21) // 25???
+  }
+
+  it should "translate filesets" in {
+
+    val json = parse("""{
+      "fileset" : {
+        "directory" : "dir",
+        "lineEnding" : "keep",
+        "followSymlinks" : true,
+        "outputDirectory" : "outdir",
+        "useDefaultExcludes" : false,
+        "includes" : [ "inc" ],
+        "excludes" : [ "exc" ],
+        "fileMode" : "0555",
+        "directoryMode" : "0777",
+        "mapper" : {
+          "type" : "ty",
+          "from" : "fr",
+          "to" : "too",
+          "classname" : "clazz"
+        }
+      }
+    }""")
+
+    val conf = jsonToConfig(json.asInstanceOf[JObject])
+    val fileset = conf.getObject("fileset").toConfig
+    fileset.getString("directory") should be("dir")
+    fileset.getString("lineEnding") should be("keep")
+    fileset.getBoolean("followSymlinks") should be(true)
+    fileset.getString("outputDirectory") should be("outdir")
+    fileset.getBoolean("useDefaultExcludes") should be(false)
+
+    val incs = fileset.getStringList("includes") 
+    incs.size should be(1)
+    incs.get(0) should be("inc")
+    val excs = fileset.getStringList("excludes") 
+    excs.size should be(1)
+    excs.get(0) should be("exc")
+
+    fileset.getString("fileMode") should be("0555")
+    fileset.getString("directoryMode") should be("0777")
+    fileset.getString("mapper.type") should be("ty")
+    fileset.getString("mapper.from") should be("fr")
+    fileset.getString("mapper.to") should be("too")
+    fileset.getString("mapper.classname") should be("clazz")
   }
 
   it should "translate resource transformers" in {
@@ -1185,6 +1323,52 @@ class ConfigurationSpec extends FlatSpec with Matchers {
     (sections(1) \ "manifestEntries" \ "for").as[String] should be("value6")
 
     (archive \ "pomPropertiesFile").as[String] should be("false")
+  }
+
+  it should "translate filesets" in {
+
+    val config = ConfigFactory.parseString("""{
+      fileset {
+        directory = "dir"
+        lineEnding = "keep"
+        followSymlinks = true
+        outputDirectory = "outdir"
+        useDefaultExcludes = false
+        includes = [ "inc" ]
+        excludes = [ "exc" ]
+        fileMode = "0555"
+        directoryMode = "0777"
+        mapper {
+          type = "ty"
+          from = "fr"
+          to = "too"
+          classname = "clazz"
+        }
+      }
+    }""")
+
+    val json = configToJson(config).asInstanceOf[JObject]
+    val fileset = (json \ "fileset").as[JObject]
+
+    (fileset \ "directory").as[String] should be("dir")
+    (fileset \ "lineEnding").as[String] should be("keep")
+    (fileset \ "followSymlinks").as[Boolean] should be(true)
+    (fileset \ "outputDirectory").as[String] should be("outdir")
+    (fileset \ "useDefaultExcludes").as[Boolean] should be(false)
+
+    val iList = (fileset \ "includes").as[JArray].arr
+    iList.size should be(1)
+    iList(0).as[String] should be("inc")
+    val eList = (fileset \ "excludes").as[JArray].arr
+    eList.size should be(1)
+    eList(0).as[String] should be("exc")
+
+    (fileset \ "fileMode").as[String] should be("0555")
+    (fileset \ "directoryMode").as[String] should be("0777")
+    (fileset \ "mapper" \ "type").as[String] should be("ty")
+    (fileset \ "mapper" \ "from").as[String] should be("fr")
+    (fileset \ "mapper" \ "to").as[String] should be("too")
+    (fileset \ "mapper" \ "classname").as[String] should be("clazz")
   }
 
   it should "translate resource transformers" in {

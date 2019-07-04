@@ -102,9 +102,8 @@ a way to directly translate Project into Config, we will add support for
 translating XML comments.
 
 Things left to do before its 1.0 ready:
-* update docs with attributeKeys changes
 * test Windows installer
-* make sure examples in the docs are in the unit tests too
+* test dot syntax in Hocon
 
 Nice to have: translating comments from XML to Hocon
 

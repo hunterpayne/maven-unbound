@@ -40,4 +40,63 @@ class IncludeSpec extends FlatSpec with Matchers {
       "pom-include", ConfigParseOptions.defaults(), resolveOpts))
     project.toString should be (correct.toString)
   }
+
+  it should "merge complex poms" in {
+
+    val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
+    val project = HoconReader.readPOM(ConfigFactory.load(
+      "pom-include2", ConfigParseOptions.defaults(), resolveOpts))
+
+    val is = getClass().getClassLoader.getResourceAsStream("pom-include2.xml")
+    try {
+      val project2 = new Project(XML.load(is))
+      val removedVectors =
+        project.toString.replaceAllLiterally("Vector(", "List(")
+      val removedVectors2 =
+        project2.toString.replaceAllLiterally("Vector(", "List(")
+      removedVectors should be (removedVectors2)
+    } finally {
+      is.close()
+    }
+  }
+
+  it should "merge overlaping poms" in {
+
+    val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
+    val project = HoconReader.readPOM(ConfigFactory.load(
+      "pom-include3", ConfigParseOptions.defaults(), resolveOpts))
+
+    val is = getClass().getClassLoader.getResourceAsStream("pom-include3.xml")
+    try {
+      val project2 = new Project(XML.load(is))
+      val removedVectors =
+        project.toString.replaceAllLiterally("Vector(", "List(")
+      val removedVectors2 =
+        project2.toString.replaceAllLiterally("Vector(", "List(")
+      removedVectors should be (removedVectors2)
+
+    } finally {
+      is.close()
+    }
+  }
+
+  it should "merge more complex poms" in {
+
+    val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
+    val project = HoconReader.readPOM(ConfigFactory.load(
+      "pom-include4", ConfigParseOptions.defaults(), resolveOpts))
+
+    val is = getClass().getClassLoader.getResourceAsStream("pom-include4.xml")
+    try {
+      val project2 = new Project(XML.load(is))
+      val removedVectors =
+        project.toString.replaceAllLiterally("Vector(", "List(")
+      val removedVectors2 =
+        project2.toString.replaceAllLiterally("Vector(", "List(")
+      removedVectors should be (removedVectors2)
+
+    } finally {
+      is.close()
+    }
+  }
 }
