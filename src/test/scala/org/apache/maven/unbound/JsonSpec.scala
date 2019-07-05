@@ -216,6 +216,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       project2.toString should be (project1.toString)
       project2.makeModelObject() // just to make sure it doesn't NPE
 
+      val project3 = JsonReader.readPOM(JsonWriter.writePOM(project1))
+      project3.toString should be (project1.toString)
+
     } finally {
       is.close()
     }
@@ -390,6 +393,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
         val project3 = new Project(XML.load(is2))
         project3.toString should be (project1.toString)
 
+        val project4 = JsonReader.readPOM(JsonWriter.writePOM(project1))
+        project4.toString should be (project1.toString)
+
       } finally {
         is2.close()
       }
@@ -481,6 +487,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       try {
         val project3 = new Project(XML.load(is2))
         project3.toString should be (project1.toString)
+
+        val project4 = JsonReader.readPOM(JsonWriter.writePOM(project1))
+        project4.toString should be (project1.toString)
 
       } finally {
         is2.close()
@@ -1107,6 +1116,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       try {
         val project3 = new Project(XML.load(is2))
         project3.toString should be (project1.toString)
+
+        val project4 = JsonReader.readPOM(JsonWriter.writePOM(project1))
+        project4.toString should be (project1.toString)
 
       } finally {
         is2.close()

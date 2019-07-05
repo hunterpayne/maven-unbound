@@ -51,7 +51,10 @@ trait Writeable {
   def writePOM(filename: String): Unit = {
     val writer =
       new OutputStreamWriter(new FileOutputStream(new File(filename)), "UTF-8")
-    try { writePOM(writer) } finally { writer.close() }
+    try {
+      writePOM(writer)
+      writer.flush()
+    } finally { writer.close() }
   }
 
   /** writes this object to the specified stream using the specified encoding */

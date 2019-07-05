@@ -141,16 +141,18 @@ case class Notifier(
     emptyToDefault(
       (elem \ SL.SendOnWarning).text.toLowerCase(Locale.ROOT), SL.TrueStr) ==
       SL.TrueStr.toString,
-    (elem \ SL.Configuration).flatMap(_.map { e => (e.label, e.text) }).toMap)
+    (elem \ SL.Configuration).headOption.map(
+      _.child.filter(_.isInstanceOf[Elem]).map { e =>
+        (e.label, e.text.trim) }.toMap).getOrElse(Map[String, String]()))
 
   lazy val xml = <notifier>
                    <type>{`type`}</type>
                    <sendOnError>{sendOnError}</sendOnError>
-                   <sendOnWarning>{sendOnWarning}</sendOnWarning>
+                   <sendOnFailure>{sendOnFailure}</sendOnFailure>
                    <sendOnSuccess>{sendOnSuccess}</sendOnSuccess>
                    <sendOnWarning>{sendOnWarning}</sendOnWarning>
                    { if (!configuration.isEmpty) <configuration>
-                     { configuration.foreach { case(k, v) =>
+                     { configuration.map { case(k, v) =>
                        PropertyValue(k, v).xml } }
                    </configuration> }
                  </notifier>

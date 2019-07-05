@@ -196,24 +196,6 @@ trait HoconProjectReader {
         else Map[String, String]()
       )
     }
-  /*
-  implicit val manifestSectionSeqConfigReader:
-      ValueReader[Option[Seq[ManifestSection]]] =
-    ValueReader.relative { config =>
-      if (config.hasPath(ManifestSections)) {
-        import scala.collection.JavaConverters._
-        Some(config.getObjectList(ManifestSections).asScala.map { obj =>
-          val c = obj.toConfig
-          ManifestSection(
-            if (c.hasPath(Name)) c.as[String](Name) else null,
-            if (c.hasPath(ManifestEntries))
-              c.as[Map[String, String]](ManifestEntries)
-            else Map[String, String]()
-          )
-        }.toSeq)
-      } else None
-    }
-   */
 
   /**
     * Converts a Typesafe Config object to a Project case class which can

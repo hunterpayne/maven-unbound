@@ -122,13 +122,10 @@ object Cli {
     */
   def createPomXmlFiles(at: String, project: Project, from: String): Unit = {
 
-    val writer = new FileWriter(at + xmlFileName)
     try {
-      project.writePOM(writer)
-      writer.flush()
+      project.writePOM(at + xmlFileName)
       println(s"generated ${at}${xmlFileName} from ${at}${from}")
     } finally {
-      writer.close()
       project.modules.foreach { mod => recurse(at + File.separator + mod) }
     }
   }

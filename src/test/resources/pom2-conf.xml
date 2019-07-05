@@ -16,6 +16,18 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   <ciManagement>
     <system>jenkins</system>
     <url>https://my.jenkins.internal/jenkins</url>
+    <notifiers>
+      <notifier>
+        <type>text</type>
+        <sendOnError>false</sendOnError>
+        <sendOnFailure>false</sendOnFailure>
+        <sendOnSuccess>false</sendOnSuccess>
+        <sendOnWarning>false</sendOnWarning>
+        <configuration>
+          <key>value</key>
+        </configuration>
+      </notifier>
+    </notifiers>
   </ciManagement>
   <distributionManagement>
     <repository>
