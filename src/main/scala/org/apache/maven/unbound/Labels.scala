@@ -544,6 +544,48 @@ trait Labels {
     override def toString(): String = "simple"
   }
 
+  object AttributeKeys extends Str {
+    override def toString(): String = "attributeKeys"
+  }
+  object FilesetStr extends Str {
+    override def toString(): String = "fileset"
+  }
+  object LineEnding extends Str {
+    override def toString(): String = "lineEnding"
+  }
+  object FollowSymlinks extends Str {
+    override def toString(): String = "followSymlinks"
+  }
+  object UseDefaultExcludes extends Str {
+    override def toString(): String = "useDefaultExcludes"
+  }
+  object FileMode extends Str {
+    override def toString(): String = "fileMode"
+  }
+  object DefaultFileMode extends Str {
+    override def toString(): String = "0644"
+  }
+  object DirectoryMode extends Str {
+    override def toString(): String = "directoryMode"
+  }
+  object DefaultDirectoryMode extends Str {
+    override def toString(): String = "0755"
+  }
+  object Mapper extends Str {
+    override def toString(): String = "mapper"
+  }
+  object Identity extends Str {
+    override def toString(): String = "identity"
+  }
+  object From extends Str {
+    override def toString(): String = "from"
+  }
+  object To extends Str {
+    override def toString(): String = "to"
+  }
+  object Classname extends Str {
+    override def toString(): String = "classname"
+  }
 
   object TrueStr extends Str {
     override def toString(): String = "true"

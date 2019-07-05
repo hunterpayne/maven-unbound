@@ -408,6 +408,10 @@ case class DistributionManagement(
                    { if (snapshotRepository != null)
                      snapshotRepository.snapshotXml }
                    { if (site != null) site.xml }
+                   { if (relocation != null) relocation.xml }
+                   { if (status != null &&
+                     status != DistributionManagement.None)
+                     <status>{status}</status> }
                  </distributionManagement>
 
   def makeModelObject(): org.apache.maven.model.DistributionManagement = {

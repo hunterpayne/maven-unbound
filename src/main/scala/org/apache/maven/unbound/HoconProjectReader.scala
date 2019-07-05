@@ -122,7 +122,7 @@ trait HoconProjectReader {
         else null,
         if (config.hasPath(PropertiesStr))
           config.as[Map[String, String]](PropertiesStr)
-        else null,
+        else Map[String, String](),
         if (config.hasPath(DependencyManagementStr))
           config.as[Seq[Dependency]](DependencyManagementStr)
         else null,
@@ -136,16 +136,6 @@ trait HoconProjectReader {
           config.as[Seq[Repository]](PluginRepositories)
         else null,
         if (config.hasPath(ReportingStr)) config.as[Reporting](ReportingStr)
-        else null
-      )
-    }
-
-  implicit val manifestSectionConfigReader: ValueReader[ManifestSection] =
-    ValueReader.relative { config =>
-      ManifestSection(
-        if (config.hasPath(Name)) config.as[String](Name) else null,
-        if (config.hasPath(ManifestEntries))
-          config.as[Map[String, String]](ManifestEntries)
         else null
       )
     }
@@ -169,6 +159,61 @@ trait HoconProjectReader {
         else DistributionManagement.None
       )
     }
+
+  implicit val archiverConfigReader: ValueReader[Archiver] =
+    ValueReader.relative { config =>
+      Archiver(
+        if (config.hasPath(AddMavenDescriptor))
+          config.as[Boolean](AddMavenDescriptor)
+        else true,
+        if (config.hasPath(Compress)) config.as[Boolean](Compress) else true,
+        if (config.hasPath(Forced)) config.as[Boolean](Forced) else true,
+        if (config.hasPath(Index)) config.as[Boolean](Index) else false,
+        if (config.hasPath(ManifestStr))
+          config.as[ManifestObj](ManifestStr)
+        else null,
+        if (config.hasPath(ManifestEntries))
+          config.as[Map[String, String]](ManifestEntries)
+        else Map[String, String](),
+        if (config.hasPath(ManifestFile))
+          config.as[String](ManifestFile)
+        else null,
+        if (config.hasPath(ManifestSections))
+          config.as[Seq[ManifestSection]](ManifestSections)
+        else Seq[ManifestSection](),
+        if (config.hasPath(PomPropertiesFile))
+          config.as[String](PomPropertiesFile)
+        else null
+      )
+    }
+
+  implicit val manifestSectionConfigReader: ValueReader[ManifestSection] =
+    ValueReader.relative { config =>
+      ManifestSection(
+        if (config.hasPath(Name)) config.as[String](Name) else null,
+        if (config.hasPath(ManifestEntries))
+          config.as[Map[String, String]](ManifestEntries)
+        else Map[String, String]()
+      )
+    }
+  /*
+  implicit val manifestSectionSeqConfigReader:
+      ValueReader[Option[Seq[ManifestSection]]] =
+    ValueReader.relative { config =>
+      if (config.hasPath(ManifestSections)) {
+        import scala.collection.JavaConverters._
+        Some(config.getObjectList(ManifestSections).asScala.map { obj =>
+          val c = obj.toConfig
+          ManifestSection(
+            if (c.hasPath(Name)) c.as[String](Name) else null,
+            if (c.hasPath(ManifestEntries))
+              c.as[Map[String, String]](ManifestEntries)
+            else Map[String, String]()
+          )
+        }.toSeq)
+      } else None
+    }
+   */
 
   /**
     * Converts a Typesafe Config object to a Project case class which can

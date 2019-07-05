@@ -596,4 +596,42 @@ class DefaultsSpec extends FlatSpec with Matchers {
     val conf = ConfigFactory.parseString("""{ repository : {} }""")
     conf.as[Repository]("repository").toString should be(correct.toString)
   }
+
+  it should "be correct for Archiver" in {
+
+    val correct = Archiver(
+      true, true, true, false, null, Map[String, String](), null, 
+      Seq[ManifestSection](), null)
+    Archiver().toString should be(correct.toString)
+
+    val xml = new Archiver(XML.loadString("""<archive></archive>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[Archiver](
+      JsonMethods.parse("""{ "archive" : {} }""").asInstanceOf[JObject], 
+      "archive")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ archive : {} }""")
+    HoconReader.readArchiver(conf).toString should be(correct.toString)
+  }
+
+  it should "be correct for Fileset" in {
+
+    val correct = Fileset(
+      null, null, false, null, true, Seq[String](), Seq[String](), 
+      "0644", "0755", null)
+    Fileset().toString should be(correct.toString)
+
+    val xml = new Fileset(XML.loadString("""<fileset></fileset>"""))
+    xml.toString should be(correct.toString)
+
+    val json = JsonReader.readObject[Fileset](
+      JsonMethods.parse("""{ "fileset" : {} }""").asInstanceOf[JObject], 
+      "fileset")
+    json.toString should be(correct.toString)
+
+    val conf = ConfigFactory.parseString("""{ fileset : {} }""")
+    HoconReader.readFileset(conf).toString should be(correct.toString)
+  }
 }

@@ -39,30 +39,30 @@ protected[unbound] object Fileset extends CommonJsonReader {
       case obj @ JObject(fields) =>
         new Fileset(
           readStr(fields, DirectoryStr).getOrElse(null),
-          readStr(fields, "lineEnding").getOrElse(null),
-          readBool(fields, "followSymlinks").getOrElse(false),
-          readStr(fields, "outputDirectory").getOrElse(null),
-          readBool(fields, "useDefaultExcludes").getOrElse(true),
-          readStringSequence(fields, "includes"),
-          readStringSequence(fields, "excludes"),
-          readStr(fields, "modeFile").getOrElse("0644"),
-          readStr(fields, "modeDirectory").getOrElse("0755"),
-          readObject[Mapper](obj, "mapper")
+          readStr(fields, LineEnding).getOrElse(null),
+          readBool(fields, FollowSymlinks).getOrElse(false),
+          readStr(fields, OutputDirectory).getOrElse(null),
+          readBool(fields, UseDefaultExcludes).getOrElse(true),
+          readStringSequence(fields, Includes),
+          readStringSequence(fields, Excludes),
+          readStr(fields, FileMode).getOrElse(DefaultFileMode),
+          readStr(fields, DirectoryMode).getOrElse(DefaultDirectoryMode),
+          readObject[Mapper](obj, Mapper)
         )
     },
     {
       case f: Fileset =>
         JObject(Seq[Option[JField]](
           writeStr(DirectoryStr, f.directory),
-          writeStr("lineEnding", f.lineEnding),
-          writeBool("followSymlinks", f.followSymlinks, false),
-          writeStr("outputDirectory", f.outputDirectory),
-          writeBool("useDefaultExcludes", f.useDefaultExcludes, true),
+          writeStr(LineEnding, f.lineEnding),
+          writeBool(FollowSymlinks, f.followSymlinks, false),
+          writeStr(OutputDirectory, f.outputDirectory),
+          writeBool(UseDefaultExcludes, f.useDefaultExcludes, true),
           writeStringSequence(Includes, f.includes),
           writeStringSequence(Excludes, f.excludes),
-          writeStr("fileMode", f.fileMode),
-          writeStr("directoryMode", f.directoryMode),
-          writeObject("mapper", f.mapper)
+          writeStr(FileMode, f.fileMode),
+          writeStr(DirectoryMode, f.directoryMode),
+          writeObject(Mapper, f.mapper)
         ).flatten.toList)
     }
   ))
@@ -76,21 +76,22 @@ case class Fileset(
   followSymlinks: Boolean = false,
   outputDirectory: String = null, useDefaultExcludes: Boolean = true,
   includes: Seq[String] = Seq[String](), excludes: Seq[String] = Seq[String](),
-  fileMode: String = "0644", directoryMode: String = "0755",
+  fileMode: String = SL.DefaultFileMode,
+  directoryMode: String = SL.DefaultDirectoryMode,
   mapper: Mapper = null
 ) {
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.DirectoryStr).text),
-    emptyToNull((elem \ "lineEnding").text),
-    emptyToDefaultBool((elem \ "followSymlinks").text, false),
-    emptyToNull((elem \ "outputDirectory").text),
-    emptyToDefaultBool((elem \ "useDefaultExcludes").text, true),
+    emptyToNull((elem \ SL.LineEnding).text),
+    emptyToDefaultBool((elem \ SL.FollowSymlinks).text, false),
+    emptyToNull((elem \ SL.OutputDirectory).text),
+    emptyToDefaultBool((elem \ SL.UseDefaultExcludes).text, true),
     (elem \ SL.Includes).map { _.text },
     (elem \ SL.Excludes).map { _.text },
-    emptyToDefault((elem \ "fileMode").text, "0644"),
-    emptyToDefault((elem \ "directoryMode").text, "0755"),
-    (elem \ "mapper").map { case e: Elem =>
+    emptyToDefault((elem \ SL.FileMode).text, SL.DefaultFileMode),
+    emptyToDefault((elem \ SL.DirectoryMode).text, SL.DefaultDirectoryMode),
+    (elem \ SL.Mapper).map { case e: Elem =>
       new Mapper(e) }.headOption.getOrElse(null)
   )
 
@@ -109,23 +110,24 @@ case class Fileset(
       { if (!excludes.isEmpty) <excludes>
         { excludes.map { Exclude(_).xml } }
         </excludes> }
-      { if (fileMode != null && fileMode != "0644")
+      { if (fileMode != null && fileMode != SL.DefaultFileMode.toString)
         <fileMode>{fileMode}</fileMode> }
-      { if (directoryMode != null && directoryMode != "0755")
+      { if (directoryMode != null &&
+        directoryMode != SL.DefaultDirectoryMode.toString)
         <directoryMode>{directoryMode}</directoryMode> }
       { if (mapper != null) mapper.xml }
     </fileset>
 }
 
 case class Mapper(
-  `type`: String = "identity", from: String = null,
+  `type`: String = SL.Identity, from: String = null,
   to: String = null, classname: String = null) {
 
   def this(elem: Elem) = this(
-    emptyToDefault((elem \ SL.TypeStr).text, "identity"),
-    emptyToNull((elem \ "from").text),
-    emptyToNull((elem \ "to").text),
-    emptyToNull((elem \ "classname").text)
+    emptyToDefault((elem \ SL.TypeStr).text, SL.Identity),
+    emptyToNull((elem \ SL.From).text),
+    emptyToNull((elem \ SL.To).text),
+    emptyToNull((elem \ SL.Classname).text)
   )
 
   lazy val xml =

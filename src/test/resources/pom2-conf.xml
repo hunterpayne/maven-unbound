@@ -39,6 +39,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <name>My_Artifactory-snapshots</name>
       <url>http://my.maven.repository.internal/artifactory/snapshot</url>
     </snapshotRepository>
+    <relocation>
+      <groupId>new-home</groupId>
+      <artifactId>new-home-artifact</artifactId>
+      <version>new-version</version>
+      <message>going to a new home</message>
+    </relocation>
   </distributionManagement>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

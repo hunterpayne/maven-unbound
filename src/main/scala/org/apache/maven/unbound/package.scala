@@ -145,7 +145,7 @@ package object unbound {
               ConfigFactory.parseString(JsonWriter.writeArchiver(a)).root()
 
               // a fileset
-            } else if (e.label == "fileset" && attrs.isEmpty) {
+            } else if (e.label == SL.FilesetStr.toString && attrs.isEmpty) {
               val f = new Fileset(e)
               ConfigFactory.parseString(JsonWriter.writeFileset(f)).root()
 
@@ -207,7 +207,7 @@ package object unbound {
                 attrs.foldLeft(map) { case(c, (n, v)) =>
                   c.withValue(n, ConfigValueFactory.fromAnyRef(v))
                 }.withValue(
-                  "attributeKeys",
+                  SL.AttributeKeys,
                   ConfigValueFactory.fromIterable(keys.asJava))
               } else {
                 map
@@ -397,12 +397,13 @@ package object unbound {
                   Seq(arch.xml) ++
                   mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
                     makeElem(k, v) }
-                } else if (mS.keySet.find { _ == "fileset" }.isDefined) {
+                } else if (mS.keySet.find {
+                  _ == SL.FilesetStr.toString }.isDefined) {
                   // a Maven fileset
                   val fs = HoconReader.readFileset(m.toConfig())
                   Seq(fs.xml) ++
-                  mS.filter { _._1 != "fileset" }.map { case(k, v) =>
-                    makeElem(k, v) }
+                  mS.filter { _._1 != SL.FilesetStr.toString
+                  }.map { case(k, v) => makeElem(k, v) }
                 } else {
                   // a normal Map (ie non-string value type)
                   mS.map { case(k, v) => makeElem(k, v) }.toSeq
@@ -414,18 +415,19 @@ package object unbound {
                 Seq(arch.xml) ++
                 mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
                   makeElem(k, v) }
-              } else if (mS.keySet.find { _ == "fileset" }.isDefined) {
+              } else if (mS.keySet.find {
+                _ == SL.FilesetStr.toString }.isDefined) {
                 // a Maven fileset
                 val fs = HoconReader.readFileset(m.toConfig())
                 Seq(fs.xml) ++
-                mS.filter { _._1 != "fileset" }.map { case(k, v) =>
+                mS.filter { _._1 != SL.FilesetStr.toString }.map { case(k, v) =>
                   makeElem(k, v) }
               } else {
                 // look for attributeKeys and if its present make those
                 // children into attributes instead of elements
                 val c = m.toConfig
-                if (c.hasPath("attributeKeys")) {
-                  val attrKeys = c.getStringList("attributeKeys")
+                if (c.hasPath(SL.AttributeKeys)) {
+                  val attrKeys = c.getStringList(SL.AttributeKeys)
 
                   if (attrKeys != null && !attrKeys.isEmpty) {
                     val attrValues: Seq[(String, String)] =
@@ -437,7 +439,7 @@ package object unbound {
                       attrValues.foldLeft(md) { case(n, (k, v)) =>
                         new UnprefixedAttribute(k, v, n) }
                     mS.filter { case(k, _) =>
-                      k != "attributeKeys" && !attrKeys.contains(k)
+                      k != SL.AttributeKeys.toString && !attrKeys.contains(k)
                     }.map { case(k, v) => makeElem(k, v) }.toSeq
 
                   } else {

@@ -18,7 +18,7 @@
     be called just like mvn can but the JSON or HOCON POM files will generate
     pom.xml files on the fly which will in turn be built using Maven.
   </description>
-  <url>https://github.com/hunterpayne/maven-unbound</url>
+  <url>https://hunterpayne.github.io/maven-unbound-site/index.html</url>
   <inceptionYear>2019</inceptionYear>
   <licenses>
     <license>
@@ -58,7 +58,6 @@
     <!-- Streaming release version. -->
     <release.epoch>1.0.0</release.epoch>
     <release.stamp>${maven.build.timestamp}</release.stamp>
-    <!--    <revision>${release.epoch}.${release.stamp}</revision> -->
     <revision>${release.epoch}</revision>
 
     <!-- Must override in each cross-version module. -->
@@ -66,13 +65,13 @@
     <version.scala.epoch>2.12</version.scala.epoch>
     <version.scala.release>2.12.8</version.scala.release>
     
-    <version.scala.zinc>1.3.0-M2</version.scala.zinc>
     <version.scala.plugin.macro>2.1.1</version.scala.plugin.macro>
     
     <!-- Java epoch. -->
     <version.java>1.8</version.java>
-    <maven.compiler.source>${version.java}</maven.compiler.source><!-- Used by M2E. -->
-    <maven.compiler.target>${version.java}</maven.compiler.target><!-- Used by M2E. -->
+    <!-- Used by M2E. -->
+    <maven.compiler.source>${version.java}</maven.compiler.source>
+    <maven.compiler.target>${version.java}</maven.compiler.target>
 
     <!-- scalatest -->
     <version.scalatest>3.0.6</version.scalatest>
@@ -249,6 +248,13 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.7.1</version>
+	<dependencies>
+          <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-module-twiki</artifactId>
+            <version>1.8</version>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
 	<groupId>org.scoverage</groupId>
@@ -272,21 +278,9 @@
 	</executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>index</goal>
-            </goals>
-            <phase>site</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
 	<groupId>com.redhat.victims.maven</groupId>
 	<artifactId>security-versions</artifactId>
+        <version>1.0.6</version>
 	<executions>
 	  <execution>
 	    <goals>
@@ -295,6 +289,181 @@
 	    <phase>package</phase>
 	  </execution>
 	</executions>
+      </plugin>
+      <!-- build installers -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rpm-maven-plugin</artifactId>
+        <version>2.2.0</version>
+        <executions>
+          <execution>
+            <id>generate-rpm</id>
+            <goals>
+              <goal>rpm</goal>
+            </goals>
+	    <phase>package</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <license>Apache 2.0 (c) 2019</license>
+          <distribution>Maven Unbound</distribution>
+          <group>Development/Tools</group>
+          <!-- <icon></icon> -->
+          <packager>SWWDC</packager>
+          <prefix>/usr/local</prefix>
+          <!-- <changelogFile>src/changelog</changelogFile> -->
+          <defineStatements>
+            <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+          </defineStatements>
+	  <prereqs>apache-maven</prereqs>
+          <mappings>
+            <mapping>
+              <directory>/usr/local/bin</directory>
+              <filemode>555</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
+              <sources>
+                <source>
+                  <location>mvnu</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>/usr/local/share/lib/unbound</directory>
+              <filemode>555</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
+              <sources>
+                <source>
+                  <location>target/unbound-1.0.0-exec.jar</location>
+                </source>
+              </sources>
+            </mapping>
+          </mappings>
+	  <preinstallScriptlet>
+            <script>echo "installing ${project.name} now"</script>
+          </preinstallScriptlet>
+        </configuration>
+      </plugin>
+
+      <plugin>
+	<artifactId>maven-resources-plugin</artifactId>
+	<version>2.3</version>
+	<executions>
+          <execution>
+            <id>copy-deb-resources</id>
+            <phase>process-resources</phase>
+            <goals><goal>copy-resources</goal></goals>
+            <configuration>
+              <overwrite>false</overwrite>
+              <outputDirectory>${basedir}/target/deb</outputDirectory>
+              <resources>
+		<resource>
+		  <targetPath>usr/bin/</targetPath>
+		  <directory>.</directory>
+		  <includes>
+		    <include>mvnu</include>
+		  </includes>
+		</resource>
+              </resources>
+            </configuration>
+          </execution>
+	</executions>
+      </plugin>
+      <plugin>
+	<artifactId>maven-antrun-plugin</artifactId>
+	<version>1.6</version>
+	<executions>
+          <execution>
+            <id>fix-mvnu-permissions</id>
+            <phase>package</phase>
+            <configuration>
+              <target>
+		<chmod perm="755">
+                  <fileset dir="${basedir}/target/deb">
+                    <include name="usr/bin/mvnu"/>
+                  </fileset>
+		</chmod>
+              </target>
+            </configuration>
+            <goals><goal>run</goal></goals>
+          </execution>
+          <execution>
+            <id>fix-jar-permissions</id>
+            <phase>package</phase>
+            <configuration>
+              <target>
+		<chmod perm="444">
+                  <fileset dir="${basedir}/target/deb">
+                    <include name="lib/*.jar"/>
+                  </fileset>
+		</chmod>
+              </target>
+            </configuration>
+            <goals><goal>run</goal></goals>
+          </execution>
+	</executions>
+      </plugin>
+      <plugin>
+        <groupId>net.sf.debian-maven</groupId>
+        <artifactId>debian-maven-plugin</artifactId>
+        <version>1.0.6</version>
+        <executions>
+          <execution>
+            <id>generate-deb</id>
+            <goals>
+              <goal>package</goal>
+            </goals>
+	    <phase>package</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <packageName>unbound</packageName>
+          <packageSection>Maven Unbound</packageSection>
+          <packageTitle>Maven Unbound</packageTitle>
+	  <projectUrl>${project.url}</projectUrl>
+	  <packageSection>Development</packageSection>
+	  <!-- <projectOrganization>Apache Foundation</projectOrganization> -->
+	  <!-- <maintainerEmail></maintainerEmail> -->
+	  <excludeAllDependencies>true</excludeAllDependencies>
+	  <excludeAllArtifacts>true</excludeAllArtifacts>
+	  <includeArtifacts>
+	    <includeArtifact>unbound-1.0.0-exec.jar</includeArtifact>
+	  </includeArtifacts>
+	  <packageDependencies>
+	    <packageDependency>maven</packageDependency>
+	  </packageDependencies>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.digitalmediaserver</groupId>
+        <artifactId>nsis-maven-plugin</artifactId>
+        <version>1.0.2</version>
+        <configuration>
+          <makensisExecutable>${project.external-resources}/third-party/nsis/Bin/makensis.exe</makensisExecutable>
+          <makensisExecutableLinux>/usr/bin/makensis</makensisExecutableLinux>
+          <makensisExecutableMacOS>${project.external-resources}/third-party/nsis/Bin/makensisMacOS</makensisExecutableMacOS>
+          <compression>lzma</compression>
+          <compressionIsFinal>true</compressionIsFinal>
+          <compressionDictSize>64</compressionDictSize>
+          <defines>
+            <PROJECT_NAME_SHORT>${project.name.short}</PROJECT_NAME_SHORT>
+            <PROJECT_NAME_CAMEL>${project.name.camel}</PROJECT_NAME_CAMEL>
+          </defines>
+        </configuration>
+        <executions>
+          <execution>
+            <id>build-windows-installer</id>
+            <configuration>
+              <scriptFile>nsis/${project.artifactId}.nsi</scriptFile>
+              <outputFile>${project.build.finalName}.exe</outputFile>
+              <attachArtifact>false</attachArtifact>
+            </configuration>
+            <goals>
+              <goal>make</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -320,14 +489,12 @@
           <reportSet>
             <reports>
 	      <!-- select reports -->
-	      <report>index</report>
 	      <report>summary</report>
               <report>dependencies</report>
               <report>dependency-info</report>
               <report>dependency-convergence</report>
               <report>team</report>
               <report>licenses</report>
-              <report>plugins</report>
               <report>scm</report>
               <report>issue-management</report>
             </reports>

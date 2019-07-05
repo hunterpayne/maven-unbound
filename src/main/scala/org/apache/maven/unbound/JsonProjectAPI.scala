@@ -51,9 +51,8 @@ trait CommonJsonReader extends Labels {
   // for strings
   protected def readStr(fields: List[JField], key: String): Option[String] =
     fields.filter { _._1 == key }.headOption.map { case(_, v) => v match {
-      case JString(s) => s.replaceAllLiterally("\n", scala.compat.Platform.EOL)
-      case v =>
-        v.as[String].replaceAllLiterally("\n", scala.compat.Platform.EOL)
+      case JString(s) => unencodeJson(s)
+      case v => unencodeJson(v.as[String])
     }}
 
   // for objects
@@ -84,7 +83,7 @@ trait CommonJsonReader extends Labels {
   protected def readStringSequence(
     fields: List[JField], key: String): Seq[String] =
     fields.filter { _._1 == key }.headOption.map { goals =>
-      goals._2.children.map { goal => Extraction.extract[String](goal) }
+      goals._2.children.map { goal => goal.as[String] }
     }.getOrElse(Seq[String]())
 
   // utility methods for converting a specific data type to a Json4s field
@@ -214,17 +213,21 @@ object JsonWriter extends JsonProjectAPI {
     * Writes a human readable Json representing project into the provided
     * Writer
     */
-  def writePOM[W <: Writer](project: Project, writer: W): Unit =
+  def writePOM[W <: Writer](project: Project, writer: W): Unit = {
     writePretty[Project, W](project, writer)
+    writer.flush()
+  }
 
   /**
     * Writes a human readable Json representing project into the provided
     * OutputStream using encoding enc
     */
   def writePOM(
-    project: Project, os: OutputStream, enc: String = "UTF-8"): Unit =
-    writePretty[Project, OutputStreamWriter](
-      project, new OutputStreamWriter(os, enc))
+    project: Project, os: OutputStream, enc: String = "UTF-8"): Unit = {
+    val writer = new OutputStreamWriter(os, enc)
+    writePretty(project, writer)
+    writer.flush()
+  }
 
   // used to write an Archiver as Json
   protected[unbound] def writeArchiver(archiver: Archiver): String =

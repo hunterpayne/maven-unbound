@@ -259,6 +259,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <name>My_Artifactory-snapshots</name>
       <url>http://my.maven.repository.internal/artifactory/snapshot</url>
     </snapshotRepository>
+    <relocation>
+      <groupId>new-home</groupId>
+      <artifactId>new-home-artifact</artifactId>
+      <version>new-version</version>
+      <message>going to a new home</message>
+    </relocation>
   </distributionManagement>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -1043,6 +1049,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <activation>
         <activeByDefault>true</activeByDefault>
         <jdk>1.8</jdk>
+        <file>
+          <missing>foo</missing>
+          <exists>bar</exists>
+        </file>
       </activation>
       <build>
         <plugins>
@@ -1156,6 +1166,97 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     //val removedVectors = 
     //project1.toString.replaceAllLiterally("Vector(", "List(")
     //project2.toString should be (removedVectors)
+  }
+
+  it should "load a hocon with complex dot syntax" in {
+
+    val correct = """<project 
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.maven.lifecycle.test</groupId>
+  <artifactId>mojo-configuration</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+  <name>project-with-additional-lifecycle-elements</name>
+  <url>http://maven.apache.org</url>
+  <organization>
+    <name>org-name</name>
+    <url>org-url</url>
+  </organization>
+  <properties>
+    <myPropsfoo>bar</myPropsfoo>
+  </properties>
+  <build>
+    <outputDirectory>target-output</outputDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>0.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.its.plugins</groupId>
+        <artifactId>maven-it-plugin</artifactId>
+        <version>0.1</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>xpp3-reader</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+"""
+
+    val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
+    val project1 = readPOM(ConfigFactory.load(
+      "complex-merge", ConfigParseOptions.defaults(), resolveOpts))
+    project1.makeModelObject() // just to make sure it doesn't NPE
+
+    val project2 = new Project(XML.loadString(correct))
+
+    project1.toString.replaceAllLiterally("Vector(", "List(") should be (
+      project2.toString)
   }
 }
 

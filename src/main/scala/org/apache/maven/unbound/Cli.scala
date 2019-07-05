@@ -17,7 +17,8 @@
 
 package org.apache.maven.unbound
 
-import java.io.{ File, FileInputStream, FileOutputStream, OutputStreamWriter }
+import java.io.{
+  File, FileInputStream, FileOutputStream, FileWriter, OutputStreamWriter }
 
 import scala.io.Source
 import scala.xml.XML
@@ -70,11 +71,9 @@ object Cli {
     */
   def createPomJsonFiles(at: String, project: Project): Unit = {
 
-    val jsonStr = JsonWriter.writePOM(project)
-    val writer = new OutputStreamWriter(
-      new FileOutputStream(new File(at + jsonFileName)), "UTF-8")
+    val writer = new FileWriter(new File(at + jsonFileName))
     try {
-      writer.write(jsonStr)
+      JsonWriter.writePOM(project, writer)
       writer.flush()
       println(s"generated ${at}${jsonFileName} from ${at}${xmlFileName}")
     } finally {
@@ -123,18 +122,14 @@ object Cli {
     */
   def createPomXmlFiles(at: String, project: Project, from: String): Unit = {
 
-    val xmlStr = project.toXmlString
-    val writer = new OutputStreamWriter(
-      new FileOutputStream(new File(at + xmlFileName)), "UTF-8")
+    val writer = new FileWriter(at + xmlFileName)
     try {
-      writer.write(xmlStr)
+      project.writePOM(writer)
       writer.flush()
       println(s"generated ${at}${xmlFileName} from ${at}${from}")
     } finally {
       writer.close()
-
-      project.modules.foreach { module =>
-        recurse(at + File.separator + module) }
+      project.modules.foreach { mod => recurse(at + File.separator + mod) }
     }
   }
 
