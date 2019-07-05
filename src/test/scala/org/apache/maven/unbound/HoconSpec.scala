@@ -1186,6 +1186,7 @@ xmlns="http://maven.apache.org/POM/4.0.0">
     <url>org-url</url>
   </organization>
   <properties>
+    <dotted.name>value</dotted.name>
     <myPropsfoo>bar</myPropsfoo>
   </properties>
   <build>
@@ -1242,6 +1243,16 @@ xmlns="http://maven.apache.org/POM/4.0.0">
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <parent>
+            <child>foo2</child>
+            <child2>
+              <key>value</key>
+              <key2>value2</key2>
+              <key3>value3</key3>
+            </child2>
+          </parent>
+        </configuration>
       </plugin>
     </plugins>
   </build>

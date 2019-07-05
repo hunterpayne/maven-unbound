@@ -103,7 +103,6 @@ translating XML comments.
 
 Things left to do before its 1.0 ready:
 * test Windows installer
-* test dot syntax in Hocon
 
 Nice to have: translating comments from XML to Hocon
 
