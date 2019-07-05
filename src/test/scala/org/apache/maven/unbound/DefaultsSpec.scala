@@ -86,6 +86,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     jsonBuild.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ build : {} }""")
+    import HoconReader._
     conf.as[Build]("build").toString should be(correct.toString)
   }
 
@@ -103,6 +104,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ extension : {} }""")
+    import HoconReader._
     conf.as[Extension]("extension").toString should be(correct.toString)
   }
 
@@ -123,6 +125,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     import HoconReader._
 
     val conf = ConfigFactory.parseString("""{ ciManagement : {} }""")
+    import HoconReader._
     conf.as[CIManagement]("ciManagement").toString should be(correct.toString)
   }
 
@@ -141,6 +144,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ notifier : {} }""")
+    import HoconReader._
     conf.as[Notifier]("notifier").toString should be(correct.toString)
   }
 
@@ -159,6 +163,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ contributor : {} }""")
+    import HoconReader._
     conf.as[Contributor]("contributor").toString should be(correct.toString)
   }
 
@@ -178,6 +183,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ developer : {} }""")
+    import HoconReader._
     conf.as[Developer]("developer").toString should be(correct.toString)
   }
 
@@ -196,6 +202,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ dependency : {} }""")
+    import HoconReader._
     conf.as[Dependency]("dependency").toString should be(correct.toString)
   }
 
@@ -213,6 +220,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ parent : {} }""")
+    import HoconReader._
     conf.as[Parent]("parent").toString should be(correct.toString)
   }
 
@@ -231,6 +239,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ organization : {} }""")
+    import HoconReader._
     conf.as[Organization]("organization").toString should be(correct.toString)
   }
 
@@ -248,6 +257,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ license : {} }""")
+    import HoconReader._
     conf.as[License]("license").toString should be(correct.toString)
   }
 
@@ -265,6 +275,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ scm : {} }""")
+    import HoconReader._
     conf.as[Scm]("scm").toString should be(correct.toString)
   }
 
@@ -283,6 +294,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ issueManagement : {} }""")
+    import HoconReader._
     conf.as[IssueManagement]("issueManagement").toString should be(
       correct.toString)
   }
@@ -303,6 +315,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ distributionManagement : {} }""")
+    import HoconReader._
     conf.as[DistributionManagement](
       "distributionManagement").toString should be(correct.toString)
   }
@@ -321,6 +334,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ site : {} }""")
+    import HoconReader._
     conf.as[Site]("site").toString should be(correct.toString)
   }
 
@@ -338,6 +352,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ relocation : {} }""")
+    import HoconReader._
     conf.as[Relocation]("relocation").toString should be(correct.toString)
   }
 
@@ -357,6 +372,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ plugin : {} }""")
+    import HoconReader._
     conf.as[Plugin]("plugin").toString should be(correct.toString)
   }
 
@@ -374,6 +390,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ execution : {} }""")
+    import HoconReader._
     conf.as[Execution]("execution").toString should be(correct.toString)
   }
 
@@ -394,6 +411,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ profile : {} }""")
+    import HoconReader._
     conf.as[Profile]("profile").toString should be(correct.toString)
   }
 
@@ -411,6 +429,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ activation : {} }""")
+    import HoconReader._
     conf.as[Activation]("activation").toString should be(correct.toString)
   }
 
@@ -427,6 +446,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ os : {} }""")
+    import HoconReader._
     conf.as[ActivationOS]("os").toString should be(correct.toString)
   }
 
@@ -445,6 +465,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ property : {} }""")
+    import HoconReader._
     conf.as[ActivationProperty]("property").toString should be(correct.toString)
   }
 
@@ -461,6 +482,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ file : {} }""")
+    import HoconReader._
     conf.as[ActivationFile]("file").toString should be(correct.toString)
   }
 
@@ -485,6 +507,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ buildBase : {} }""")
+    import HoconReader._
     conf.as[BuildBase]("buildBase").toString should be(correct.toString)
   }
 
@@ -502,6 +525,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ reporting : {} }""")
+    import HoconReader._
     conf.as[Reporting]("reporting").toString should be(correct.toString)
   }
 
@@ -521,6 +545,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ reportPlugin : {} }""")
+    import HoconReader._
     conf.as[ReportPlugin]("reportPlugin").toString should be(correct.toString)
   }
 
@@ -538,6 +563,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ reportSet : {} }""")
+    import HoconReader._
     conf.as[ReportSet]("reportSet").toString should be(correct.toString)
   }
 
@@ -557,6 +583,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ deploymentRepository : {} }""")
+    import HoconReader._
     conf.as[DeploymentRepository](
       "deploymentRepository").toString should be(correct.toString)
   }
@@ -576,6 +603,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ repositoryPolicy : {} }""")
+    import HoconReader._
     conf.as[RepositoryPolicy]("repositoryPolicy").toString should be(
       correct.toString)
   }
@@ -594,6 +622,7 @@ class DefaultsSpec extends FlatSpec with Matchers {
     json.toString should be(correct.toString)
 
     val conf = ConfigFactory.parseString("""{ repository : {} }""")
+    import HoconReader._
     conf.as[Repository]("repository").toString should be(correct.toString)
   }
 

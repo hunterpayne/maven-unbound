@@ -110,7 +110,7 @@ trait HoconProjectReader {
   implicit val profileConfigReader: ValueReader[Profile] =
     ValueReader.relative { config =>
       Profile(
-        if (config.hasPath(Id)) config.as[String](Id) else null,
+        if (config.hasPath(Id)) config.as[String](Id) else DefaultStr,
         if (config.hasPath(ActivationStr))
           config.as[Activation](ActivationStr)
         else null,
@@ -125,16 +125,16 @@ trait HoconProjectReader {
         else Map[String, String](),
         if (config.hasPath(DependencyManagementStr))
           config.as[Seq[Dependency]](DependencyManagementStr)
-        else null,
+        else Seq[Dependency](),
         if (config.hasPath(Dependencies))
           config.as[Seq[Dependency]](Dependencies)
-        else null,
+        else Seq[Dependency](),
         if (config.hasPath(Repositories))
           config.as[Seq[Repository]](Repositories)
-        else null,
+        else Seq[Repository](),
         if (config.hasPath(PluginRepositories))
           config.as[Seq[Repository]](PluginRepositories)
-        else null,
+        else Seq[Repository](),
         if (config.hasPath(ReportingStr)) config.as[Reporting](ReportingStr)
         else null
       )
