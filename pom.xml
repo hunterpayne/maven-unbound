@@ -37,6 +37,17 @@
       <timezone>America/Los_Angeles</timezone>
     </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Thomas Boyles</name>
+      <email>no-spam</email>
+      <roles>
+        <role>marketing</role>
+        <role>testing</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </contributor>
+  </contributors>
   <scm>
     <connection>
       scm:git:https://github.com/hunterpayne/maven-unbound.git
