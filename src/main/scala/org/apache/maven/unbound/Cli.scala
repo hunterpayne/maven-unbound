@@ -71,13 +71,13 @@ object Cli {
     */
   def createPomJsonFiles(at: String, project: Project): Unit = {
 
-    val writer = new FileWriter(new File(at + jsonFileName))
+    val fos = new FileOutputStream(new File(at + jsonFileName))
     try {
-      JsonWriter.writePOM(project, writer)
-      writer.flush()
+      JsonWriter.writePOM(project, fos)
+      fos.flush()
       println(s"generated ${at}${jsonFileName} from ${at}${xmlFileName}")
     } finally {
-      writer.close()
+      fos.close()
 
       project.modules.foreach { module =>
         recurseXml(at + File.separator + module, (s, p) =>

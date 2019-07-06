@@ -10,7 +10,7 @@ Install the appropiate one for your distribution of Linux.
 
 For Windows the installer is generated at target/unbound-1.0.0.exe
 
-For OSX use the RPM installer.  You might have to install rpm via brew.
+For OSX use the RPM installer.  You might have to install rpm itself via brew.
 
 ## To use the Unbound command line interface
 
@@ -88,7 +88,8 @@ to and from Xml and Json and read from Hocon.
 
 ## Is it ready to use?
 
-The main functionality is finished and works.  This is beta code and ready to try.
+The main functionality is finished and works.  This is beta code and ready to 
+try.
 
 We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
 to Security CVE reports.  A basic maven site now can be generated via
