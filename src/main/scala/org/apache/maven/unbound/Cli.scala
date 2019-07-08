@@ -21,7 +21,8 @@ import java.io.{
   File, FileInputStream, FileOutputStream, FileWriter, OutputStreamWriter }
 
 import scala.io.Source
-import scala.xml.XML
+import scala.xml.Elem
+import scala.xml.parsing.ConstructingParser
 
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 
@@ -45,22 +46,24 @@ object Cli {
     * @param at the path where we are writing the new pom.xml file
     * @param project the parsed form of the Project to write to disk
     */
-  def createPomHoconFiles(at: String, project: Project): Unit = {
+  def createPomHoconFiles(
+    at: String, comments: DocComments, project: Project): Unit = {
 
     val hocon = ConfigFactory.parseString(JsonWriter.writeConcisePOM(project))
+    val hocon2 = comments.insertConf(hocon)
     val writer = new OutputStreamWriter(
       new FileOutputStream(new File(at + hoconFileName)), "UTF-8")
     val options = ConfigRenderOptions.defaults().setOriginComments(false)
     try {
-      writer.write(hocon.root().render(options))
+      writer.write(hocon2.root().render(options))
       writer.flush()
       println(s"generated ${at}${hoconFileName} from ${at}${xmlFileName}")
     } finally {
       writer.close()
     }
     project.modules.foreach { module =>
-      recurseXml(at + File.separator + module, (s, p) =>
-        createPomHoconFiles(s, p)) }
+      recurseXml(at + File.separator + module, (s, c, p) =>
+        createPomHoconFiles(s, c, p)) }
   }
 
   /**
@@ -80,7 +83,7 @@ object Cli {
       fos.close()
 
       project.modules.foreach { module =>
-        recurseXml(at + File.separator + module, (s, p) =>
+        recurseXml(at + File.separator + module, (s, _, p) =>
           createPomJsonFiles(s, p)) }
     }
   }
@@ -92,7 +95,8 @@ object Cli {
     * @param createFile a function to converts XML POM files into something
     * else and writing those new files to disk in the directory specified by s
     */
-  def recurseXml(s: String, createFile: (String, Project) => Unit): Unit = {
+  def recurseXml(s: String, createFile: (String, DocComments, Project) => Unit):
+      Unit = {
 
     val xml = new File(s + xmlFileName)
 
@@ -100,8 +104,16 @@ object Cli {
 
       val xmlIn = new FileInputStream(xml)
       try {
-        val project = new Project(XML.load(xmlIn))
-        createFile(s, project)
+        // val root = scala.xml.XML.load(xmlIn)
+        val parser =
+          ConstructingParser.fromSource(Source.fromInputStream(xmlIn), true)
+        val root = parser.document.docElem.asInstanceOf[Elem]
+        // extract comments from root
+        val comments = CommentExtractor(root)
+        val project = new Project(root)
+        // pass them to createFile which can insert them back into the
+        // Config object before its rendered
+        createFile(s, comments, project)
       } catch {
         case e: Exception => e.printStackTrace()
       } finally {
@@ -148,9 +160,21 @@ object Cli {
 
     } else if (conf.exists()) {
 
-      val project = HoconReader.readPOM(loadConfig(conf))
-      createPomXmlFiles(s, project, hoconFileName)
-
+      val config = loadConfig(conf)
+      val project = HoconReader.readPOM(config)
+      if (false) { // if to write comments or not
+        val comments = CommentExtractor(config)
+        try {
+          (new Writeable {
+            val xml = comments.insertXml(project.xml)
+          }).writePOM(s + xmlFileName)
+          println(s"generated ${s}${xmlFileName} from ${s}${hoconFileName}")
+        } finally {
+          project.modules.foreach { mod => recurse(s + File.separator + mod) }
+        }
+      } else {
+        createPomXmlFiles(s, project, hoconFileName)
+      }
     } else {
 
       println(s"no pom.json or pom.conf in ${s}")
@@ -165,11 +189,11 @@ object Cli {
 
       // read xml and generate json
       if (args.find(_ == "--generate-json").isDefined)
-        recurseXml(".", (s, p) => createPomJsonFiles(s, p))
+        recurseXml(".", (s, _, p) => createPomJsonFiles(s, p))
 
       // read xml and generate hocon
       if (args.find(_ == "--generate-hocon").isDefined)
-        recurseXml(".", (s, p) => createPomHoconFiles(s, p))
+        recurseXml(".", (s, c, p) => createPomHoconFiles(s, c, p))
 
       val unkn = args.find { s =>
         s != "--generate-hocon" && s != "--generate-json" }

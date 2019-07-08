@@ -224,7 +224,7 @@ package object unbound {
             epty.root().withOrigin(epty.origin().withComments(list))
             // unhandled
           case n: Node =>
-            println("n " + n)
+            println("n " + n + " class " + n.getClass.getName)
             assert(false)
             null
         }
@@ -240,7 +240,7 @@ package object unbound {
         elem.child.map { ch => (ch.label, appendNode(ch.label, empty, ch)) }
       // fold them together into 1 big Config at the paths
       childConfs.foldLeft(ConfigFactory.empty()) { case(c, (k, v)) =>
-        if (v != null) c.withValue(k, v) else c }
+        if (v != null && !k.startsWith("#")) { c.withValue(k, v) } else c }
     } else {
       null
     }

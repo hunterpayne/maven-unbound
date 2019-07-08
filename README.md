@@ -89,22 +89,16 @@ to and from Xml and Json and read from Hocon.
 ## Is it ready to use?
 
 The main functionality is finished and works.  This is beta code and ready to 
-try.
+try.  Comments are only moved from XML to Hocon as that's the use case
+that makes sense.  When Hocon is translated back to XML, that's for a computer
+to consume.  And Json doesn't support comments so comments are stripped when
+useding Json POMs.
 
 We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
 to Security CVE reports.  A basic maven site now can be generated via
 ```mvn site```
 
-Because we don't have code that directly translates Project to Config, we 
-can't support transforming XML comments.  This is because to generate HOCON, 
-we first generate JSON and load it into a Config which is then rendered 
-into HOCON.  JSON has no support for comments.  If in the future we create
-a way to directly translate Project into Config, we will add support for
-translating XML comments.
-
 Things left to do before its 1.0 ready:
 * test Windows installer
-
-Nice to have: translating comments from XML to Hocon
 
 Watch this space for more news.

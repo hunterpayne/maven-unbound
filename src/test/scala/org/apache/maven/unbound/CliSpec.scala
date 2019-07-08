@@ -36,7 +36,7 @@ class CliSpec extends FlatSpec with Matchers {
     val jsonFile = new File("src/test/resources/pom.json")
 
     Cli.recurseXml(
-      "src/test/resources", (s, p) => Cli.createPomJsonFiles(s, p))
+      "src/test/resources", (s, _, p) => Cli.createPomJsonFiles(s, p))
     val projectJson: Project = JsonReader.readPOM(new FileReader(jsonFile))
     val projectXml = new Project(XML.load(new FileReader(xmlFile)))
     projectJson.toString should be(projectXml.toString)
@@ -50,7 +50,7 @@ class CliSpec extends FlatSpec with Matchers {
     val hoconFile = new File("src/test/resources/pom.conf")
 
     Cli.recurseXml(
-      "src/test/resources", (s, p) => Cli.createPomHoconFiles(s, p))
+      "src/test/resources", (s, c, p) => Cli.createPomHoconFiles(s, c, p))
     val projectHocon: Project = HoconReader.readPOM(loadConfig(hoconFile))
     val projectXml = new Project(XML.load(new FileReader(xmlFile)))
     projectHocon.toString.replaceAllLiterally("Vector(", "List(") should be(
