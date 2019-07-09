@@ -65,7 +65,7 @@ class CommentSpec extends FlatSpec with Matchers {
     pathElements0.size should be(3)
     pathElements0(0) should be(ElementLabel("project"))
     pathElements0(1) should be(ElementLabel("properties"))
-    pathElements0(2) should be(ListIndex(1))
+    pathElements0(2) should be(ListIndex(0))
 
     val Comments(s1, path1) = comments(1)
     s1.size should be(1)
@@ -76,7 +76,7 @@ class CommentSpec extends FlatSpec with Matchers {
     pathElements1.size should be(3)
     pathElements1(0) should be(ElementLabel("project"))
     pathElements1(1) should be(ElementLabel("properties"))
-    pathElements1(2) should be(ListIndex(3))
+    pathElements1(2) should be(ListIndex(0))
 
     val Comments(s12, path12) = comments(12)
     s12.size should be(1)
@@ -88,7 +88,7 @@ class CommentSpec extends FlatSpec with Matchers {
     pathElements12(2) should be(ElementLabel("plugins"))
     pathElements12(3) should be(ListIndex(9))
     pathElements12(4) should be(ElementLabel("configuration"))
-    pathElements12(5) should be(ListIndex(7))
+    pathElements12(5) should be(ListIndex(3))
   }
 
   it should "parse from Hocon" in {

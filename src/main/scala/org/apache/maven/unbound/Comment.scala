@@ -55,8 +55,9 @@ case class ListIndex(idx: Int) extends PathElement {
       case l: ConfigList => if (l.size > idx) l.get(idx) == n else false
       case o: ConfigObject =>
         val keys = o.asScala.keys
-        if (keys.size > idx) keys.toSeq(idx) == n
-        else false
+        if (keys.size > idx) {
+          o.get(keys.toSeq(idx)) == n
+        } else false
     }
 }
 
@@ -73,32 +74,50 @@ case class CommentPath(elems: PathElement*) {
           case cur: ConfigObject =>
             cur.asScala.find { case(k, v) => pe.matchConf(cur, k, v) } match {
               case Some((_, c)) => findNext(it, c) :+ cur
-              case None => Seq()
+              case None => println("no match " + cur); Seq()
             }
           case cl: ConfigList =>
             cl.asScala.find { v => pe.matchConf(cl, "", v) } match {
               case Some(c) => findNext(it, c) :+ cl
-              case None => Seq()
+              case None => println("no match list"); Seq()
             }
         }
       } else Seq(cv)
 
-    val path = findNext(elems.toIterator, conf.root())
+    val it = elems.toIterator
+    val path = findNext(it, conf.root())
     if (!path.isEmpty) {
       val relems = elems.reverse.toIterator
       // add comments to path.head
       val origin = path.head.origin().withComments(s.asJava)
+      // println(
+      // "iterating through path " + elems + " with path " +
+      // path.map { s =>
+      // s.toString.substring(0, Math.min(s.toString.size, 40))
+      //          }.mkString(", "))
       path.tail.foldLeft(path.head.withOrigin(origin)) { case(ch, par) =>
         par match {
           case cur: ConfigObject => relems.next match {
             case ElementLabel(label) => cur.withValue(label, ch)
-            case ListIndex(idx) => cur.withValue(s"[$idx]", ch)
+            case ListIndex(idx) =>
+              val keys = cur.asScala.keys.toSeq
+              if (keys.size > idx) {
+                val k = keys(idx)
+                cur.withValue(k, ch)
+              } else {
+                println("mismatch " + cur + " @ listidx=" + idx)
+                cur
+              }
           }
-          case cl: ConfigList =>
-            val idx = relems.next.asInstanceOf[ListIndex].idx
-            val lst = new java.util.ArrayList[ConfigValue](cl)
-            lst.set(idx, ch)
-            ConfigValueFactory.fromIterable(lst)
+          case cl: ConfigList => relems.next match {
+            case ListIndex(idx) =>
+              val lst = new java.util.ArrayList[ConfigValue](cl)
+              lst.set(idx, ch)
+              ConfigValueFactory.fromIterable(lst)
+            case ElementLabel(label) =>
+              println("mismatch " + label + " in " + cl)
+              cl
+          }
         }}.asInstanceOf[ConfigObject].toConfig
 
     } else conf
@@ -214,13 +233,14 @@ object CommentExtractor {
 
     def traverse(cur: Elem, path: List[Elem]): Seq[Comments] = {
       val newPath = path :+ cur
-      cur.child.zipWithIndex.flatMap { case(n, idx) => n match {
-        case e: Elem => traverse(e, newPath)
+      var elemIdx = 0
+      cur.child.flatMap { n => n match {
+        case e: Elem => elemIdx = elemIdx + 1; traverse(e, newPath)
         case c: XmlComment =>
           val newPathElems = elemPathToPath(newPath)
           Seq(Comments(
             Seq(c.commentText),
-            CommentPath((newPathElems ++ Seq(ListIndex(idx))): _*)))
+            CommentPath((newPathElems ++ Seq(ListIndex(elemIdx))): _*)))
         case _ => Seq()
       }}
     }
