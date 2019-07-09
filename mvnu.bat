@@ -5,10 +5,10 @@ set DIR=%CD%
 popd
 
 if EXIST %DIR%/unbound-1.0.0-exec.jar (
-  java -jar %DIR%/unbound-1.0.0-exec.jar %*
+  java -jar %DIR%\unbound-1.0.0-exec.jar %*
 ) ELSE (
   REM For testing in a dev environment
-  java -jar %DIR%/target/unbound-1.0.0-exec.jar %*
+  java -jar %DIR%\target\unbound-1.0.0-exec.jar %*
 )
 
 :loop 

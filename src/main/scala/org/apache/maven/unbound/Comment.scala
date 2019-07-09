@@ -79,22 +79,19 @@ case class CommentPath(elems: PathElement*) {
           case cl: ConfigList =>
             cl.asScala.find { v => pe.matchConf(cl, "", v) } match {
               case Some(c) => findNext(it, c) :+ cl
-              case None => println("no match list"); Seq()
+              case None =>
+                println("no match list " + cl + " looking for " + pe)
+                Seq()
             }
         }
       } else Seq(cv)
 
     val it = elems.toIterator
     val path = findNext(it, conf.root())
-    if (!path.isEmpty) {
+    if (!path.isEmpty && elems.size <= path.size) {
       val relems = elems.reverse.toIterator
       // add comments to path.head
       val origin = path.head.origin().withComments(s.asJava)
-      // println(
-      // "iterating through path " + elems + " with path " +
-      // path.map { s =>
-      // s.toString.substring(0, Math.min(s.toString.size, 40))
-      //          }.mkString(", "))
       path.tail.foldLeft(path.head.withOrigin(origin)) { case(ch, par) =>
         par match {
           case cur: ConfigObject => relems.next match {
@@ -220,13 +217,20 @@ object CommentExtractor {
   }
 
   protected[unbound] def isListElem(cur: Elem): Boolean = {
-    val head = cur.child.filter(_.isInstanceOf[Elem]).head
-    !cur.child.isEmpty && cur.child.tail.forall { _ match {
-      case e: Elem => e.label == head.label
-      case t: Text => t.text.trim.isEmpty
-      case c: XmlComment => true
-      case _ => false
-    }}
+    val elemChildren = cur.child.filter(_.isInstanceOf[Elem])
+    if (elemChildren.size > 1 ||
+      (1 == elemChildren.size &&
+        singular(cur.label) == elemChildren(0).label)) {
+      val head = elemChildren.head
+      elemChildren.tail.forall { _ match {
+        case e: Elem => e.label == head.label
+        case t: Text => t.text.trim.isEmpty
+        case c: XmlComment => true
+        case _ => false
+      }}
+    } else {
+      false
+    }
   }
 
   def apply(root: Elem): DocComments = {

@@ -44,7 +44,7 @@ class CommentSpec extends FlatSpec with Matchers {
     val pathElements = path.elems.toArray
     pathElements.size should be(3)
     pathElements(0) should be(ElementLabel("project"))
-    pathElements(1) should be(ListIndex(0))
+    pathElements(1) should be(ElementLabel("parent"))
     pathElements(2) should be(ListIndex(0))
   }
 

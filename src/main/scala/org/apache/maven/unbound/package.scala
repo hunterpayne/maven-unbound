@@ -248,7 +248,7 @@ package object unbound {
 
   // check return the plural form of s, currently only handles y to ies
   // special case
-  private def singular(s: String): String =
+  protected[unbound] def singular(s: String): String =
     if (s.endsWith("ies")) s.substring(0, s.length - 3) + "y"
     else s.substring(0, s.length - 1)
 
@@ -397,6 +397,7 @@ package object unbound {
                   Seq(arch.xml) ++
                   mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
                     makeElem(k, v) }
+                  /*
                 } else if (mS.keySet.find {
                   _ == SL.FilesetStr.toString }.isDefined) {
                   // a Maven fileset
@@ -404,6 +405,7 @@ package object unbound {
                   Seq(fs.xml) ++
                   mS.filter { _._1 != SL.FilesetStr.toString
                   }.map { case(k, v) => makeElem(k, v) }
+                   */
                 } else {
                   // a normal Map (ie non-string value type)
                   mS.map { case(k, v) => makeElem(k, v) }.toSeq
