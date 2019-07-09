@@ -92,7 +92,7 @@ The main functionality is finished and works.  This is beta code and ready to
 try.  Comments are only moved from XML to Hocon as that's the use case
 that makes sense.  When Hocon is translated back to XML, that's for a computer
 to consume.  And Json doesn't support comments so comments are stripped when
-useding Json POMs.
+using Json POMs.
 
 We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
 to Security CVE reports.  A basic maven site now can be generated via
@@ -100,5 +100,7 @@ to Security CVE reports.  A basic maven site now can be generated via
 
 Things left to do before its 1.0 ready:
 * test Windows installer
+* new renderer for Typesafe Config that outputs cannonical form Hocon POM files
+  - Use += for all lists so refactoring is easier
 
 Watch this space for more news.
