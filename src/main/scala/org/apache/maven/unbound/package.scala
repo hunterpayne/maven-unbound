@@ -222,10 +222,13 @@ package object unbound {
               ConfigValueFactory.fromAnyRef(toAnyRef(t.text.trim))
             else null
           case c: Comment =>
+            /*
             val epty = ConfigFactory.empty()
             val list = new java.util.ArrayList[java.lang.String]()
             list.add(c.text)
             epty.root().withOrigin(epty.origin().withComments(list))
+             */
+            null
             // unhandled
           case n: Node =>
             println("n " + n + " class " + n.getClass.getName)
@@ -238,10 +241,10 @@ package object unbound {
 
     // check if null and start recursing down the heirarchy of children
     if (elem != null) {
-      val empty = ConfigFactory.empty()
       // build each child's ConfigObject
       val childConfs =
-        elem.child.map { ch => (ch.label, appendNode(ch.label, empty, ch)) }
+        elem.child.map { ch =>
+          (ch.label, appendNode(ch.label, ConfigFactory.empty(), ch)) }
       // fold them together into 1 big Config at the paths
       childConfs.foldLeft(ConfigFactory.empty()) { case(c, (k, v)) =>
         if (v != null && !k.startsWith("#")) { c.withValue(k, v) } else c }
