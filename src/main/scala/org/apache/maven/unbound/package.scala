@@ -153,6 +153,7 @@ package object unbound {
             } else if (attrs.isEmpty && e.child.forall {
               case ele: Elem => ele.label == SL.DependencyStr.toString
               case t: Text => t.text.trim == ""
+              case c: Comment => true
               case _ => false
             }) {
               val listInJava = e.child.map {
@@ -163,6 +164,7 @@ package object unbound {
             } else if (attrs.isEmpty && e.child.forall {
               case el: Elem => el.label == SL.PropertyStr.toString
               case t: Text => t.text.trim == ""
+              case c: Comment => true
               case _ => false
             }) {
               val pairSeqInScala = (e \ SL.PropertyStr).map { el =>
@@ -176,6 +178,7 @@ package object unbound {
             } else if (attrs.isEmpty && e.child.forall {
               case el: Elem => e.label.startsWith(el.label)
               case t: Text => t.text.trim == ""
+              case c: Comment => true
               case _ => false
             }) {
               val listInJava = e.child.map {
@@ -192,6 +195,7 @@ package object unbound {
                       if (path != "") path + "." + ele.label else ele.label
                     (ele.label, appendNode(newPath, parent, ele))
                   case t: Text => (SL.TextStr.toString, null)
+                  case _ => (null, null)
                 }.filter { case(k, v) => v != null }.toMap
               val map = mapInScala.foldLeft(parent) { case(c, (k, v)) =>
                 c.withValue(k, v) }.root()

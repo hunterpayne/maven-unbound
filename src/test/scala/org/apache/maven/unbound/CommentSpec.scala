@@ -170,4 +170,34 @@ class CommentSpec extends FlatSpec with Matchers {
     val project2 = HoconReader.readPOM(config2)
     project2.toString should be(project1.toString)
   }
+
+  it should "convert XML to Hocon" in {
+
+    val root = parseXmlString(Source.fromResource("comment-bug.xml"))
+    val comments = CommentExtractor(root)
+    val project = new Project(root)
+    val hocon = ConfigFactory.parseString(JsonWriter.writeConcisePOM(project))
+    val hocon1 = comments.insertConf(hocon)
+    HoconReader.readPOM(
+      hocon1).toString.replaceAllLiterally("Vector(", "List(") should be(
+      project.toString.replaceAllLiterally("Vector(", "List("))
+
+    val root2 = parseXmlString(Source.fromResource("comment-bug2.xml"))
+    val comments2 = CommentExtractor(root2)
+    val project2 = new Project(root2)
+    val hocon2 = ConfigFactory.parseString(JsonWriter.writeConcisePOM(project2))
+    val hocon3 = comments2.insertConf(hocon2)
+    HoconReader.readPOM(
+      hocon3).toString.replaceAllLiterally("Vector(", "List(") should be(
+      project2.toString.replaceAllLiterally("Vector(", "List("))
+
+    val root3 = parseXmlString(Source.fromResource("comment-bug3.xml"))
+    val comments3 = CommentExtractor(root3)
+    val project3 = new Project(root3)
+    val hocon4 = ConfigFactory.parseString(JsonWriter.writeConcisePOM(project3))
+    val hocon5 = comments3.insertConf(hocon4)
+    HoconReader.readPOM(
+      hocon5).toString.replaceAllLiterally("Vector(", "List(") should be(
+      project3.toString.replaceAllLiterally("Vector(", "List("))
+  }
 }

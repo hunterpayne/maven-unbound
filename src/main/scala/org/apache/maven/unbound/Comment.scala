@@ -17,6 +17,7 @@
 
 package org.apache.maven.unbound
 
+import scala.compat.Platform.EOL
 import scala.xml.{ Comment => XmlComment, Elem, Node, Null, Text, TopScope }
 
 import com.typesafe.config.{
@@ -74,7 +75,9 @@ case class CommentPath(elems: PathElement*) {
           case cur: ConfigObject =>
             cur.asScala.find { case(k, v) => pe.matchConf(cur, k, v) } match {
               case Some((_, c)) => findNext(it, c) :+ cur
-              case None => println("no match " + cur); Seq()
+              case None =>
+                println("no match " + cur + " looking for " + pe)
+                Seq()
             }
           case cl: ConfigList =>
             cl.asScala.find { v => pe.matchConf(cl, "", v) } match {
@@ -238,12 +241,16 @@ object CommentExtractor {
     def traverse(cur: Elem, path: List[Elem]): Seq[Comments] = {
       val newPath = path :+ cur
       var elemIdx = 0
+      val numElems = cur.child.filter(_.isInstanceOf[Elem]).size
       cur.child.flatMap { n => n match {
-        case e: Elem => elemIdx = elemIdx + 1; traverse(e, newPath)
+        case e: Elem =>
+          elemIdx = Math.min(elemIdx + 1, numElems - 1)
+          traverse(e, newPath)
         case c: XmlComment =>
           val newPathElems = elemPathToPath(newPath)
+          val comments = c.commentText.split(Array('\n', '\r'))
           Seq(Comments(
-            Seq(c.commentText),
+            comments.toSeq,
             CommentPath((newPathElems ++ Seq(ListIndex(elemIdx))): _*)))
         case _ => Seq()
       }}
