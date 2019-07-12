@@ -374,7 +374,8 @@ package object unbound {
                 }.toSeq
               } else if (mS.values.forall { v =>
                 v.valueType() == ConfigValueType.STRING }) {
-                if (mS.keySet.forall { isDependencyProperty(_) }) {
+                if (!mS.isEmpty &&
+                  mS.keySet.forall { isDependencyProperty(_) }) {
                   // a Dependency object (for configurations)
                   elemKey = SL.DependencyStr
                   mS.map { case(k, v) => new Elem(
