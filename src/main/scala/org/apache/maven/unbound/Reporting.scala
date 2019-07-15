@@ -172,7 +172,7 @@ case class ReportPlugin(
     reportSets.foreach { rs => plugin.addReportSet(rs.makeModelObject()) }
     if (configuration != null) {
       val xmlStr =
-        (new Writeable {
+        (new Writable {
           val xml: Elem = configToElem(configuration)
         }).toXmlString
       val sReader = new StringReader(xmlStr)
@@ -247,7 +247,7 @@ case class ReportSet(
     rs.setInherited(if (inherited) SL.TrueStr else SL.FalseStr)
     if (configuration != null) {
       val xmlStr =
-        (new Writeable {
+        (new Writable {
           val xml: Elem = configToElem(configuration)
         }).toXmlString
       val sReader = new StringReader(xmlStr)

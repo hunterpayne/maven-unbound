@@ -118,21 +118,22 @@ case class Dependency(
   }
 }
 
-case class Exclusion(groupId: String, artifactId: String) {
+case class Exclusion(groupId: String = null, artifactId: String = null) {
 
   def this(elem: Elem) = this(
     emptyToNull((elem \ SL.GroupId).text),
     emptyToNull((elem \ SL.ArtifactId).text))
 
-  lazy val xml = <exclusion>
-                   <groupId>{groupId}</groupId>
-                   <artifactId>{artifactId}</artifactId>
-                 </exclusion>
+  lazy val xml =
+    <exclusion>
+      { if (groupId != null) <groupId>{groupId}</groupId> }
+      { if (artifactId != null) <artifactId>{artifactId}</artifactId> }
+    </exclusion>
 
   def makeModelObject(): org.apache.maven.model.Exclusion = {
     val exclusion = new org.apache.maven.model.Exclusion()
-    exclusion.setGroupId(groupId)
-    exclusion.setArtifactId(artifactId)
+    if (groupId != null) exclusion.setGroupId(groupId)
+    if (artifactId != null) exclusion.setArtifactId(artifactId)
     exclusion
   }
 }

@@ -55,7 +55,8 @@ object Cli {
       new FileOutputStream(new File(at + hoconFileName)), "UTF-8")
     val options = ConfigRenderOptions.defaults().setOriginComments(false)
     try {
-      writer.write(hocon2.root().render(options))
+      // writer.write(hocon2.root().render(options))
+      writer.write(project.generateConf(comments))
       writer.flush()
       println(s"generated ${at}${hoconFileName} from ${at}${xmlFileName}")
     } finally {
@@ -165,7 +166,7 @@ object Cli {
       if (false) { // if to write comments or not
         val comments = CommentExtractor(config)
         try {
-          (new Writeable {
+          (new Writable {
             val xml = comments.insertXml(project.xml)
           }).writePOM(s + xmlFileName)
           println(s"generated ${s}${xmlFileName} from ${s}${hoconFileName}")

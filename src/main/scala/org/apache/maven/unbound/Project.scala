@@ -119,7 +119,7 @@ case class Project(
   childInheritUrl: Boolean = true,
   modelVersion: String = SL.DefaultModelVersion,
   parent: Parent = null,
-  groupId: String, artifactId: String, version: String,
+  groupId: String = null, artifactId: String = null, version: String = null,
   packaging: String = SL.JarStr, name: String = null,
   description: String = null, url: String = null, inceptionYear: String = null,
   organization: Organization = null,
@@ -137,7 +137,7 @@ case class Project(
   pluginRepositories: Seq[Repository] = Seq[Repository](),
   build: Build = null, reporting: Reporting = null,
   profiles: Seq[Profile] = Seq[Profile]())
-    extends Writeable with HoconProjectReader {
+    extends Writable with HoconProjectReader {
 
   def this(elem: Elem) = this(
     emptyToDefaultBool((elem \@ SL.ChildInheritProjectFP).trim, true),
@@ -195,10 +195,11 @@ case class Project(
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
       <modelVersion>{modelVersion}</modelVersion>
       { if (parent != null) parent.xml }
-      <groupId>{groupId}</groupId>
-      <artifactId>{artifactId}</artifactId>
-      <version>{version}</version>
-      <packaging>{packaging}</packaging>
+      { if (groupId != null) <groupId>{groupId}</groupId> }
+      { if (artifactId != null) <artifactId>{artifactId}</artifactId> }
+      { if (version != null) <version>{version}</version> }
+      { if (packaging != null && packaging != SL.JarStr.toString)
+        <packaging>{packaging}</packaging> }
       { if (name != null) <name>{name}</name> }
       { if (description != null) <description>{description}</description> }
       { if (url != null) <url>{url}</url> }
@@ -293,5 +294,14 @@ case class Project(
     if (reporting != null) model.setReporting(reporting.makeModelObject())
     profiles.foreach { pro => model.addProfile(pro.makeModelObject()) }
     model
+  }
+
+  import scala.reflect.classTag
+
+  override val keyName = "project"
+
+  def generateConf(comments: DocComments): String = {
+    implicit val ct = classTag[Project]
+    instanceToString[Project](this, comments)
   }
 }

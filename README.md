@@ -100,7 +100,6 @@ to Security CVE reports.  A basic maven site now can be generated via
 
 Things left to do before its 1.0 ready:
 * test Windows installer
-* new renderer for Typesafe Config that outputs cannonical form Hocon POM files
-  - Use += for all lists so refactoring is easier
+* better comments and use cases for site
 
 Watch this space for more news.

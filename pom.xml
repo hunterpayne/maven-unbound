@@ -65,19 +65,11 @@
     <!-- Resource identity sequence. -->
 <!--    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> -->
     <maven.build.timestamp.format></maven.build.timestamp.format>
-    
-    <!-- Streaming release version. -->
-    <release.epoch>1.0.0</release.epoch>
-    <release.stamp>${maven.build.timestamp}</release.stamp>
-    <revision>${release.epoch}</revision>
 
-    <!-- Must override in each cross-version module. -->
-    <version.scala.simple.epoch>2.12</version.scala.simple.epoch>
+    <!-- Sets the version of Scala used -->
     <version.scala.epoch>2.12</version.scala.epoch>
     <version.scala.release>2.12.8</version.scala.release>
-    
-    <version.scala.plugin.macro>2.1.1</version.scala.plugin.macro>
-    
+
     <!-- Java epoch. -->
     <version.java>1.8</version.java>
     <!-- Used by M2E. -->
@@ -89,7 +81,7 @@
 
     <!-- File format. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    
+
   </properties>
 
   <dependencies>
@@ -97,12 +89,16 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>${version.scala.release}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.scala-lang.modules</groupId>
       <artifactId>scala-xml_${version.scala.epoch}</artifactId>
       <version>1.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-reflect</artifactId>
+      <version>${version.scala.release}</version>
     </dependency>
     <dependency>
       <groupId>com.iheart</groupId>
@@ -188,7 +184,6 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <minimizeJar>true</minimizeJar>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>org.apache.maven.unbound.Cli</mainClass>

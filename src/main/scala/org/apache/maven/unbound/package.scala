@@ -399,39 +399,47 @@ package object unbound {
                         null, k, Null, TopScope, Text(removeQuotes(v.render())))
                   }.toSeq
                 } else if (mS.keySet.find {
-                  _ == SL.Archive.toString }.isDefined) {
+                  _ == SL.Archive.toString }.isDefined &&
+                  !mS.keySet.find {
+                    _ == SL.AttributeKeys.toString }.isDefined) {
                   // a Maven archiver
                   val arch = HoconReader.readArchiver(m.toConfig())
                   Seq(arch.xml) ++
                   mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
                     makeElem(k, v) }
-                  /*
+
                 } else if (mS.keySet.find {
-                  _ == SL.FilesetStr.toString }.isDefined) {
+                  _ == SL.FilesetStr.toString }.isDefined &&
+                   !mS.keySet.find {
+                     _ == SL.AttributeKeys.toString }.isDefined) {
                   // a Maven fileset
                   val fs = HoconReader.readFileset(m.toConfig())
                   Seq(fs.xml) ++
                   mS.filter { _._1 != SL.FilesetStr.toString
                   }.map { case(k, v) => makeElem(k, v) }
-                   */
+
                 } else {
                   // a normal Map (ie non-string value type)
                   mS.map { case(k, v) => makeElem(k, v) }.toSeq
                 }
               } else if (mS.keySet.find {
-                _ == SL.Archive.toString }.isDefined) {
+                _ == SL.Archive.toString }.isDefined &&
+                !mS.keySet.find { _ == SL.AttributeKeys.toString }.isDefined) {
                 // a Maven archiver
                 val arch = HoconReader.readArchiver(m.toConfig())
                 Seq(arch.xml) ++
                 mS.filter { _._1 != SL.Archive.toString }.map { case(k, v) =>
                   makeElem(k, v) }
+
               } else if (mS.keySet.find {
-                _ == SL.FilesetStr.toString }.isDefined) {
+                _ == SL.FilesetStr.toString }.isDefined &&
+                !mS.keySet.find { _ == SL.AttributeKeys.toString }.isDefined) {
                 // a Maven fileset
                 val fs = HoconReader.readFileset(m.toConfig())
                 Seq(fs.xml) ++
                 mS.filter { _._1 != SL.FilesetStr.toString }.map { case(k, v) =>
                   makeElem(k, v) }
+
               } else {
                 // look for attributeKeys and if its present make those
                 // children into attributes instead of elements

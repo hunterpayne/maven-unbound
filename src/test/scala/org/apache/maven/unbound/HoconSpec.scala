@@ -224,7 +224,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   <groupId>org.example</groupId>
   <artifactId>jpademo</artifactId>
   <version>1.0</version>
-  <packaging>jar</packaging>
   <name>jpademo</name>
   <url>http://maven.apache.org</url>
   <scm>
@@ -430,7 +429,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   <groupId>org.apache.maven.lifecycle.test</groupId>
   <artifactId>mojo-configuration</artifactId>
   <version>1.0</version>
-  <packaging>jar</packaging>
   <name>project-with-additional-lifecycle-elements</name>
   <url>http://maven.apache.org</url>
   <developers>
@@ -1190,7 +1188,6 @@ xmlns="http://maven.apache.org/POM/4.0.0">
   <groupId>org.apache.maven.lifecycle.test</groupId>
   <artifactId>mojo-configuration</artifactId>
   <version>1.0</version>
-  <packaging>jar</packaging>
   <name>project-with-additional-lifecycle-elements</name>
   <url>http://maven.apache.org</url>
   <organization>

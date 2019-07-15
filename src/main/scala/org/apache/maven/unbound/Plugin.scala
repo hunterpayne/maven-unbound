@@ -122,7 +122,7 @@ case class Plugin(
     plugin.setInherited(inherited)
     if (configuration != null) {
       val xmlStr =
-        (new Writeable {
+        (new Writable {
           val xml: Elem = configToElem(configuration)
         }).toXmlString
       val sReader = new StringReader(xmlStr)
@@ -203,7 +203,7 @@ case class Execution(
     exec.setInherited(inherited)
     if (configuration != null) {
       val xmlStr =
-        (new Writeable {
+        (new Writable {
           val xml: Elem = configToElem(configuration)
         }).toXmlString
       val sReader = new StringReader(xmlStr)

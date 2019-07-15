@@ -151,7 +151,6 @@ trait JsonProjectAPI extends JsonMethods with CommonJsonReader {
     new Contributor.ContributorSerializer +
     new Developer.DeveloperSerializer +
     new MailingList.MailingListSerializer +
-    new Parent.ParentSerializer +
     new License.LicenseSerializer +
     new Scm.ScmSerializer +
     new IssueManagement.IssueManagementSerializer +
