@@ -4,7 +4,7 @@
     "artifactId":"unbound",
     "version":"1.0.0",
     "name":"Unbound",
-    "description":"Maven Unbound is a file level translator of Apache Maven POM files to and\n    from JSON and HOCON POM formats.  It provides both a library to support\n    these translations and a command line interface to translate between\n    XML, JSON and HOCON formats of POMs.  The CLI can be called with\n    the mvnu script in this directory.  \n    \u2013\u2013generate\u2013hocon and \n    \u2013\u2013generate\u2013json command line flags are added to\n    translate a Maven project from XML to JSON and/or HOCON.  Then mvnu can\n    be called just like mvn can but the JSON or HOCON POM files will generate\n    pom.xml files on the fly which will in turn be built using Maven.",
+    "description":"Maven Unbound is a file level translator of Apache Maven POM files to and\n    from JSON and HOCON POM formats.  It provides both a library to support\n    these translations and a command line interface to translate between\n    XML, JSON and HOCON formats of POMs.  The CLI can be called with\n    the mvnu script in this directory.  \n    --generate-hocon and \n    --generate-json command line flags are added to\n    translate a Maven project from XML to JSON and/or HOCON.  Then mvnu can\n    be called just like mvn can but the JSON or HOCON POM files will generate\n    pom.xml files on the fly which will in turn be built using Maven.",
     "url":"https://github.com/hunterpayne/maven-unbound",
     "inceptionYear":"2019",
     "licenses":[
