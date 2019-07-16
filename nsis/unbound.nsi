@@ -67,14 +67,15 @@ Section "Install"
   ;Add files
   SetOutPath "$INSTDIR"
  
-  File "../LICENSE"
-  file "../mvnu.bat"
-  file "../target/unbound-1.0.0-exec.jar"
+  File "PathEd.exe"
+  File "..\\LICENSE"
+  File "..\\mvnu.bat"
+  File "..\\target\\unbound-1.0.0-exec.jar"
  
-  ;create desktop shortcut
-  ;CreateShortCut "$DESKTOP\${PRODUCT}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""
+  ; Add the installation folder to the system PATH -> to enable grr.exe
+  ExecWait '$INSTDIR\PathEd.exe add "$INSTDIR"' ; put the path in quotes because of possible spaces
  
-  ;write uninstall information to the registry
+  ; write uninstall information to the registry
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayName" "${PRODUCT} (remove only)"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "UninstallString" "$INSTDIR\Uninstall.exe"
  
@@ -86,17 +87,17 @@ SectionEnd
 ;--------------------------------    
 ;Uninstaller Section  
 Section "Uninstall"
+
+  ; Remove the installation folder from the system PATH -> was required for grr.exe
+  ExecWait '$INSTDIR\PathEd.exe remove "$INSTDIR"' 
  
-  ;Delete Files 
+  ; Delete Files 
   RMDir /r "$INSTDIR\*.*"    
  
-  ;Remove the installation directory
+  ; Remove the installation directory
   RMDir "$INSTDIR"
  
-  ;Delete Start Menu Shortcuts
-  ;Delete "$DESKTOP\${PRODUCT}.lnk"
- 
-  ;Delete Uninstaller And Unistall Registry Entries
+  ; Delete Uninstaller And Unistall Registry Entries
   DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\${PRODUCT}"
   DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}"  
  
