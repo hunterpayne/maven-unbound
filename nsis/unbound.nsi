@@ -1,7 +1,7 @@
 ; -------------------------------
 ; Start
  
- 
+  Name "Maven Unbound Installer" 
   !define PRODUCT "Maven Unbound"
   !define MUI_FILE "unbound"
   !define VERSION "1.0.0"
@@ -14,7 +14,6 @@
 ;---------------------------------
 ;General
  
-;  OutFile "unbound-1.0.0.exe"
   ShowInstDetails "nevershow"
   ShowUninstDetails "nevershow"
   ;SetCompressor "bzip2"
@@ -57,7 +56,7 @@
 ;--------------------------------
 ;Data
  
-  LicenseData "../LICENSE"
+  LicenseData "..\\LICENSE"
  
  
 ;-------------------------------- 
@@ -73,7 +72,8 @@ Section "Install"
   File "..\\target\\unbound-1.0.0-exec.jar"
  
   ; Add the installation folder to the system PATH -> to enable grr.exe
-  ExecWait '$INSTDIR\PathEd.exe add "$INSTDIR"' ; put the path in quotes because of possible spaces
+  ; put the path in quotes because of spaces
+  ExecWait '$INSTDIR\PathEd.exe add "$INSTDIR"' 
  
   ; write uninstall information to the registry
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayName" "${PRODUCT} (remove only)"
@@ -88,7 +88,7 @@ SectionEnd
 ;Uninstaller Section  
 Section "Uninstall"
 
-  ; Remove the installation folder from the system PATH -> was required for grr.exe
+  ; Remove the installation folder from the system PATH -> was required for mvnu.bat
   ExecWait '$INSTDIR\PathEd.exe remove "$INSTDIR"' 
  
   ; Delete Files 
@@ -110,9 +110,8 @@ SectionEnd
  
 ;Function that calls a messagebox when installation finished correctly
 Function .onInstSuccess
-  MessageBox MB_OK "You have successfully installed ${PRODUCT}. Use the desktop icon to start the program."
+  MessageBox MB_OK "You have successfully installed ${PRODUCT}.  mvnu is now in your path"
 FunctionEnd
- 
  
 Function un.onUninstSuccess
   MessageBox MB_OK "You have successfully uninstalled ${PRODUCT}."
