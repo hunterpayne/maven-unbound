@@ -88,7 +88,7 @@ to and from Xml and Json and read from Hocon.
 
 ## Is it ready to use?
 
-The main functionality is finished and works.  This is beta code and ready to 
+All functionality is finished and works.  This is beta code and ready to 
 try.  Comments are only moved from XML to Hocon as that's the use case
 that makes sense.  When Hocon is translated back to XML, that's for a computer
 to consume.  And Json doesn't support comments so comments are stripped when
