@@ -99,7 +99,6 @@ to Security CVE reports.  A basic maven site now can be generated via
 ```mvn site```
 
 Things left to do before its 1.0 ready:
-* test Windows installer
-* better comments and use cases for site
+* better docs and use cases for site
 
 Watch this space for more news.

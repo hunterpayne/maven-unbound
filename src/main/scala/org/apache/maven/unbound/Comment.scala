@@ -21,7 +21,7 @@ import scala.compat.Platform.EOL
 import scala.xml.{ Comment => XmlComment, Elem, Node, Null, Text, TopScope }
 
 import com.typesafe.config.{
-  Config, ConfigList, ConfigObject, ConfigValue, ConfigValueFactory }
+  Config, ConfigList, ConfigObject, ConfigValue, ConfigValueFactory, ConfigValueType }
 
 sealed trait PathElement {
 
@@ -82,6 +82,13 @@ case class CommentPath(elems: PathElement*) {
           case cl: ConfigList =>
             cl.asScala.find { v => pe.matchConf(cl, "", v) } match {
               case Some(c) => findNext(it, c) :+ cl
+              // special case to deal with lists that are empty but contain
+              // comments and so their path has an extra ListIndex(0) on
+              // the end which we consume here
+              case None if (pe == ListIndex(0) && cl.isEmpty && !it.hasNext) =>
+                Seq(cl)
+              // special case for comments after the last element of a list
+              case None if (pe == ListIndex(cl.size) && !it.hasNext) => Seq(cl)
               case None =>
                 println("no match list " + cl + " looking for " + pe)
                 Seq()
@@ -93,34 +100,62 @@ case class CommentPath(elems: PathElement*) {
     val path = findNext(it, conf.root())
     if (!path.isEmpty && elems.size <= path.size) {
       val relems = elems.reverse.toIterator
-      // add comments to path.head
-      val origin = path.head.origin().withComments(s.asJava)
-      path.tail.foldLeft(path.head.withOrigin(origin)) { case(ch, par) =>
-        par match {
-          case cur: ConfigObject => relems.next match {
-            case ElementLabel(label) => cur.withValue(label, ch)
-            case ListIndex(idx) =>
-              val keys = cur.asScala.keys.toSeq
-              if (keys.size > idx) {
-                val k = keys(idx)
-                cur.withValue(k, ch)
-              } else {
-                println("mismatch " + cur + " @ listidx=" + idx)
-                cur
-              }
-          }
-          case cl: ConfigList => relems.next match {
-            case ListIndex(idx) =>
-              val lst = new java.util.ArrayList[ConfigValue](cl)
-              lst.set(idx, ch)
-              ConfigValueFactory.fromIterable(lst)
-            case ElementLabel(label) =>
-              println("mismatch " + label + " in " + cl)
-              cl
-          }
-        }}.asInstanceOf[ConfigObject].toConfig
 
-    } else conf
+      // println("for elems " + elems + " path size " + path.size)
+      // println(
+      //  "paths " + path.map { s =>
+      //    val str = s.toString
+      //    if (str.size > 60) str.substring(0, 60) else str }.mkString(","))
+
+      // add comments to path.head
+      val oldComments = path.head.origin().comments().asScala
+      val origin = path.head.origin().withComments((oldComments ++ s).asJava)
+      // println("origin " + origin.comments.asScala.mkString)
+      path.tail.foldLeft(path.head.withOrigin(origin)) { case(ch, par) =>
+        (if (relems.hasNext) {
+          par match {
+            case cur: ConfigObject => relems.next match {
+              case ElementLabel(label) => cur.withValue(label, ch)
+              case ListIndex(idx) =>
+                // special case to deal with lists that are empty but contain
+                // comments and so their path has an extra ListIndex(0) on
+                // the end which we consume here
+                if (ch.valueType() == ConfigValueType.LIST &&
+                  relems.hasNext && ch.asInstanceOf[ConfigList].isEmpty) {
+                  // println("special zero " + ch)
+                  relems.next match {
+                    case ElementLabel(lbl) => cur.withValue(lbl, ch)
+                    case _ =>
+                      println("mismatch " + cur + " @ listidx=" + idx)
+                      cur
+                  }
+                } else {
+                  val keys = cur.asScala.keys.toSeq
+                  if (keys.size > idx) {
+                    val k = keys(idx)
+                    cur.withValue(k, ch)
+                  } else {
+                    println("mismatch " + cur + " @ listidx=" + idx)
+                    cur
+                  }
+                }
+            }
+            case cl: ConfigList => relems.next match {
+              case ListIndex(idx) =>
+                val lst = new java.util.ArrayList[ConfigValue](cl)
+                lst.set(idx, ch)
+                ConfigValueFactory.fromIterable(lst)
+              case ElementLabel(label) =>
+                println("mismatch " + label + " in " + cl + " elems " + elems)
+                cl
+            }
+          }
+        } else {
+          par
+        })}.asInstanceOf[ConfigObject].toConfig
+    } else {
+      conf
+    }
   }
 
   def insertXml(s: Seq[String], root: Elem): Elem = {
@@ -241,17 +276,33 @@ object CommentExtractor {
     def traverse(cur: Elem, path: List[Elem]): Seq[Comments] = {
       val newPath = path :+ cur
       var elemIdx = 0
+      var lastLabel: String = null
+      val elements = cur.child.filter { _.isInstanceOf[Elem] }
+      val nextLabels: Map[String, String] =
+        if (elements.size > 1)
+          elements.map { _.label }.sliding(2).map { s => (s(0), s(1)) }.toMap
+        else Map[String, String]()
+      val isList = isListElem(cur)
       val numElems = cur.child.filter(_.isInstanceOf[Elem]).size
       cur.child.flatMap { n => n match {
         case e: Elem =>
           elemIdx = Math.min(elemIdx + 1, numElems - 1)
+          lastLabel = e.label
           traverse(e, newPath)
         case c: XmlComment =>
           val newPathElems = elemPathToPath(newPath)
           val comments = c.commentText.split(Array('\n', '\r'))
-          Seq(Comments(
+          // dependencies are always in lists and the string dependency is never
+          // a key
+          if (null == lastLabel || isList ||
+            lastLabel == SL.DependencyStr.toString)
+            Seq(Comments(
+              comments.toSeq,
+              CommentPath((newPathElems ++ Seq(ListIndex(elemIdx))): _*)))
+          else Seq(Comments(
             comments.toSeq,
-            CommentPath((newPathElems ++ Seq(ListIndex(elemIdx))): _*)))
+            CommentPath((newPathElems ++ Seq(ElementLabel(
+              nextLabels.getOrElse(lastLabel, lastLabel)))): _*)))
         case _ => Seq()
       }}
     }

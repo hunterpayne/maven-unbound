@@ -88,7 +88,7 @@ class CommentSpec extends FlatSpec with Matchers {
     pathElements12(2) should be(ElementLabel("plugins"))
     pathElements12(3) should be(ListIndex(9))
     pathElements12(4) should be(ElementLabel("configuration"))
-    pathElements12(5) should be(ListIndex(3))
+    pathElements12(5) should be(ElementLabel("packager"))
   }
 
   it should "parse from Hocon" in {

@@ -293,6 +293,18 @@ trait Writable {
 
         case "Seq[String]" =>
           val lst = value.asInstanceOf[Seq[String]]
+          // get comments that are interspearsed in the list of strings in XML
+          comments.comments.filter { comment =>
+            comment.path.elems.toList.startsWith(currPath) &&
+            currPath.size < comment.path.elems.size }.foreach {
+            case comment: Comments =>
+              comment.s.foreach { str =>
+                sb.append(spacer * (depth + 1))
+                sb.append("# ")
+                sb.append(str)
+                sb.append("\n")
+              }
+          }
           if (!lst.isEmpty) {
             writeKey(key)
             sb.append(" = [ ")
@@ -373,7 +385,7 @@ trait Writable {
             val innerClassname = mapClz.substring(11, mapClz.length - 1)
             sb.append(" {\n")
             objMap.foreach { case(k, v) =>
-              val keyPath = currPath ::: List(ElementLabel(key))
+              val keyPath = currPath ::: List(ElementLabel(k))
               insertComments(keyPath, depth + 2)
               sb.append(k)
               sb.append(" = ")
@@ -393,14 +405,16 @@ trait Writable {
             // val rendered = conf.root().render(options)
             // need to take off the first currPath.size PathElements off the
             // paths b/c otherwise the comment insertion doesn't work
-            val rendered =
+            val filteredComments =
               DocComments(comments.comments.flatMap { case comment: Comments =>
                 if (comment.path.elems.toList.startsWith(currPath)) {
                   val cPath = comment.path.elems.toSeq
                   val suffixPath = cPath.slice(currPath.size, cPath.size)
                   Some(Comments(comment.s, CommentPath(suffixPath: _*)))
                 } else None
-              }).insertConf(conf).root().render(options)
+              })
+            val rendered =
+              filteredComments.insertConf(conf).root().render(options)
 
             sb.append(
               rendered.split('\n').mkString("\n" + (spacer * (1 + depth))))

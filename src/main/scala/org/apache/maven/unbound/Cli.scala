@@ -50,7 +50,7 @@ object Cli {
     at: String, comments: DocComments, project: Project): Unit = {
 
     val hocon = ConfigFactory.parseString(JsonWriter.writeConcisePOM(project))
-    val hocon2 = comments.insertConf(hocon)
+    // val hocon2 = comments.insertConf(hocon)
     val writer = new OutputStreamWriter(
       new FileOutputStream(new File(at + hoconFileName)), "UTF-8")
     val options = ConfigRenderOptions.defaults().setOriginComments(false)
