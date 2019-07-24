@@ -97,9 +97,8 @@ that makes sense.  When Hocon is translated back to XML, that's for a computer
 to consume.  And Json doesn't support comments so comments are stripped when
 using Json POMs.
 
-We have FindBugs, Scoverage, and Scalastyle reporting in place now.  In addition
-to Security CVE reports.  A basic maven site now can be generated via
-```mvn site```
+We have FindBugs, Scoverage, Scalastyle, and CVE reports reporting.  
+The Unbound web site now can be generated via ```mvn site```
 
 Things left to do before its 1.0 ready:
 * better docs and use cases for site
