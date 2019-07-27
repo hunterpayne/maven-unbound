@@ -229,8 +229,7 @@ would become
 ```                
 transformers = [
   {
-    implementation = "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"
-    mainClass = "org.apache.maven.unbound.Cli"
+    implementation = "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer", mainClass = "org.apache.maven.unbound.Cli"
   }
 ]
 ```
@@ -283,9 +282,7 @@ Here is the XML:
 ```
 becomes in Hocon:
 ```
-fileset {
-  directory = "src/main/java", outputDirectory = "target/classes", includes = [ "*.java" ]
-}
+fileset { directory = "src/main/java", outputDirectory = "target/classes", includes = [ "*.java" ] }
 ```
 
 
@@ -365,8 +362,7 @@ uses shade to create an executable jar.
           configuration {
             minimizeJar = true, shadedArtifactAttached = true, shadedClassifierName = "exec"
             transformers = [ {
-                implementation = "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"
-                mainClass = "org.apache.maven.unbound.Cli"
+                implementation = "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer", mainClass = "org.apache.maven.unbound.Cli"
             } ]
           }
           goals = [ "shade" ], phase = "package"
