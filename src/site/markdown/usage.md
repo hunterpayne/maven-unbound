@@ -227,11 +227,7 @@ of a piece of XML that configures a Transformer
 ```
 would become
 ```                
-transformers = [
-  {
-    implementation = "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer", mainClass = "org.apache.maven.unbound.Cli"
-  }
-]
+transformers = [ { implementation = "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer", mainClass = "org.apache.maven.unbound.Cli" } ]
 ```
 Note the only change in usual behavior is that the implementation entry 
 becomes a XML attribute.  Since this is a special case, you don't have to add
