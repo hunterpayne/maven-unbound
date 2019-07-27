@@ -23,36 +23,23 @@ scalaCompile.conf could be
 ```
 dependencies = [
   {
-    groupId = "org.scala-lang"
-    artifactId = "scala-library"
-    version = "${versionScalaRelease}"
-    scope = "compile"
+    groupId = "org.scala-lang", artifactId = "scala-library"
+    version = "${versionScalaRelease}", scope = "compile"
   }
 ]
 build {
   plugins = [
     {
-      groupId = "org.apache.maven.plugins"
-      artifactId = "maven-compiler-plugin"
+      groupId = "org.apache.maven.plugins", artifactId = "maven-compiler-plugin"
       version = "3.7.0"
-      configuration {
-        skip = true
-        skipMain = true
-      }
+      configuration { skip = true, skipMain = true }
     }
     {
-      groupId = "net.alchim31.maven"
-      artifactId = "scala-maven-plugin"
+      groupId = "net.alchim31.maven", artifactId = "scala-maven-plugin"
       version = "4.0.2"
-      configuration {
-        scalaVersion = "${versionScalaRelease}"
-      }
-      executions = [
-        {
-          goals = [ "compile", "testCompile" ]
-        }
-      ]
-     }
+      configuration { scalaVersion = "${versionScalaRelease}" }
+      executions = [ { goals = [ "compile", "testCompile" ] } ]
+    }
   ]
 }
 ```
@@ -62,9 +49,7 @@ and then in your pom.conf file you have
 {
   project {
     artifactId = "my-sub-module"
-    properties {
-      versionScalaRelease = "2.12.8"
-    }
+    properties { versionScalaRelease = "2.12.8" }
     include "scalaCompile.conf"
   }
 }
@@ -84,10 +69,7 @@ structures can be thought of as a Map from String to Any.  So the key of the
 map is the label of the child XML node.  So:
 
 ```
-parent {
-  groupId = "bar"
-  artifactId = "foo"
-}
+parent { groupId = "bar", artifactId = "foo" }
 ```
 becomes
 ```
@@ -280,10 +262,7 @@ which becomes
 ```
 archive {
   manifestFile = "src/main/resources/Manifest.txt"
-  manifest {
-    addClasspath = true
-    mainClass = "com.footballradar.jpademo.App"
-  }
+  manifest { addClasspath = true, mainClass = "com.footballradar.jpademo.App" }
 }
 ```
 
@@ -305,9 +284,7 @@ Here is the XML:
 becomes in Hocon:
 ```
 fileset {
-  directory = "src/main/java"
-  outputDirectory = "target/classes"
-  includes = [ "*.java" ]
+  directory = "src/main/java", outputDirectory = "target/classes", includes = [ "*.java" ]
 }
 ```
 
@@ -319,20 +296,8 @@ have lists of dependencies in their configuration sections.  When a Hocon object
 is composed entirely of keys that match the keys of a dependency object, the
 Hocon will be translated into XML in the following way:
 ```
-defineBridge = [
-  {
-    groupId = "org.scala-sbt",
-    artifactId = "compiler-bridge_${version.scala.epoch}",
-    version = "${version.scala.zinc}"
-  }
-]
-defineCompiler = [
-  {
-    groupId = "org.scala-lang",
-    artifactId = "scala-compiler",
-    version = "${version.scala.release}"
-  }
-]
+defineBridge = [ { groupId = "org.scala-sbt", artifactId = "compiler-bridge_${version.scala.epoch}", version = "${version.scala.zinc}" } ]
+defineCompiler = [ { groupId = "org.scala-lang", artifactId = "scala-compiler", version = "${version.scala.release}" } ]
 ```
 becomes
 ```
@@ -365,38 +330,14 @@ Here is an example of a simple Hocon POM file that builds a libarary jar.
 ```
 {
   project {
-    groupId = "my-group"
-    artifactId = "unbound-lib"
-    properties {
-      versionScalaRelease = "2.12.8"
-    }
+    groupId = "my-group", artifactId = "unbound-lib"
+    properties { versionScalaRelease = "2.12.8" }
     # from example in the beginning of this page
     include "scalaCompile.conf"
-    dependencies +=
-      {
-        artifactId = "scala-xml_${version.scala.epoch}"
-        groupId = "org.scala-lang.modules"
-        version = "1.2.0"
-      }
-    dependencies +=
-      {
-        artifactId = "ficus_${version.scala.epoch}"
-        groupId = "com.iheart"
-        version = "1.4.6"
-      }
-    dependencies +=
-      {
-        artifactId = "json4s-native_${version.scala.epoch}"
-        groupId = "org.json4s"
-        version = "3.6.6"
-      }
-    dependencies +=
-      {
-        artifactId = "scalatest_${version.scala.epoch}"
-        groupId = "org.scalatest"
-        scope = "test"
-        version = "${version.scalatest}"
-      }
+    dependencies += { artifactId = "scala-xml_${version.scala.epoch}", groupId = "org.scala-lang.modules", version = "1.2.0" },
+    dependencies += { artifactId = "ficus_${version.scala.epoch}", groupId = "com.iheart", version = "1.4.6" }
+    dependencies += { artifactId = "json4s-native_${version.scala.epoch}", groupId = "org.json4s", version = "3.6.6" }
+    dependencies += { artifactId = "scalatest_${version.scala.epoch}", groupId = "org.scalatest", scope = "test", version = "${version.scalatest}" }
   }
 }
 ```
@@ -408,73 +349,29 @@ uses shade to create an executable jar.
 {
   project {
     artifactId = "unbound"
-    properties {
-      versionScalaRelease = "2.12.8"
-    }
+    properties { versionScalaRelease = "2.12.8" }
     # from example in the beginning of this page
     include "scalaCompile.conf"
-    dependencies +=
-      {
-        artifactId = "scala-xml_${version.scala.epoch}"
-        groupId = "org.scala-lang.modules"
-        version = "1.2.0"
-      }
-    dependencies +=
-      {
-        artifactId = "ficus_${version.scala.epoch}"
-        groupId = "com.iheart"
-        version = "1.4.6"
-      }
-    dependencies +=
-      {
-        artifactId = "json4s-native_${version.scala.epoch}"
-        groupId = "org.json4s"
-        version = "3.6.6"
-      }
-    dependencies +=
-      {
-        artifactId = "maven-model"
-        groupId = "org.apache.maven"
-        version = "3.6.1"
-      }
-    dependencies +=
-      {
-        artifactId = "maven-shared-utils"
-        groupId = "org.apache.maven.shared"
-        version = "3.2.1"
-      }
-    dependencies +=
-      {
-        artifactId = "scalatest_${version.scala.epoch}"
-        groupId = "org.scalatest"
-        scope = "test"
-        version = "${version.scalatest}"
-      }
+    dependencies += { artifactId = "scala-xml_${version.scala.epoch}", groupId = "org.scala-lang.modules", version = "1.2.0" }
+    dependencies += { artifactId = "ficus_${version.scala.epoch}", groupId = "com.iheart", version = "1.4.6" }
+    dependencies += { artifactId = "json4s-native_${version.scala.epoch}", groupId = "org.json4s", version = "3.6.6" }
+    dependencies += { artifactId = "maven-model", groupId = "org.apache.maven", version = "3.6.1" }
+    dependencies += { artifactId = "maven-shared-utils", groupId = "org.apache.maven.shared", version = "3.2.1" }
+    dependencies += { artifactId = "scalatest_${version.scala.epoch}", groupId = "org.scalatest", scope = "test", version = "${version.scalatest}" }
     build {
-      plugins +=
-        {
-          groupId = "org.apache.maven.plugins"
-          artifactId = "maven-shade-plugin"
-          version = "3.2.1"
-          executions = [
-            {
-              configuration {
-                minimizeJar = true
-                shadedArtifactAttached = true
-                shadedClassifierName = "exec"
-                transformers = [
-                  {
-                    implementation = "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"
-                    mainClass = "org.apache.maven.unbound.Cli"
-                  }
-                ]
-              }
-              goals = [ "shade" ]
-              phase = "package"
-            }
-          ]
-        }
-      ]
+      plugins += {
+        groupId = "org.apache.maven.plugins", artifactId = "maven-shade-plugin", version = "3.2.1"
+        executions = [ {
+          configuration {
+            minimizeJar = true, shadedArtifactAttached = true, shadedClassifierName = "exec"
+            transformers = [ {
+                implementation = "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"
+                mainClass = "org.apache.maven.unbound.Cli"
+            } ]
+          }
+          goals = [ "shade" ], phase = "package"
+        } ]
+      }
     }
   }
 }
