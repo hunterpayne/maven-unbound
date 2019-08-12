@@ -21,26 +21,25 @@ parts of a multi-module build system into any Hocon file.  Then these build
 components can be included in sub-modules.  For instance in a file called
 scalaCompile.conf could be
 ```
-dependencies = [
+dependencies +=
   {
     groupId = "org.scala-lang", artifactId = "scala-library"
     version = "${versionScalaRelease}", scope = "compile"
   }
-]
 build {
-  plugins = [
+  plugins +=
     {
       groupId = "org.apache.maven.plugins", artifactId = "maven-compiler-plugin"
       version = "3.7.0"
       configuration { skip = true, skipMain = true }
     }
+  plugins +=
     {
       groupId = "net.alchim31.maven", artifactId = "scala-maven-plugin"
       version = "4.0.2"
       configuration { scalaVersion = "${versionScalaRelease}" }
       executions = [ { goals = [ "compile", "testCompile" ] } ]
     }
-  ]
 }
 ```
 
@@ -367,4 +366,7 @@ uses shade to create an executable jar.
     }
   }
 }
+
+There are [More Examples](https://github.com/hunterpayne/maven-unbound/tree/master/examples) here in the Unbound source repository.
+
 ```

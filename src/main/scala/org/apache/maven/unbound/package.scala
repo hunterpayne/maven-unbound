@@ -78,9 +78,32 @@ package object unbound {
   def loadConfig(files: File*): Config = {
     require(!files.isEmpty)
 
-    val config: Config = ConfigFactory.parseFile(files.head)
+    // val config: Config = ConfigFactory.parseFile(files.head)
+    // val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
+    // println("loading config " + files.head.getAbsolutePath)
+    val parseOpts = ConfigParseOptions.defaults() /* .appendIncluder(
+      new ConfigIncluder() {
+        def include(
+          context: ConfigIncludeContext, what: String): ConfigObject = {
+          println("ctx " + context + " what " + what)
+          context.relativeTo(what).parse(context.parseOptions)
+        }
+
+        def withFallback(fallback: ConfigIncluder): ConfigIncluder = {
+          println("with fallback " + fallback)
+          fallback.withFallback(this)
+          this
+          // fallback
+        }
+      }) */
+    val config = ConfigFactory.parseFile(files.head, parseOpts)
+
     files.tail.foldLeft(config) { case(conf, file) =>
-      conf.withFallback(ConfigFactory.parseFile(file)) }.resolve()
+      // conf.withFallback(ConfigFactory.parseFile(file))
+      conf.withFallback(ConfigFactory.parseFile(files.head, parseOpts))
+      // conf.withFallback(ConfigFactory.load(
+      // file.toURI(), ConfigParseOptions.defaults(), resolveOpts))
+    }.resolve()
   }
 
   /**
