@@ -296,36 +296,6 @@
 	  </execution>
 	</executions>
       </plugin>
-      <plugin>
-        <groupId>org.digitalmediaserver</groupId>
-        <artifactId>nsis-maven-plugin</artifactId>
-        <version>1.0.2</version>
-        <configuration>
-          <makensisExecutable>C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe</makensisExecutable>
-          <makensisExecutableLinux>/usr/bin/makensis</makensisExecutableLinux>
-          <makensisExecutableMacOS>${project.external-resources}/third-party/nsis/Bin/makensisMacOS</makensisExecutableMacOS>
-          <compression>lzma</compression>
-          <compressionIsFinal>true</compressionIsFinal>
-          <compressionDictSize>64</compressionDictSize>
-          <defines>
-            <PROJECT_NAME_SHORT>${project.name.short}</PROJECT_NAME_SHORT>
-            <PROJECT_NAME_CAMEL>${project.name.camel}</PROJECT_NAME_CAMEL>
-          </defines>
-        </configuration>
-        <executions>
-          <execution>
-            <id>build-windows-installer</id>
-            <configuration>
-              <scriptFile>nsis/${project.artifactId}.nsi</scriptFile>
-              <outputFile>${project.build.finalName}.exe</outputFile>
-              <attachArtifact>false</attachArtifact>
-            </configuration>
-            <goals>
-              <goal>make</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -397,6 +367,7 @@
 
   <profiles>
     <profile>
+      <id>build-linux-installer</id>
       <activation>
 	<os><name>Linux</name></os>
       </activation>
@@ -548,6 +519,49 @@
             </configuration>
 	  </plugin>
 	</plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>build-windows-installer</id>
+      <activation>
+        <file>
+          <!-- <exists>C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe</exists> -->
+          <exists>/usr/bin/makensis</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.digitalmediaserver</groupId>
+            <artifactId>nsis-maven-plugin</artifactId>
+            <version>1.0.2</version>
+            <configuration>
+              <makensisExecutable>C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe</makensisExecutable>
+              <makensisExecutableLinux>/usr/bin/makensis</makensisExecutableLinux>
+              <makensisExecutableMacOS>${project.external-resources}/third-party/nsis/Bin/makensisMacOS</makensisExecutableMacOS>
+              <compression>lzma</compression>
+              <compressionIsFinal>true</compressionIsFinal>
+              <compressionDictSize>64</compressionDictSize>
+              <defines>
+                <PROJECT_NAME_SHORT>${project.name.short}</PROJECT_NAME_SHORT>
+                <PROJECT_NAME_CAMEL>${project.name.camel}</PROJECT_NAME_CAMEL>
+              </defines>
+            </configuration>
+            <executions>
+              <execution>
+                <id>build-windows-installer</id>
+                <configuration>
+                  <scriptFile>nsis/${project.artifactId}.nsi</scriptFile>
+                  <outputFile>${project.build.finalName}.exe</outputFile>
+                  <attachArtifact>false</attachArtifact>
+                </configuration>
+                <goals>
+                  <goal>make</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
       </build>
     </profile>
   </profiles>

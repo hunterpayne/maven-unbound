@@ -30,9 +30,12 @@ class JsonSpec extends FlatSpec with Matchers {
 
   import JsonReader._
 
+  def stripIfWindows(s: String): String = 
+    if (isWindows()) s.replaceAllLiterally(System.lineSeparator, "\n") else s
+
   it should "load from json" in {
 
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -203,7 +206,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </plugins>
   </reporting>
 </project>
-"""
+""")
 
     val is = getClass().getClassLoader.getResourceAsStream("pom-json.json")
     try {
@@ -225,7 +228,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   }
 
   it should "load another pom from json" in {
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.example</groupId>
@@ -375,7 +378,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </plugins>
   </build>
 </project>
-"""
+""")
 
     val is = getClass().getClassLoader.getResourceAsStream("pom2-json.json")
     try {
@@ -404,7 +407,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   }
 
   it should "load a 3rd pom from json" in {
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.maven.lifecycle.test</groupId>
@@ -469,7 +472,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </plugins>
   </build>
 </project>
-"""
+""")
 
     val is = getClass().getClassLoader.getResourceAsStream("pom3-json.json")
     try {
@@ -498,7 +501,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   }
 
   it should "load a 4th pom from json" in {
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -1098,7 +1101,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </profile>
   </profiles>
 </project>
-"""
+""")
 
     val is = getClass().getClassLoader.getResourceAsStream("pom4-json.json")
     try {

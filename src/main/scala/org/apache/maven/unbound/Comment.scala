@@ -17,7 +17,6 @@
 
 package org.apache.maven.unbound
 
-import scala.compat.Platform.EOL
 import scala.xml.{ Comment => XmlComment, Elem, Node, Null, Text, TopScope }
 
 import com.typesafe.config.{
@@ -222,6 +221,10 @@ case class DocComments(comments: Seq[Comments]) {
 
 object CommentExtractor {
 
+  private def strip(s: String): String =
+    if (isWindows()) s.filter { c => c != '\n' && c != '\r' }
+    else s
+
   def apply(conf: Config): DocComments = {
     import scala.collection.JavaConverters._
 
@@ -233,7 +236,7 @@ object CommentExtractor {
         case i: Int => ListIndex(i)
       })
 
-      val comments = curr.origin().comments().asScala.toSeq
+      val comments = curr.origin().comments().asScala.toSeq.map { strip(_) }
       val thisComments =
         if (comments.isEmpty) Seq()
         else Seq(Comments(comments, CommentPath(newPath: _*)))
@@ -292,8 +295,8 @@ object CommentExtractor {
         case c: XmlComment =>
           val newPathElems = elemPathToPath(newPath)
           val comments = c.commentText.split(Array('\n', '\r'))
-          // dependencies are always in lists and the string dependency is never
-          // a key
+          // dependencies are always in lists and the string dependency is
+          // never a key
           if (null == lastLabel || isList ||
             lastLabel == SL.DependencyStr.toString)
             Seq(Comments(

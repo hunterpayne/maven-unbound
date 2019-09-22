@@ -34,6 +34,8 @@ trait Writable {
 
   val xml: Elem
 
+  private val nl = System.lineSeparator
+
   // max width: 80 chars
   // indent:     2 spaces
   /**
@@ -100,7 +102,8 @@ trait Writable {
     sb.append(keyName)
     sb.append(" ")
     subToString[T](instance, sb, cmts, List(ElementLabel(keyName)), 1, false)
-    sb.append("}\n")
+    sb.append("}")
+    sb.append(nl)
     sb.toString
   }
 
@@ -260,7 +263,7 @@ trait Writable {
             sb.append(spacer * dp)
             sb.append("# ")
             sb.append(str)
-            sb.append("\n")
+            sb.append(nl)
           }
       }
 
@@ -275,21 +278,23 @@ trait Writable {
         case "Boolean" =>
           writeKey(key)
           sb.append(" = ")
-          if (value.asInstanceOf[Boolean]) sb.append("true\n")
-          else sb.append("false\n")
+          if (value.asInstanceOf[Boolean]) sb.append("true")
+          else sb.append("false")
+          sb.append(nl)
 
         case "Int" | "Long" | "Float" | "Double" =>
           writeKey(key)
           sb.append(" = ")
           sb.append(value.toString)
-          sb.append("\n")
+          sb.append(nl)
 
         case "String" =>
           writeKey(key)
           sb.append(" = ")
           sb.append("\"")
           sb.append(encodeJson(value.toString))
-          sb.append("\"\n")
+          sb.append("\"")
+          sb.append(nl)
 
         case "Seq[String]" =>
           val lst = value.asInstanceOf[Seq[String]]
@@ -302,7 +307,7 @@ trait Writable {
                 sb.append(spacer * (depth + 1))
                 sb.append("# ")
                 sb.append(str)
-                sb.append("\n")
+                sb.append(nl)
               }
           }
           if (!lst.isEmpty) {
@@ -316,7 +321,8 @@ trait Writable {
               sb.append("\"")
               if (c != last) sb.append(", ")
             }
-            sb.append(" ]\n")
+            sb.append(" ]")
+            sb.append(nl)
           }
 
         case lstClz if (lstClz.startsWith("Seq[")) =>
@@ -324,7 +330,8 @@ trait Writable {
           if (!lst.isEmpty) {
             val innerClassname = lstClz.substring(4, lstClz.length - 1)
             writeKey(key)
-            sb.append(" = [\n")
+            sb.append(" = [")
+            sb.append(nl)
 
             val last = lst.last
             lst.zipWithIndex.foreach { case(v, idx) =>
@@ -333,14 +340,16 @@ trait Writable {
               writeElem(innerClassname, v, idxPath)
             }
             sb.append(spacer * (depth + 1))
-            sb.append("]\n")
+            sb.append("]")
+            sb.append(nl)
           }
 
         case "Properties" =>
           val props = value.asInstanceOf[Properties]
           if (!props.isEmpty) {
             writeKey(key)
-            sb.append(" {\n")
+            sb.append(" {")
+            sb.append(nl)
             var idx = 0
             props.stringPropertyNames().iterator().forEachRemaining { k =>
               insertComments(currPath ::: List(ListIndex(idx)), depth + 2)
@@ -350,18 +359,21 @@ trait Writable {
               sb.append(k)
               sb.append(" = \"")
               sb.append(encodeJson(v))
-              sb.append("\"\n")
+              sb.append("\"")
+              sb.append(nl)
               idx = idx + 1
             }
             sb.append(spacer * (depth + 1))
-            sb.append("}\n")
+            sb.append("}")
+            sb.append(nl)
           }
 
         case "Map[String,String]" =>
           val strMap = value.asInstanceOf[Map[String, String]]
           if (!strMap.isEmpty) {
             writeKey(key)
-            sb.append(" {\n")
+            sb.append(" {")
+            sb.append(nl)
             var idx = 0
             strMap.foreach { case(k, v) =>
               insertComments(currPath ::: List(ElementLabel(k)), depth + 2)
@@ -371,11 +383,13 @@ trait Writable {
               sb.append(k)
               sb.append("\" = \"")
               sb.append(encodeJson(v))
-              sb.append("\"\n")
+              sb.append("\"")
+              sb.append(nl)
               idx = idx + 1
             }
             sb.append(spacer * (depth + 1))
-            sb.append("}\n")
+            sb.append("}")
+            sb.append(nl)
           }
 
         case mapClz if (mapClz.startsWith("Map[String,")) =>
@@ -383,7 +397,8 @@ trait Writable {
           if (!objMap.isEmpty) {
             writeKey(key)
             val innerClassname = mapClz.substring(11, mapClz.length - 1)
-            sb.append(" {\n")
+            sb.append(" {")
+            sb.append(nl)
             objMap.foreach { case(k, v) =>
               val keyPath = currPath ::: List(ElementLabel(k))
               insertComments(keyPath, depth + 2)
@@ -392,7 +407,8 @@ trait Writable {
               writeElem(innerClassname, v, keyPath, Some(k))
             }
             sb.append(spacer * (depth + 1))
-            sb.append("}\n")
+            sb.append("}")
+            sb.append(nl)
           }
 
         case "com.typesafe.config.Config" =>
@@ -416,9 +432,9 @@ trait Writable {
             val rendered =
               filteredComments.insertConf(conf).root().render(options)
 
-            sb.append(
-              rendered.split('\n').mkString("\n" + (spacer * (1 + depth))))
-            sb.append("\n")
+            sb.append(rendered.split(Array('\n', '\r')).
+              mkString(nl + (spacer * (1 + depth))))
+            sb.append(nl)
           }
 
         case clz =>
@@ -463,7 +479,8 @@ trait Writable {
     }.toSeq
 
     if (tab && depth > 0) sb.append(spacer * depth)
-    sb.append("{\n")
+    sb.append("{")
+    sb.append(nl)
 
     methods.reverse.foreach { method =>
       val value = instMirror.reflectMethod(method.asMethod)()
@@ -474,6 +491,7 @@ trait Writable {
     }
 
     if (depth > 0) sb.append(spacer * depth)
-    sb.append("}\n")
+    sb.append("}")
+    sb.append(nl)
   }
 }

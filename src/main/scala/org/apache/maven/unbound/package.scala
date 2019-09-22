@@ -18,6 +18,7 @@
 package org.apache.maven
 
 import java.io.{ File, InputStream, IOException }
+import java.util.Locale
 import javax.xml.parsers.{
   DocumentBuilder, DocumentBuilderFactory, ParserConfigurationException }
 
@@ -40,6 +41,12 @@ import org.xml.sax.SAXException
   */
 package object unbound {
 
+  protected[unbound] val separators = System.lineSeparator.toArray
+  protected[unbound] val os =
+    System.getProperty("os.name").toLowerCase(Locale.ROOT)
+
+  protected[unbound] def isWindows(): Boolean = os.contains("win")
+
   /**
     * Take a list of something and if its empty returns a list containing only
     * default instead, otherwise it returns the original list
@@ -53,7 +60,11 @@ package object unbound {
   /**
     * translates empty string to null, otherwise returns the original string
     */
-  def emptyToNull(s: String): String = if (s != "") s else null
+  def emptyToNull(s: String): String =
+    if (s != "") {
+      if (isWindows()) s.replaceAllLiterally(System.lineSeparator, "\n")
+      else s
+    } else null
 
   /**
     * translates the empty string to a default, otherwise returns the original
@@ -61,7 +72,11 @@ package object unbound {
     * @param s string to test and return if not empty
     * @param d string to return if s is the empty string
     */
-  def emptyToDefault(s: String, d: String): String = if (s != "") s else d
+  def emptyToDefault(s: String, d: String): String =
+    if (s != "") {
+      if (isWindows()) s.replaceAllLiterally(System.lineSeparator, "\n")
+      else s
+    } else d
 
   /**
     * if s is the string &quot;true&quot; returns true, if s is not the empty
@@ -528,7 +543,10 @@ package object unbound {
       if (v != null) {
         v match {
           case JNull => null
-          case s: JString => s.s
+          case s: JString =>
+            if (isWindows())
+              s.s.replaceAllLiterally(System.lineSeparator, "\n")
+            else s.s
           case b: JBool => b.value
           case d: JDecimal => d.num
           case d: JDouble => d.num

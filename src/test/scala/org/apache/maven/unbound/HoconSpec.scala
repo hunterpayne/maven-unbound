@@ -32,9 +32,12 @@ class HoconSpec extends FlatSpec with Matchers {
 
   import HoconReader._
 
+  def stripIfWindows(s: String): String = 
+    if (isWindows()) s.replaceAllLiterally(System.lineSeparator, "\n") else s
+
   it should "load from hocon" in {
 
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -201,7 +204,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </plugins>
   </reporting>
 </project>
-"""
+""")
 
     val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
     val project1 = readPOM(ConfigFactory.load(
@@ -218,7 +221,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   }
 
   it should "load another pom from hocon" in {
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.example</groupId>
@@ -397,7 +400,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </plugins>
   </build>
 </project>
-"""
+""")
 
     val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
     val project1 = readPOM(ConfigFactory.load(
@@ -423,7 +426,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   }
 
   it should "load a 3rd pom from hocon" in {
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.maven.lifecycle.test</groupId>
@@ -513,7 +516,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </plugins>
   </build>
 </project>
-"""
+""")
 
     val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
     val project1 = readPOM(ConfigFactory.load(
@@ -530,7 +533,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   }
 
   it should "load a 4th pom from hocon" in {
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -1162,7 +1165,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </profile>
   </profiles>
 </project>
-"""
+""")
 
     val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
     val project1 = readPOM(ConfigFactory.load(
@@ -1180,7 +1183,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
   it should "load a hocon with complex dot syntax" in {
 
-    val correct = """<project 
+    val correct = stripIfWindows("""<project 
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xmlns="http://maven.apache.org/POM/4.0.0">
@@ -1266,7 +1269,7 @@ xmlns="http://maven.apache.org/POM/4.0.0">
     </plugins>
   </build>
 </project>
-"""
+""")
 
     val resolveOpts = ConfigResolveOptions.defaults().setAllowUnresolved(true)
     val project1 = readPOM(ConfigFactory.load(
