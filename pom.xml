@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project 
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.maven</groupId>
   <artifactId>unbound</artifactId>
   <version>1.0.0</version>
-  <packaging>jar</packaging>
   <name>Unbound</name>
   <description>
     Maven Unbound is a file level translator of Apache Maven POM files to and
@@ -12,8 +11,8 @@
     these translations and a command line interface to translate between
     XML, JSON and HOCON formats of POMs.  The CLI can be called with
     the mvnu script in this directory.  
-    &#8211;&#8211;generate&#8211;hocon and 
-    &#8211;&#8211;generate&#8211;json command line flags are added to
+    ––generate–hocon and 
+    ––generate–json command line flags are added to
     translate a Maven project from XML to JSON and/or HOCON.  Then mvnu can
     be called just like mvn can but the JSON or HOCON POM files will generate
     pom.xml files on the fly which will in turn be built using Maven.
@@ -58,37 +57,33 @@
     <url>https://github.com/hunterpayne/maven-unbound</url>
   </scm>
   <issueManagement>
-    <url>https://github.com/hunterpayne/maven-unbound/issues</url>
     <system>GitHub</system>
+    <url>https://github.com/hunterpayne/maven-unbound/issues</url>
   </issueManagement>
   <properties>
-    <!-- Resource identity sequence. -->
-<!--    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> -->
-    <maven.build.timestamp.format></maven.build.timestamp.format>
-
-    <!-- Sets the version of Scala used -->
-    <version.scala.epoch>2.12</version.scala.epoch>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <findbugsOmissions>
+      MutableStaticFields,FindNullDeref,MethodReturnCheck,UnreadFields
+    </findbugsOmissions>
     <version.scala.release>2.12.8</version.scala.release>
-
-    <!-- Java epoch. -->
-    <version.java>1.8</version.java>
-    <!-- Used by M2E. -->
     <maven.compiler.source>${version.java}</maven.compiler.source>
     <maven.compiler.target>${version.java}</maven.compiler.target>
-
-    <!-- scalatest -->
+    <packageSection>Development</packageSection>
+    <rpmPackageDependency>apache-maven</rpmPackageDependency>
     <version.scalatest>3.0.6</version.scalatest>
-
-    <!-- File format. -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+    <mainClass>org.apache.maven.unbound.Cli</mainClass>
+    <version.java>1.8</version.java>
+    <launcherName>mvnu</launcherName>
+    <debPackageDependency>maven</debPackageDependency>
+    <maven.build.timestamp.format></maven.build.timestamp.format>
+    <versionScalaRelease>${version.scala.release}</versionScalaRelease>
+    <version.scala.epoch>2.12</version.scala.epoch>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${version.scala.release}</version>
+      <version>${versionScalaRelease}</version>
     </dependency>
     <dependency>
       <groupId>org.scala-lang.modules</groupId>
@@ -105,10 +100,10 @@
       <artifactId>ficus_${version.scala.epoch}</artifactId>
       <version>1.4.6</version>
       <exclusions>
-	<exclusion>
-	  <groupId>org.scala-lang</groupId>
-	  <artifactId>scala-library</artifactId>
-	</exclusion>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -132,20 +127,17 @@
       <version>${version.scalatest}</version>
       <scope>test</scope>
       <exclusions>
-	<exclusion>
-	  <groupId>org.scala-lang.modules</groupId>
-	  <artifactId>scala-xml_${version.scala.epoch}</artifactId>
-	</exclusion>
+        <exclusion>
+          <groupId>org.scala-lang.modules</groupId>
+          <artifactId>scala-xml_${version.scala.epoch}</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
   </dependencies>
-
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
     <plugins>
-
-      <!-- Disable default compiler. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -155,13 +147,11 @@
           <skipMain>true</skipMain>
         </configuration>
       </plugin>
-
-      <!-- Enable alternative compiler. -->
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
         <version>4.0.2</version>
-	<executions>
+        <executions>
           <execution>
             <goals>
               <goal>compile</goal>
@@ -170,7 +160,84 @@
           </execution>
         </executions>
         <configuration>
-          <scalaVersion>${version.scala.release}</scalaVersion>
+          <scalaVersion>${versionScalaRelease}</scalaVersion>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.7.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-module-twiki</artifactId>
+            <version>1.8</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.scalastyle</groupId>
+        <artifactId>scalastyle-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <failOnWarning>false</failOnWarning>
+          <outputFile>${project.build.directory}/site/scalastyle-output.xml</outputFile>
+          <configLocation>${project.basedir}/scalastyle-config.xml</configLocation>
+          <includeTestSourceDirectory>false</includeTestSourceDirectory>
+          <outputEncoding>UTF-8</outputEncoding>
+          <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
+          <verbose>false</verbose>
+          <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
+          <failOnViolation>true</failOnViolation>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <parallel>false</parallel>
+          <reportsDirectory>
+            ${project.build.directory}/surefire-reports
+          </reportsDirectory>
+          <filereports>TestSuite.txt</filereports>
+          <junitxml>.</junitxml>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.scoverage</groupId>
+        <artifactId>scoverage-maven-plugin</artifactId>
+        <version>1.4.0-RC1</version>
+        <executions>
+          <execution>
+            <id>scoverage_unit</id>
+            <phase>site</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <highlighting>true</highlighting>
+          <minimumCoverage>70</minimumCoverage>
+          <failOnMinimumCoverage>true</failOnMinimumCoverage>
+          <scalaVersion>${versionScalaRelease}</scalaVersion>
+          <excludedPackages>java..*;scala..*</excludedPackages>
         </configuration>
       </plugin>
       <plugin>
@@ -185,9 +252,10 @@
             </goals>
             <configuration>
               <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.apache.maven.unbound.Cli</mainClass>
-                </transformer>
+                <transformer 
+                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>${mainClass}</mainClass>
+</transformer>
               </transformers>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>exec</shadedClassifierName>
@@ -195,110 +263,21 @@
           </execution>
         </executions>
       </plugin>
-
-      <!-- enable scalatest -->
       <plugin>
-        <groupId>org.scalatest</groupId>
-        <artifactId>scalatest-maven-plugin</artifactId>
-        <version>1.0</version>
-        <configuration>
-          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-          <junitxml>.</junitxml>
-          <filereports>TestSuite.txt</filereports>
-          <parallel>false</parallel>
-        </configuration>
+        <groupId>com.redhat.victims.maven</groupId>
+        <artifactId>security-versions</artifactId>
+        <version>1.0.6</version>
         <executions>
           <execution>
-            <id>test</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-dependency-plugin</artifactId>
-	<version>3.1.1</version>
-	<executions>
-          <execution>
-            <id>copy</id>
             <phase>package</phase>
-          </execution>
-	</executions>
-      </plugin>
-      <plugin>
-        <groupId>org.scalastyle</groupId>
-        <artifactId>scalastyle-maven-plugin</artifactId>
-        <version>1.0.0</version>
-        <configuration>
-          <verbose>false</verbose>
-          <failOnViolation>true</failOnViolation>
-          <includeTestSourceDirectory>false</includeTestSourceDirectory>
-          <failOnWarning>false</failOnWarning>
-          <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
-          <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
-          <configLocation>${project.basedir}/scalastyle-config.xml</configLocation>
-          <outputFile>${project.build.directory}/site/scalastyle-output.xml</outputFile>
-          <outputEncoding>UTF-8</outputEncoding>
-        </configuration>
-        <executions>
-          <execution>
             <goals>
               <goal>check</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.7.1</version>
-	<dependencies>
-          <dependency>
-            <groupId>org.apache.maven.doxia</groupId>
-            <artifactId>doxia-module-twiki</artifactId>
-            <version>1.8</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <plugin>
-	<groupId>org.scoverage</groupId>
-	<artifactId>scoverage-maven-plugin</artifactId>
-	<version>1.4.0-RC1</version>
-	<configuration>
-          <scalaVersion>${version.scala.release}</scalaVersion>
-          <highlighting>true</highlighting>
-          <minimumCoverage>0</minimumCoverage>
-          <failOnMinimumCoverage>true</failOnMinimumCoverage>
-	  <excludedPackages>java..*;scala..*</excludedPackages>
-	</configuration>
-	<executions>
-          <execution>
-            <id>scoverage_unit</id>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <phase>site</phase>
-          </execution>
-	</executions>
-      </plugin>
-      <plugin>
-	<groupId>com.redhat.victims.maven</groupId>
-	<artifactId>security-versions</artifactId>
-        <version>1.0.6</version>
-	<executions>
-	  <execution>
-	    <goals>
-	      <goal>check</goal>
-	    </goals>
-	    <phase>package</phase>
-	  </execution>
-	</executions>
-      </plugin>
     </plugins>
   </build>
-
   <reporting>
     <plugins>
       <plugin>
@@ -313,14 +292,13 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>3.0.0</version>
-	<reportSets>
+        <reportSets>
           <reportSet>
+            <id>default</id>
             <reports>
-	      <!-- select reports -->
-	      <report>summary</report>
+              <report>summary</report>
               <report>dependencies</report>
               <report>dependency-info</report>
               <report>dependency-convergence</report>
@@ -333,29 +311,24 @@
         </reportSets>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>3.0.0-M3</version>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-dependency-plugin</artifactId>
-	<version>3.1.1</version>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.1</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
         <version>3.0.5</version>
-	<configuration>
-          <omitVisitors>MutableStaticFields,FindNullDeref,MethodReturnCheck,UnreadFields</omitVisitors>
+        <configuration>
+          <omitVisitors>${findbugsOmissions}</omitVisitors>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.scoverage</groupId>
         <artifactId>scoverage-maven-plugin</artifactId>
-	<version>1.4.0-RC1</version>
-	<reportSets>
+        <version>1.4.0-RC1</version>
+        <reportSets>
           <reportSet>
+            <id>default</id>
             <reports>
               <report>report</report>
             </reports>
@@ -364,165 +337,182 @@
       </plugin>
     </plugins>
   </reporting>
-
   <profiles>
     <profile>
-      <id>build-linux-installer</id>
+      <id>RPM builder</id>
       <activation>
-	<os><name>Linux</name></os>
+        <os>
+          <name>Linux</name>
+        </os>
+        <file>
+          <exists>/usr/binm/rpmbuild</exists>
+        </file>
       </activation>
       <build>
-	<plugins>
-	  <!-- build installers -->
-	  <plugin>
+        <plugins>
+          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>rpm-maven-plugin</artifactId>
             <version>2.2.0</version>
             <executions>
               <execution>
-		<id>generate-rpm</id>
-		<goals>
-		  <goal>rpm</goal>
-		</goals>
-		<phase>package</phase>
+                <id>generate-rpm</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>rpm</goal>
+                </goals>
               </execution>
             </executions>
             <configuration>
               <license>Apache 2.0 (c) 2019</license>
-              <distribution>Maven Unbound</distribution>
-              <group>Development/Tools</group>
-              <!-- <icon></icon> -->
-              <packager>SWWDC</packager>
-              <prefix>/usr/local</prefix>
-              <!-- <changelogFile>src/changelog</changelogFile> -->
-              <defineStatements>
-		<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
-              </defineStatements>
-	      <prereqs>apache-maven</prereqs>
-              <mappings>
-		<mapping>
-		  <directory>/usr/local/bin</directory>
-		  <filemode>555</filemode>
-		  <username>root</username>
-		  <groupname>root</groupname>
-		  <sources>
-                    <source>
-                      <location>mvnu</location>
-                    </source>
-		  </sources>
-		</mapping>
-		<mapping>
-		  <directory>/usr/local/share/lib/unbound</directory>
-		  <filemode>555</filemode>
-		  <username>root</username>
-		  <groupname>root</groupname>
-		  <sources>
-                    <source>
-                      <location>target/unbound-1.0.0-exec.jar</location>
-                    </source>
-		  </sources>
-		</mapping>
-              </mappings>
-	      <preinstallScriptlet>
-		<script>echo "installing ${project.name} now"</script>
+              <preinstallScriptlet>
+                <script/>
               </preinstallScriptlet>
+              <group>Development/Tools</group>
+              <prefix>/usr</prefix>
+              <packager>SWWDC</packager>
+              <distribution>${project.name}</distribution>
+              <defineStatements>
+                <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+              </defineStatements>
+              <prereqs>${rpmPackageDependencies}</prereqs>
+              <mappings>
+                <mapping>
+                  <sources>
+                    <source>
+                      <location>${launcherName}</location>
+                    </source>
+                  </sources>
+                  <username>root</username>
+                  <directory>/usr/bin</directory>
+                  <groupname>root</groupname>
+                  <filemode>555</filemode>
+                </mapping>
+                <mapping>
+                  <directory>/usr/share/lib/${project.artifactId}</directory>
+                  <username>root</username>
+                  <groupname>root</groupname>
+                  <sources>
+                    <source>
+                      <location>target/${project.artifactId}-${project.version}-exec.jar</location>
+                    </source>
+                  </sources>
+                  <filemode>444</filemode>
+                </mapping>
+              </mappings>
             </configuration>
-	  </plugin>
-	  
-	  <plugin>
-	    <artifactId>maven-resources-plugin</artifactId>
-	    <version>2.3</version>
-	    <executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>deb-builder</id>
+      <activation>
+        <os>
+          <name>Linux</name>
+        </os>
+        <file>
+          <exists>/usr/bin/dpkg</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.3</version>
+            <executions>
               <execution>
-		<id>copy-deb-resources</id>
-		<phase>process-resources</phase>
-		<goals><goal>copy-resources</goal></goals>
-		<configuration>
-		  <overwrite>false</overwrite>
-		  <outputDirectory>${basedir}/target/deb</outputDirectory>
-		  <resources>
-		    <resource>
-		      <targetPath>usr/bin/</targetPath>
-		      <directory>.</directory>
-		      <includes>
-			<include>mvnu</include>
-		      </includes>
-		    </resource>
-		  </resources>
-		</configuration>
+                <id>copy-deb-resources</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/deb</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>.</directory>
+                      <targetPath>usr/bin/</targetPath>
+                      <includes>
+                        <include>${launcherName}</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                  <overwrite>false</overwrite>
+                </configuration>
               </execution>
-	    </executions>
-	  </plugin>
-	  <plugin>
-	    <artifactId>maven-antrun-plugin</artifactId>
-	    <version>1.6</version>
-	    <executions>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
               <execution>
-		<id>fix-mvnu-permissions</id>
-		<phase>package</phase>
-		<configuration>
-		  <target>
-		    <chmod perm="755">
+                <id>fix-launcher-permissions</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <chmod perm="555">
                       <fileset dir="${basedir}/target/deb">
-			<include name="usr/bin/mvnu"/>
+                        <include name="usr/bin/${launcherName}"/>
                       </fileset>
-		    </chmod>
-		  </target>
-		</configuration>
-		<goals><goal>run</goal></goals>
+                    </chmod>
+                  </target>
+                </configuration>
               </execution>
               <execution>
-		<id>fix-jar-permissions</id>
-		<phase>package</phase>
-		<configuration>
-		  <target>
-		    <chmod perm="444">
-                      <fileset dir="${basedir}/target/deb">
-			<include name="lib/*.jar"/>
+                <id>fix-jar-permissions</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <chmod perm="444">
+                      <fileset dir="${basedir}/target">
+                        <include name="${project.artifactId}-${project.version}-exec.jar"/>
                       </fileset>
-		    </chmod>
-		  </target>
-		</configuration>
-		<goals><goal>run</goal></goals>
+                    </chmod>
+                  </target>
+                </configuration>
               </execution>
-	    </executions>
-	  </plugin>
-	  <plugin>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>net.sf.debian-maven</groupId>
             <artifactId>debian-maven-plugin</artifactId>
             <version>1.0.6</version>
             <executions>
               <execution>
-		<id>generate-deb</id>
-		<goals>
-		  <goal>package</goal>
-		</goals>
-		<phase>package</phase>
+                <id>generate-deb</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>package</goal>
+                </goals>
               </execution>
             </executions>
             <configuration>
-              <packageName>unbound</packageName>
-              <packageSection>Maven Unbound</packageSection>
-              <packageTitle>Maven Unbound</packageTitle>
-	      <projectUrl>${project.url}</projectUrl>
-	      <packageSection>Development</packageSection>
-	      <!-- <projectOrganization>Apache Foundation</projectOrganization> -->
-	      <!-- <maintainerEmail></maintainerEmail> -->
-	      <excludeAllDependencies>true</excludeAllDependencies>
-	      <excludeAllArtifacts>true</excludeAllArtifacts>
-	      <includeArtifacts>
-		<includeArtifact>unbound-1.0.0-exec.jar</includeArtifact>
-	      </includeArtifacts>
-	      <packageDependencies>
-		<packageDependency>maven</packageDependency>
-	      </packageDependencies>
+              <packageSection>${packageSection}</packageSection>
+              <packageDependencies>
+                <packageDependency>${debPackageDependency}</packageDependency>
+              </packageDependencies>
+              <excludeAllArtifacts>true</excludeAllArtifacts>
+              <packageTitle>${project.name}</packageTitle>
+              <packageName>${project.artifactId}</packageName>
+              <projectUrl>${project.url}</projectUrl>
+              <excludeAllDependencies>true</excludeAllDependencies>
             </configuration>
-	  </plugin>
-	</plugins>
+          </plugin>
+        </plugins>
       </build>
     </profile>
     <profile>
-      <id>build-windows-installer</id>
+      <id>windows-installer-builder</id>
       <activation>
         <file>
           <!-- <exists>C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe</exists> -->
@@ -535,31 +525,35 @@
             <groupId>org.digitalmediaserver</groupId>
             <artifactId>nsis-maven-plugin</artifactId>
             <version>1.0.2</version>
-            <configuration>
-              <makensisExecutable>C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe</makensisExecutable>
-              <makensisExecutableLinux>/usr/bin/makensis</makensisExecutableLinux>
-              <makensisExecutableMacOS>${project.external-resources}/third-party/nsis/Bin/makensisMacOS</makensisExecutableMacOS>
-              <compression>lzma</compression>
-              <compressionIsFinal>true</compressionIsFinal>
-              <compressionDictSize>64</compressionDictSize>
-              <defines>
-                <PROJECT_NAME_SHORT>${project.name.short}</PROJECT_NAME_SHORT>
-                <PROJECT_NAME_CAMEL>${project.name.camel}</PROJECT_NAME_CAMEL>
-              </defines>
-            </configuration>
             <executions>
               <execution>
                 <id>build-windows-installer</id>
-                <configuration>
-                  <scriptFile>nsis/${project.artifactId}.nsi</scriptFile>
-                  <outputFile>${project.build.finalName}.exe</outputFile>
-                  <attachArtifact>false</attachArtifact>
-                </configuration>
                 <goals>
                   <goal>make</goal>
                 </goals>
+                <configuration>
+                  <outputFile>${project.build.finalName}.exe</outputFile>
+                  <scriptFile>nsis/${project.artifactId}.nsi</scriptFile>
+                  <attachArtifact>false</attachArtifact>
+                </configuration>
               </execution>
             </executions>
+            <configuration>
+              <compressionDictSize>64</compressionDictSize>
+              <defines>
+                <PROJECT_NAME_SHORT>${project.name}</PROJECT_NAME_SHORT>
+                <PROJECT_NAME_CAMEL>${project.artifactId}</PROJECT_NAME_CAMEL>
+              </defines>
+              <makensisExecutable>
+                C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe
+              </makensisExecutable>
+              <makensisExecutableMacOS>
+                ${project.external-resources}/third-party/nsis/Bin/makensisMacOS
+              </makensisExecutableMacOS>
+              <makensisExecutableLinux>/usr/bin/makensis</makensisExecutableLinux>
+              <compression>lzma</compression>
+              <compressionIsFinal>true</compressionIsFinal>
+            </configuration>
           </plugin>
         </plugins>
       </build>
