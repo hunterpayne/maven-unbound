@@ -63,7 +63,7 @@ trait Writable {
   }
 
   /** writes this object to the specified stream using the specified encoding */
-  def writePOM(os: OutputStream, enc: String): Unit = {
+  def writePOM(os: OutputStream, enc: String = "UTF-8"): Unit = {
     val writer = new OutputStreamWriter(os, enc)
     try { writePOM(writer) } finally { writer.close() }
   }
